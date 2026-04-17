@@ -7,7 +7,11 @@
     "gravidade": "CRITICA",
     "alerta": "Risco elevado de Hipercalemia (hiperpotassemia). A combinação de IECA (que retém K+) com diurético poupador de potássio pode causar arritmias cardíacas fatais.",
     "acao_sugerida": "Substituir o diurético poupador de K+ por Furosemida (diurético de alça) ou Hidroclorotiazida. Monitorar K+ sérico.",
-    "alternativas": ["Furosemida 40mg", "Hidroclorotiazida 25mg", "Anlodipino 5mg"],
+    "alternativas": [
+      "Furosemida 40mg",
+      "Hidroclorotiazida 25mg",
+      "Anlodipino 5mg"
+    ],
     "fonte": "Diretrizes SBC 2023 / Bulário ANVISA"
   },
   {
@@ -18,7 +22,10 @@
     "gravidade": "ALTA",
     "alerta": "Risco de Insuficiência Renal Aguda. O AINE antagoniza o efeito vasodilatador renal do IECA e pode causar retenção de sódio, elevando a PA.",
     "acao_sugerida": "Substituir AINE por Paracetamol 500-1000mg ou Dipirona 500mg. Evitar uso prolongado de AINEs em hipertensos.",
-    "alternativas": ["Paracetamol 750mg", "Dipirona 500mg"],
+    "alternativas": [
+      "Paracetamol 750mg",
+      "Dipirona 500mg"
+    ],
     "fonte": "Diretrizes SBC / Nefrologia Brasileira"
   },
   {
@@ -29,7 +36,10 @@
     "gravidade": "ALTA",
     "alerta": "Aumento significativo do risco de sangramento gastrointestinal. O Ibuprofeno pode inibir o efeito cardioprotetor do AAS competindo pelo sítio da COX-1.",
     "acao_sugerida": "Se dor/inflamação necessária, preferir Paracetamol. Se AINE obrigatório, administrar AAS 2h antes e associar IBP.",
-    "alternativas": ["Paracetamol 750mg", "Celecoxib 100mg + Omeprazol 20mg"],
+    "alternativas": [
+      "Paracetamol 750mg",
+      "Celecoxib 100mg + Omeprazol 20mg"
+    ],
     "fonte": "Diretrizes SBC / FDA Drug Safety Communication"
   },
   {
@@ -40,7 +50,10 @@
     "gravidade": "ALTA",
     "alerta": "Risco aumentado de miopatia grave e rabdomiólise (destruição muscular), especialmente com Genfibrozila + Sinvastatina.",
     "acao_sugerida": "Se necessário, preferir Fenofibrato + Rosuvastatina (menor risco). Monitorar CPK e sintomas musculares.",
-    "alternativas": ["Fenofibrato 160mg (se fibrato necessário)", "Ezetimiba 10mg (alternativa à combinação)"],
+    "alternativas": [
+      "Fenofibrato 160mg (se fibrato necessário)",
+      "Ezetimiba 10mg (alternativa à combinação)"
+    ],
     "fonte": "Diretrizes de Dislipidemia SBC 2023"
   },
   {
@@ -51,7 +64,9 @@
     "gravidade": "CRITICA",
     "alerta": "Hipotensão severa potencialmente fatal. Ambos causam vasodilatação: a combinação pode levar a síncope, infarto e morte. Contraindicação ABSOLUTA.",
     "acao_sugerida": "Uso simultâneo CONTRAINDICADO. Respeitar janela mínima de 24h (Sildenafil/Vardenafil) ou 48h (Tadalafil) após nitrato.",
-    "alternativas": ["Interromper prescrição. Avaliar necessidade clínica de cada fármaco separadamente."],
+    "alternativas": [
+      "Interromper prescrição. Avaliar necessidade clínica de cada fármaco separadamente."
+    ],
     "fonte": "Bulário ANVISA / AHA Guidelines 2022"
   },
   {
@@ -62,7 +77,10 @@
     "gravidade": "CRITICA",
     "alerta": "Risco gravíssimo de sangramento maior (cerebral, gastrointestinal). AINEs inibem plaquetas E lesam mucosa gástrica, potencializando o anticoagulante.",
     "acao_sugerida": "Substituir AINE por Paracetamol. Se dor intensa, avaliar Tramadol com cautela. Associar IBP obrigatório.",
-    "alternativas": ["Paracetamol 500-1000mg", "Tramadol 50mg (com cautela)"],
+    "alternativas": [
+      "Paracetamol 500-1000mg",
+      "Tramadol 50mg (com cautela)"
+    ],
     "fonte": "ANVISA / Cochrane Review 2020"
   },
   {
@@ -73,7 +91,9 @@
     "gravidade": "ALTA",
     "alerta": "Terapia antitrombótica dupla aumenta risco de sangramento em 2-3x. Usar somente quando benefício supera risco (ex: SCA + FA).",
     "acao_sugerida": "Se necessário, associar IBP obrigatório e monitorar sinais de sangramento. Reavaliar após período de maior risco.",
-    "alternativas": ["Manter apenas anticoagulante se possível. Associar Omeprazol 20mg/dia."],
+    "alternativas": [
+      "Manter apenas anticoagulante se possível. Associar Omeprazol 20mg/dia."
+    ],
     "fonte": "AHA/ACC Guidelines 2023 / ESC 2023"
   },
   {
@@ -84,7 +104,10 @@
     "gravidade": "ALTA",
     "alerta": "Duplo bloqueio do SRAA. A combinação IECA + BRA aumenta hipercalemia, hipotensão e disfunção renal sem benefício adicional comprovado.",
     "acao_sugerida": "Manter apenas um dos dois. Preferir IECA em DM2 com proteinúria ou BRA em casos de tosse pelo IECA.",
-    "alternativas": ["Losartana 50mg (substituição ao IECA)", "Valsartana 80mg"],
+    "alternativas": [
+      "Losartana 50mg (substituição ao IECA)",
+      "Valsartana 80mg"
+    ],
     "fonte": "Diretrizes SBC 2023 / ONTARGET Trial"
   },
   {
@@ -95,7 +118,9 @@
     "gravidade": "CRITICA",
     "alerta": "Depressão respiratória grave e potencialmente fatal. Ambos deprimem o SNC: a combinação aumenta risco de apneia e morte em 3,86x (FDA 2016).",
     "acao_sugerida": "Evitar combinação. Se necessário, reduzir doses ao mínimo, monitorar saturação O2 e ter Naloxona disponível.",
-    "alternativas": ["Avaliar analgesia não opioide. Para ansiedade: Buspirona ou SSRI."],
+    "alternativas": [
+      "Avaliar analgesia não opioide. Para ansiedade: Buspirona ou SSRI."
+    ],
     "fonte": "FDA Drug Safety Communication 2016 / ANVISA"
   },
   {
@@ -106,7 +131,11 @@
     "gravidade": "ALTA",
     "alerta": "Risco de Síndrome Serotoninérgica: tremores, hipertermia, confusão mental e convulsões. O Tramadol inibe recaptação de serotonina.",
     "acao_sugerida": "Substituir Tramadol por Paracetamol, Dipirona ou Codeína. Se analgesia forte necessária, preferir morfina.",
-    "alternativas": ["Paracetamol 1000mg", "Codeína 30mg", "Morfina 5mg (casos graves)"],
+    "alternativas": [
+      "Paracetamol 1000mg",
+      "Codeína 30mg",
+      "Morfina 5mg (casos graves)"
+    ],
     "fonte": "FDA / Sternbach Criteria para Síndrome Serotoninérgica"
   },
   {
@@ -117,7 +146,9 @@
     "gravidade": "ALTA",
     "alerta": "AINEs reduzem excreção renal de lítio, elevando seus níveis plasmáticos. Intoxicação por lítio pode causar tremor, confusão, convulsões e dano renal.",
     "acao_sugerida": "Substituir AINE por Paracetamol (não afeta excreção de lítio). Monitorar lítio sérico se uso inevitável.",
-    "alternativas": ["Paracetamol 500-1000mg"],
+    "alternativas": [
+      "Paracetamol 500-1000mg"
+    ],
     "fonte": "APA Guidelines / Brunton - Goodman & Gilman"
   },
   {
@@ -128,7 +159,10 @@
     "gravidade": "ALTA",
     "alerta": "Tiazídicos causam hiponatremia compensatória que aumenta reabsorção renal de lítio, podendo triplicar seus níveis e causar intoxicação.",
     "acao_sugerida": "Monitorar lítio sérico a cada 3 meses. Considerar substituição por Furosemida (menor interação).",
-    "alternativas": ["Furosemida 40mg", "Anlodipino 5mg (se anti-hipertensivo)"],
+    "alternativas": [
+      "Furosemida 40mg",
+      "Anlodipino 5mg (se anti-hipertensivo)"
+    ],
     "fonte": "APA Guidelines 2023"
   },
   {
@@ -139,7 +173,9 @@
     "gravidade": "ALTA",
     "alerta": "Risco de bradicardia severa e bloqueio atrioventricular. Ambas as classes deprimem a condução elétrica cardíaca de forma sinérgica.",
     "acao_sugerida": "Monitorar FC continuamente. Evitar combinação em pacientes com bloqueio AV pré-existente.",
-    "alternativas": ["Avaliar monoterapia com amiodarona se arritimia refratária"],
+    "alternativas": [
+      "Avaliar monoterapia com amiodarona se arritimia refratária"
+    ],
     "fonte": "Diretrizes de Arritmias SBC 2023"
   },
   {
@@ -150,7 +186,9 @@
     "gravidade": "MODERADA",
     "alerta": "Antiácidos com Al³⁺, Mg²⁺ e Ca²⁺ quelam a quinolona, reduzindo absorção em até 90% e comprometendo eficácia antibiótica.",
     "acao_sugerida": "Administrar quinolona 2h ANTES ou 6h DEPOIS do antiácido. Não administrar simultaneamente.",
-    "alternativas": ["Ajustar horário de administração"],
+    "alternativas": [
+      "Ajustar horário de administração"
+    ],
     "fonte": "ANVISA / Micromedex Drug Interactions"
   },
   {
@@ -161,7 +199,9 @@
     "gravidade": "ALTA",
     "alerta": "Metronidazol inibe CYP2C9, reduzindo metabolização da Varfarina e aumentando INR em até 50%. Risco de sangramento grave.",
     "acao_sugerida": "Monitorar INR a cada 2-3 dias durante uso. Considerar redução de dose de Varfarina em 25-50%.",
-    "alternativas": ["Tinidazol (menor interação) se disponível"],
+    "alternativas": [
+      "Tinidazol (menor interação) se disponível"
+    ],
     "fonte": "ANVISA / Goodman & Gilman 13ª ed."
   },
   {
@@ -172,7 +212,11 @@
     "gravidade": "MODERADA_A_ALTA",
     "alerta": "AINEs causam retenção de sódio e água e vasoconstrição renal, podendo elevar a PA em 5mmHg em média e descompensar HAS controlada.",
     "acao_sugerida": "Preferir Paracetamol 750mg ou Dipirona 500mg. Se AINE inevitável, usar menor dose pelo menor tempo e monitorar PA.",
-    "alternativas": ["Paracetamol 750mg", "Dipirona 500mg", "Celecoxib 100mg (menor efeito pressórico)"],
+    "alternativas": [
+      "Paracetamol 750mg",
+      "Dipirona 500mg",
+      "Celecoxib 100mg (menor efeito pressórico)"
+    ],
     "fonte": "Diretrizes Brasileiras de Hipertensão Arterial 2020"
   },
   {
@@ -183,7 +227,11 @@
     "gravidade": "CRITICA",
     "alerta": "Metformina acumula em DRC e pode causar Acidose Lática fatal (mortalidade 50%). Contraindicada se TFG < 30 mL/min/1,73m².",
     "acao_sugerida": "TFG 30-45: reduzir dose à metade. TFG <30: suspender imediatamente. Substituir por Gliclazida ou Insulina NPH.",
-    "alternativas": ["Gliclazida MR 30mg", "Insulina NPH 10UI noturna", "Glipizida 5mg"],
+    "alternativas": [
+      "Gliclazida MR 30mg",
+      "Insulina NPH 10UI noturna",
+      "Glipizida 5mg"
+    ],
     "fonte": "Diretrizes SBD 2024 / KDIGO 2022"
   },
   {
@@ -194,7 +242,11 @@
     "gravidade": "CRITICA",
     "alerta": "Betabloqueadores não-seletivos (Propranolol, Atenolol em altas doses) bloqueiam receptores β2 pulmonares, causando broncoespasmo grave.",
     "acao_sugerida": "Substituir por beta-1 seletivos: Bisoprolol 2,5-5mg ou Carvedilol 3,125mg, com cuidado e monitoramento.",
-    "alternativas": ["Bisoprolol 2,5mg", "Nebivolol 2,5mg", "Carvedilol 3,125mg (com cautela)"],
+    "alternativas": [
+      "Bisoprolol 2,5mg",
+      "Nebivolol 2,5mg",
+      "Carvedilol 3,125mg (com cautela)"
+    ],
     "fonte": "Diretrizes SBPT (Pneumologia) 2023"
   },
   {
@@ -205,7 +257,10 @@
     "gravidade": "ALTA",
     "alerta": "AINEs inibem COX-1, reduzindo produção de prostaglandinas protetoras da mucosa gástrica. Risco de hemorragia digestiva alta em até 15x.",
     "acao_sugerida": "Preferir Paracetamol. Se AINE inevitável, associar IBP obrigatório (Omeprazol 20mg) e preferir Celecoxib.",
-    "alternativas": ["Paracetamol 750mg", "Celecoxib 100mg + Omeprazol 20mg"],
+    "alternativas": [
+      "Paracetamol 750mg",
+      "Celecoxib 100mg + Omeprazol 20mg"
+    ],
     "fonte": "Federação Brasileira de Gastroenterologia 2022"
   },
   {
@@ -216,7 +271,9 @@
     "gravidade": "ALTA",
     "alerta": "AINEs retêm sódio/água e causam vasoconstrição renal, podendo descompensar IC gravemente. Aumentam risco de hospitalização em 2,1x.",
     "acao_sugerida": "Contraindicado na IC. Usar exclusivamente Paracetamol para analgesia.",
-    "alternativas": ["Paracetamol 500-750mg"],
+    "alternativas": [
+      "Paracetamol 500-750mg"
+    ],
     "fonte": "Diretrizes SBC de Insuficiência Cardíaca 2023"
   },
   {
@@ -227,7 +284,9 @@
     "gravidade": "ALTA",
     "alerta": "Verapamil e Diltiazem têm efeito inotrópico negativo, podendo reduzir a fração de ejeção e causar descompensação cardíaca grave em IC-FEr.",
     "acao_sugerida": "Contraindicado em IC-FEr. Considerar Anlodipino (dii-idropíridínico) se BCC for necessário.",
-    "alternativas": ["Anlodipino 5mg (BCC di-idropiridinico, seguro na IC)"],
+    "alternativas": [
+      "Anlodipino 5mg (BCC di-idropiridinico, seguro na IC)"
+    ],
     "fonte": "Diretrizes SBC de IC 2023"
   },
   {
@@ -238,7 +297,11 @@
     "gravidade": "CRITICA",
     "alerta": "IECAs são Categoria D/X na gravidez. Causam oligohidrâmnio, insuficiência renal fetal, hipoplasia pulmonar e morte fetal. Contraindicação ABSOLUTA.",
     "acao_sugerida": "Substituir IMEDIATAMENTE por Metildopa 250-500mg ou Nifedipino 10mg (seguros na gestação).",
-    "alternativas": ["Metildopa 250mg", "Nifedipino 10mg", "Hidralazina 25mg"],
+    "alternativas": [
+      "Metildopa 250mg",
+      "Nifedipino 10mg",
+      "Hidralazina 25mg"
+    ],
     "fonte": "ANVISA Categoria D / WHO ANC Guidelines 2016"
   },
   {
@@ -249,7 +312,9 @@
     "gravidade": "ALTA",
     "alerta": "AINEs no 3° trimestre podem causar fechamento precoce do ducto arterioso e oligohidrâmnio. Evitar após 30 semanas.",
     "acao_sugerida": "Substituir por Paracetamol (seguro em qualquer trimestre). Evitar AINEs após 28 semanas.",
-    "alternativas": ["Paracetamol 500-750mg"],
+    "alternativas": [
+      "Paracetamol 500-750mg"
+    ],
     "fonte": "ANVISA / FDA / Ministério da Saúde"
   },
   {
@@ -260,7 +325,10 @@
     "gravidade": "ALTA",
     "alerta": "Estatinas são metabolizadas pelo fígado e podem elevar transaminases em hepatopatas. Risco de hepatotoxicidade com cirrose ou hepatite ativa.",
     "acao_sugerida": "Contraindicado em doença hepática ativa. Avaliar risco-benefício com hepatologista.",
-    "alternativas": ["Ezetimiba 10mg (menor metabolismo hepático)", "Colestiramina"],
+    "alternativas": [
+      "Ezetimiba 10mg (menor metabolismo hepático)",
+      "Colestiramina"
+    ],
     "fonte": "SBH (Sociedade Brasileira de Hepatologia) 2022"
   },
   {
@@ -271,7 +339,10 @@
     "gravidade": "CRITICA",
     "alerta": "Paciente já com K+ elevado. Adicionar diurético poupador de potássio pode elevar K+ para níveis fatalmente arritmogênicos (>6,5 mEq/L).",
     "acao_sugerida": "Contraindicado. Tratar hipercalemia primeiro (Gluconato de cálcio, Insulina+Glicose). Usar Furosemida para eliminação de K+.",
-    "alternativas": ["Furosemida 40mg", "Resina de troca iônica (Patiromer)"],
+    "alternativas": [
+      "Furosemida 40mg",
+      "Resina de troca iônica (Patiromer)"
+    ],
     "fonte": "Diretriz de Hipercalemia SBC/SBN 2023"
   },
   {
@@ -282,7 +353,11 @@
     "gravidade": "MODERADA",
     "alerta": "Tiazídicos aumentam reabsorção de ácido úrico, podendo precipitar crise de gota em pacientes predispostos.",
     "acao_sugerida": "Substituir por Furosemida (menor efeito hiperuricemiante) ou Anlodipino como anti-hipertensivo alternativo.",
-    "alternativas": ["Furosemida 40mg", "Anlodipino 5mg", "Losartana 50mg (uricosúrico leve)"],
+    "alternativas": [
+      "Furosemida 40mg",
+      "Anlodipino 5mg",
+      "Losartana 50mg (uricosúrico leve)"
+    ],
     "fonte": "EULAR Guidelines Gout 2016 / SBR"
   },
   {
@@ -293,7 +368,9 @@
     "gravidade": "ALTA",
     "alerta": "AINEs reduzem fluxo sanguíneo renal por inibição de prostaglandinas vasodilatadoras. Em DRC, podem precipitar IRA ou acelerar a progressão da doença.",
     "acao_sugerida": "Contraindicado em DRC moderada-grave. Usar Paracetamol (com dose ajustada se TFG < 30).",
-    "alternativas": ["Paracetamol 500mg 8/8h (dose reduzida em DRC)"],
+    "alternativas": [
+      "Paracetamol 500mg 8/8h (dose reduzida em DRC)"
+    ],
     "fonte": "KDIGO 2022 / Diretrizes SBN"
   },
   {
@@ -304,7 +381,10 @@
     "gravidade": "MODERADA",
     "alerta": "Betabloqueadores não-seletivos mascaram os sintomas de hipoglicemia (taquicardia, tremor) exceto sudorese. Dificulta detecção de hipoglicemia em insulinodependentes.",
     "acao_sugerida": "Preferir beta-1 seletivos (Bisoprolol, Atenolol) que têm menor efeito sobre sintomas hipoglicêmicos.",
-    "alternativas": ["Bisoprolol 5mg", "Atenolol 25mg (β1-seletivo)"],
+    "alternativas": [
+      "Bisoprolol 5mg",
+      "Atenolol 25mg (β1-seletivo)"
+    ],
     "fonte": "Diretrizes SBD 2024"
   },
   {
@@ -315,7 +395,10 @@
     "gravidade": "ALTA",
     "alerta": "Quinolonas (especialmente Levofloxacino, Moxifloxacino) prolongam o intervalo QT. Em paciente já com QT longo, risco de Torsades de Pointes e fibrilação ventricular.",
     "acao_sugerida": "Substituir por Azitromicina (atenção: também prolonga QT) ou Amoxicilina se cobertura possível. Monitorar ECG.",
-    "alternativas": ["Amoxicilina 500mg", "Doxiciclina 100mg"],
+    "alternativas": [
+      "Amoxicilina 500mg",
+      "Doxiciclina 100mg"
+    ],
     "fonte": "AHA / SBC Arritmias 2023"
   },
   {
@@ -326,7 +409,10 @@
     "gravidade": "ALTA",
     "alerta": "IECAs reduzem excreção renal de K+. Em paciente com hipercalemia pré-existente, podem agravar o quadro para níveis fatalmente arritmogênicos.",
     "acao_sugerida": "Corrigir hipercalemia antes de iniciar IECA. Após correção, monitorar K+ em 1-2 semanas. Considerar BRA alternativo.",
-    "alternativas": ["Anlodipino 5mg (anti-hipertensivo sem efeito no K+)", "Losartana 25mg (com monitoramento)"],
+    "alternativas": [
+      "Anlodipino 5mg (anti-hipertensivo sem efeito no K+)",
+      "Losartana 25mg (com monitoramento)"
+    ],
     "fonte": "SBC / SBN Diretriz Hipercalemia 2023"
   }
 ]
