@@ -142,12 +142,19 @@ class MedicationPipeline:
         self, medications: list[Medication], context: dict
     ) -> list[Alert]:
         alerts: list[Alert] = []
-        if len(medications) < 2:
+        # modifiquei aqui tem alguns casos que ele não considera superdosagem por exemplo Paracetamol 750mg tomando 2 comprimidos a cada 4 horas (total de 12 por dia).
+        if len(medications) == 0:
             return alerts
 
         pair_tasks = []
-        for m1, m2 in combinations(medications, 2):
-            pair_tasks.append(self._analyze_pair(m1, m2, context))
+        if len(medications) == 1:
+            # Cria um "parceiro virtual" para forçar o motor a rodar as regras isoladas (superdosagem, via, etc)
+            m_virtual = Medication(raw_name="[Uso Isolado]", normalization_source="unknown")
+            pair_tasks.append(self._analyze_pair(medications[0], m_virtual, context))
+        else:
+            for m1, m2 in combinations(medications, 2):
+                pair_tasks.append(self._analyze_pair(m1, m2, context))
+                
         results = await asyncio.gather(*pair_tasks)
         for alert in results:
             if alert is not None:

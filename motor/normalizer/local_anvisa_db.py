@@ -12,10 +12,12 @@ from difflib import get_close_matches
 from pathlib import Path
 from typing import Optional
 
+from motor.text_utils import sanitize_drug_name
+
 logger = logging.getLogger(__name__)
 
 _DEFAULT_PATH = Path(__file__).resolve().parent.parent / "data" / "anvisa_rxnorm_map.csv"
-_FUZZY_CUTOFF = 0.82
+_FUZZY_CUTOFF = 0.80
 
 
 class LocalAnvisaDB:
@@ -35,8 +37,8 @@ class LocalAnvisaDB:
                 record = self._row_to_record(row)
                 if not record:
                     continue
-                comercial = row.get("nome_comercial", "").strip().lower()
-                principio = row.get("principio_ativo", "").strip().lower()
+                comercial = sanitize_drug_name(row.get("nome_comercial", ""))
+                principio = sanitize_drug_name(row.get("principio_ativo", ""))
                 if comercial:
                     self._by_comercial[comercial] = record
                 if principio:
@@ -68,7 +70,7 @@ class LocalAnvisaDB:
         """
         if not name or not name.strip():
             return None, None
-        key = name.strip().lower()
+        key = sanitize_drug_name(name)
 
         exact = self._by_comercial.get(key) or self._by_principio.get(key)
         if exact:
