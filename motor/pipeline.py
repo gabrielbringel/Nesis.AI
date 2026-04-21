@@ -15,6 +15,11 @@ from motor.models import Alert, Medication, PipelineResult
 from motor.normalizer import DrugNormalizer
 from motor.scorer import RiskScorer
 
+try:
+    import mlflow
+except ImportError:  # pragma: no cover — MLflow opcional em dev
+    mlflow = None
+
 logger = logging.getLogger(__name__)
 
 _SEVERITY_RANK = {"LEVE": 1, "MODERADA": 2, "GRAVE": 3}
@@ -42,6 +47,10 @@ class MedicationPipeline:
         self.scorer = scorer or RiskScorer()
         self._version = version or os.getenv("PIPELINE_VERSION", "0.1.0")
         self._min_severity = (min_severity or os.getenv("MIN_SEVERITY_TO_ALERT", "MODERADA")).upper()
+        self._mlflow_enabled = bool(mlflow) and os.getenv("MLFLOW_TRACKING_URI") is not None
+        if self._mlflow_enabled:
+            mlflow.set_tracking_uri(os.environ["MLFLOW_TRACKING_URI"])
+            mlflow.set_experiment(os.getenv("MLFLOW_EXPERIMENT", "nesis-motor"))
 
     def analyze(self, text: str, context: Optional[dict] = None) -> PipelineResult:
         """Analisa o texto do prontuário e retorna o resultado estruturado."""
@@ -63,7 +72,7 @@ class MedicationPipeline:
         alerts.sort(key=lambda a: a.final_score, reverse=True)
 
         elapsed_ms = (time.perf_counter() - start) * 1000.0
-        return PipelineResult(
+        result = PipelineResult(
             input_text=text,
             medications_found=medications,
             alerts=alerts,
@@ -71,6 +80,31 @@ class MedicationPipeline:
             processing_time_ms=round(elapsed_ms, 3),
             pipeline_version=self._version,
         )
+        self._log_mlflow(result)
+        return result
+
+    def _log_mlflow(self, result: PipelineResult) -> None:
+        if not self._mlflow_enabled:
+            return
+        try:
+            with mlflow.start_run(nested=True):
+                mlflow.log_params(
+                    {
+                        "pipeline_version": self._version,
+                        "min_severity": self._min_severity,
+                    }
+                )
+                mlflow.log_metrics(
+                    {
+                        "processing_time_ms": result.processing_time_ms,
+                        "medications_found": len(result.medications_found),
+                        "alerts_total": len(result.alerts),
+                        "alerts_grave": sum(1 for a in result.alerts if a.severity == "GRAVE"),
+                        "unresolved_drugs": len(result.unresolved_drugs),
+                    }
+                )
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Falha ao logar no MLflow: %s", exc)
 
     # ── Pipeline interno ────────────────────────────────────────────────────
     def _build_medications(
