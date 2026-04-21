@@ -10,11 +10,9 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.auth.router import router as auth_router
 from app.config import get_settings
 from app.patients.router import router as patients_router
 from app.prescriptions.router import router as prescriptions_router
-from app.users.router import router as users_router
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
@@ -32,16 +30,13 @@ def create_app() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.allowed_origins,
-        allow_credentials=True,
-        allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-        allow_headers=["Authorization", "Content-Type"],
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
     _register_error_handlers(app)
 
-    app.include_router(auth_router)
-    app.include_router(users_router)
     app.include_router(patients_router)
     app.include_router(prescriptions_router)
 
@@ -58,10 +53,6 @@ def _register_error_handlers(app: FastAPI) -> None:
         detail = exc.detail
         if exc.status_code == status.HTTP_404_NOT_FOUND:
             detail = "Recurso não encontrado"
-        elif exc.status_code == status.HTTP_401_UNAUTHORIZED and not detail:
-            detail = "Não autenticado"
-        elif exc.status_code == status.HTTP_403_FORBIDDEN and not detail:
-            detail = "Sem permissão para este recurso"
         headers = getattr(exc, "headers", None)
         return JSONResponse(
             status_code=exc.status_code,

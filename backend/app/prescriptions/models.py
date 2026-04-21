@@ -20,9 +20,6 @@ class Prescription(UUIDMixin, TimestampMixin, Base):
     patient_id: Mapped[uuid.UUID] = mapped_column(
         Uuid, ForeignKey("patients.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    created_by: Mapped[uuid.UUID] = mapped_column(
-        Uuid, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False, index=True
-    )
     raw_text: Mapped[str] = mapped_column(Text, nullable=False)
     input_type: Mapped[str] = mapped_column(String(16), nullable=False, default="text")
     status: Mapped[str] = mapped_column(String(16), nullable=False, default="pending", index=True)
