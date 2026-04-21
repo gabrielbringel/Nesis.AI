@@ -16,6 +16,8 @@ venv/
 .venv/
 env/
 .env
+teste_pipeline.py
+test_batch.py
 
 # Environment variables
 .env

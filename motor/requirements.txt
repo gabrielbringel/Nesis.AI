@@ -1,7 +1,7 @@
 transformers>=4.40.0
 torch>=2.2.0
 rdkit>=2023.9.0
-chemicalx>=0.1.0
+chemicalx>=0.1.0 (tirei tava bugando)
 neo4j>=5.18.0
 pydantic>=2.6.0
 python-dotenv>=1.0.0
