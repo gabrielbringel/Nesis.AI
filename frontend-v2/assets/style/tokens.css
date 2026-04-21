@@ -1,0 +1,135 @@
+/* NesisAI — Design Tokens */
+
+:root {
+  /* Superfícies */
+  --surface: #0D0D0D;
+  --surface-raised: #1A1A1A;
+  --surface-inset: #080808;
+
+  /* Sombras neumórficas */
+  --shadow-dark: #000000;
+  --shadow-light: #2A2A2A;
+
+  /* Texto */
+  --text-primary: #FFFFFF;
+  --text-secondary: #A0A0A0;
+  --text-disabled: #4A4A4A;
+
+  /* Gradiente de marca */
+  --accent-start: #FF3333;
+  --accent-end: #FFC100;
+  --accent-solid: #FF6B00;
+
+  /* Semânticos */
+  --success: #00C853;
+  --warning: #FFC100;
+  --danger: #FF3333;
+  --info: #00BFFF;
+  --border-subtle: #2A2A2A;
+
+  /* Tipografia */
+  --font-display: 'Special Gothic Expanded One', sans-serif;
+  --font-primary: 'Syne', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+
+  /* Espaçamento */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Raios */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+
+  /* Transições */
+  --t-fast: 160ms ease;
+  --t-base: 240ms ease;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-primary);
+  background: var(--surface);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+input {
+  font-family: inherit;
+  border: none;
+  outline: none;
+}
+
+/* Gradiente de texto utilitário */
+.text-gradient {
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Número com Space Mono */
+.num {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Focus visible padrão */
+:focus-visible {
+  outline: 2px solid var(--accent-end);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Scrollbar discreta */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--surface-raised);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-subtle);
+}

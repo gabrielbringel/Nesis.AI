@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — NesisAI</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Special+Gothic+Expanded+One&family=Syne:wght@400..800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="assets/style/tokens.css" />
+  <link rel="stylesheet" href="assets/style/components.css" />
+  <link rel="stylesheet" href="assets/style/pages.css" />
+</head>
+<body>
+  <div id="dashShell" class="dash-shell">
+
+    <!-- ═══ Sidebar ═══ -->
+    <aside class="sidebar" aria-label="Navegação lateral">
+      <div class="sidebar-logo">
+        <img class="logo-wordmark" src="assets/nesisai-wordmark.svg" alt="NesisAI" />
+      </div>
+
+      <nav class="nav-list" aria-label="Seções">
+        <a href="#" class="nav-item active" data-nav data-section="visao-geral" data-tooltip="Visão Geral">
+          <span class="nav-icon"><i data-lucide="layout-dashboard" aria-hidden="true"></i></span>
+          <span class="nav-label">Visão Geral</span>
+        </a>
+        <a href="#" class="nav-item" data-nav data-section="pacientes" data-tooltip="Meus Pacientes">
+          <span class="nav-icon"><i data-lucide="users" aria-hidden="true"></i></span>
+          <span class="nav-label">Meus Pacientes</span>
+        </a>
+        <a href="#" class="nav-item" data-nav data-section="historico" data-tooltip="Histórico">
+          <span class="nav-icon"><i data-lucide="clock" aria-hidden="true"></i></span>
+          <span class="nav-label">Histórico</span>
+        </a>
+        <a href="#" class="nav-item" data-nav data-section="alertas" data-tooltip="Alertas">
+          <span class="nav-icon"><i data-lucide="triangle-alert" aria-hidden="true"></i></span>
+          <span class="nav-label">Alertas</span>
+          <span class="nav-badge" id="alertBadge">3</span>
+        </a>
+
+        <div class="nav-list-divider" role="separator"></div>
+
+        <a href="#" class="nav-item" data-nav data-section="configuracoes" data-tooltip="Configurações">
+          <span class="nav-icon"><i data-lucide="settings-2" aria-hidden="true"></i></span>
+          <span class="nav-label">Configurações</span>
+        </a>
+      </nav>
+
+      <button id="collapseBtn" class="collapse-btn" aria-label="Alternar sidebar">
+        <span class="collapse-icon" aria-hidden="true">‹</span>
+        <span class="collapse-label nav-label">Recolher</span>
+      </button>
+    </aside>
+
+    <div id="mobileOverlay" class="mobile-overlay" aria-hidden="true"></div>
+
+    <!-- ═══ Coluna de conteúdo ═══ -->
+    <div>
+      <!-- Topbar -->
+      <header class="topbar">
+        <div style="display:flex;align-items:center;gap:var(--space-3);">
+          <button id="mobileBtn" class="topbar-mobile-btn" aria-label="Abrir menu">
+            <i data-lucide="menu"></i>
+          </button>
+          <div class="topbar-title">
+            <span id="topbarTitleText">Visão Geral</span>
+            <small id="topbarSubtitle">Quadro-resumo da operação</small>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="search-wrap" role="search">
+            <div class="input-wrap">
+              <span class="search-icon"><i data-lucide="search" aria-hidden="true"></i></span>
+              <input
+                class="input"
+                type="search"
+                placeholder="Buscar pacientes, alertas…"
+                aria-label="Buscar"
+                style="padding-left: 38px;"
+              />
+            </div>
+          </div>
+          <div class="avatar" aria-label="Perfil do usuário" title="Gabriel">G</div>
+        </div>
+      </header>
+
+      <!-- Main -->
+      <main class="dash-main">
+
+        <!-- ─── Visão Geral ──────────────────────────────────── -->
+        <section id="s-visao-geral" class="dash-section" aria-label="Visão Geral">
+          <div id="metricGrid" class="metric-grid"></div>
+
+          <div class="card chart-card" aria-label="Análises dos últimos 30 dias">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Atividade — Últimos 30 dias</div>
+                <div class="card-subtitle">Análises de interações diárias</div>
+              </div>
+            </div>
+            <div id="chartHost"></div>
+            <div class="chart-legend">
+              <span><span class="dot" aria-hidden="true"></span>Análises</span>
+            </div>
+          </div>
+
+          <div class="card" aria-label="Consultas recentes">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Consultas Recentes</div>
+                <div class="card-subtitle">Últimas 5 análises realizadas</div>
+              </div>
+              <button class="btn btn-secondary" type="button" id="btnVerTodas">Ver todas</button>
+            </div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Paciente</th>
+                  <th>Data</th>
+                  <th class="num-col">Fármacos</th>
+                  <th class="num-col">Alertas</th>
+                  <th>Severidade</th>
+                </tr>
+              </thead>
+              <tbody id="recentHistoryBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ─── Meus Pacientes ───────────────────────────────── -->
+        <section id="s-pacientes" class="dash-section" hidden aria-label="Meus Pacientes">
+          <div class="section-toolbar">
+            <div>
+              <h2 class="section-title">Meus Pacientes</h2>
+              <p class="section-subtitle">Pacientes com consultas em aberto</p>
+            </div>
+            <button class="btn btn-primary" type="button" id="btnNovaConsulta">
+              <i data-lucide="plus" aria-hidden="true"></i>
+              Nova Consulta
+            </button>
+          </div>
+
+          <div id="patientsGrid" class="patients-grid"></div>
+        </section>
+
+        <!-- ─── Histórico ────────────────────────────────────── -->
+        <section id="s-historico" class="dash-section" hidden aria-label="Histórico de Consultas">
+          <div class="section-toolbar">
+            <div>
+              <h2 class="section-title">Histórico de Consultas</h2>
+              <p class="section-subtitle">Registro completo de análises anteriores</p>
+            </div>
+            <button class="btn btn-secondary" type="button">
+              <i data-lucide="download" aria-hidden="true"></i>
+              Exportar
+            </button>
+          </div>
+
+          <div class="card">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Paciente</th>
+                  <th>Data</th>
+                  <th class="num-col">Fármacos</th>
+                  <th class="num-col">Alertas</th>
+                  <th>Severidade</th>
+                  <th class="num-col">Tempo</th>
+                </tr>
+              </thead>
+              <tbody id="historyBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ─── Alertas ──────────────────────────────────────── -->
+        <section id="s-alertas" class="dash-section" hidden aria-label="Alertas">
+          <div class="section-toolbar">
+            <div>
+              <h2 class="section-title">Alertas de Interação</h2>
+              <p class="section-subtitle">Interações medicamentosas detectadas pelo motor de IA</p>
+            </div>
+          </div>
+
+          <div class="filter-chips" role="group" aria-label="Filtrar por severidade">
+            <button class="chip active" data-filter="all">Todos</button>
+            <button class="chip" data-filter="grave">Grave</button>
+            <button class="chip" data-filter="moderada">Moderada</button>
+            <button class="chip" data-filter="leve">Leve</button>
+          </div>
+
+          <div id="alertsList" class="alerts-list"></div>
+        </section>
+
+        <!-- ─── Configurações ────────────────────────────────── -->
+        <section id="s-configuracoes" class="dash-section" hidden aria-label="Configurações">
+          <div class="section-toolbar">
+            <div>
+              <h2 class="section-title">Configurações</h2>
+              <p class="section-subtitle">Preferências da conta e da plataforma</p>
+            </div>
+          </div>
+
+          <div class="settings-grid">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Perfil</div>
+              </div>
+              <div class="settings-form">
+                <div class="field">
+                  <label class="field-label" for="cfgName">Nome completo</label>
+                  <div class="input-wrap"><input id="cfgName" class="input" type="text" value="Gabriel Bringel" /></div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="cfgEmail">E-mail</label>
+                  <div class="input-wrap"><input id="cfgEmail" class="input" type="email" value="gbringelgoncalves@gmail.com" /></div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="cfgCrm">CRM</label>
+                  <div class="input-wrap"><input id="cfgCrm" class="input" type="text" placeholder="CRM/UF 000000" /></div>
+                </div>
+                <button
+                  class="btn btn-primary"
+                  type="button"
+                  onclick="window.NesisToast({type:'success',title:'Perfil salvo',desc:'Suas informações foram atualizadas.'})"
+                >Salvar alterações</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Alertas e notificações</div>
+              </div>
+              <div class="settings-form">
+                <label class="toggle-row">
+                  <span>Mostrar alertas LEVE</span>
+                  <span class="toggle"><input type="checkbox" /><span class="toggle-thumb"></span></span>
+                </label>
+                <label class="toggle-row">
+                  <span>Notificações em tempo real</span>
+                  <span class="toggle"><input type="checkbox" checked /><span class="toggle-thumb"></span></span>
+                </label>
+                <label class="toggle-row">
+                  <span>Auditoria automática habilitada</span>
+                  <span class="toggle"><input type="checkbox" checked /><span class="toggle-thumb"></span></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ═══ Modal: Nova Consulta ═══ -->
+  <div id="modalConsulta" class="modal-overlay" hidden aria-modal="true" role="dialog" aria-label="Nova Consulta">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">Nova Consulta</div>
+        <button class="btn-icon" id="modalClose" aria-label="Fechar modal">
+          <i data-lucide="x" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="field">
+          <label class="field-label" for="consultPatient">Paciente</label>
+          <div class="input-wrap">
+            <input id="consultPatient" class="input" type="text" placeholder="Nome do paciente" />
+          </div>
+        </div>
+
+        <div class="modal-tabs" role="tablist">
+          <button class="tab active" data-tab="texto" role="tab" aria-selected="true">
+            <i data-lucide="type" aria-hidden="true"></i> Texto Livre
+          </button>
+          <button class="tab" data-tab="arquivo" role="tab" aria-selected="false">
+            <i data-lucide="file-up" aria-hidden="true"></i> Arquivo
+          </button>
+        </div>
+
+        <div id="tabTexto" class="tab-panel">
+          <div class="field">
+            <label class="field-label" for="consultText">Texto da prescrição</label>
+            <div class="input-wrap textarea-wrap">
+              <textarea
+                id="consultText"
+                class="input textarea"
+                rows="6"
+                placeholder="Cole aqui o texto do prontuário ou prescrição…"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div id="tabArquivo" class="tab-panel" hidden>
+          <div class="drop-zone" id="dropZone" role="button" tabindex="0" aria-label="Área de upload de arquivo">
+            <div class="drop-zone-icon"><i data-lucide="upload-cloud" aria-hidden="true"></i></div>
+            <div class="drop-zone-label">Arraste o arquivo ou clique para selecionar</div>
+            <div class="drop-zone-hint">XML, PDF ou TXT — máx. 10 MB</div>
+            <input type="file" id="consultFile" accept=".xml,.pdf,.txt" class="drop-zone-input" aria-label="Selecionar arquivo" />
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" type="button" id="modalCancel">Cancelar</button>
+        <button class="btn btn-primary" type="button" id="btnAnalyze">
+          <i data-lucide="zap" aria-hidden="true"></i>
+          Analisar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="js/mock-data.js"></script>
+  <script src="js/nav.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>
