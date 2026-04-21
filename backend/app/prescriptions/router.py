@@ -5,12 +5,10 @@ from __future__ import annotations
 import uuid
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query, Request, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.audit.service import record_audit
 from app.database import get_db
-from app.dependencies import require_role
 from app.prescriptions import service
 from app.prescriptions.schemas import (
     AlertRead,
@@ -18,11 +16,8 @@ from app.prescriptions.schemas import (
     PrescriptionListResponse,
     PrescriptionRead,
 )
-from app.users.models import User
 
 router = APIRouter(prefix="/prescriptions", tags=["prescriptions"])
-
-_clinical = require_role("medico", "farmaceutico", "admin")
 
 
 @router.post(
@@ -30,19 +25,9 @@ _clinical = require_role("medico", "farmaceutico", "admin")
 )
 async def analyze_prescription(
     payload: PrescriptionCreate,
-    request: Request,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(_clinical),
 ) -> PrescriptionRead:
-    prescription = await service.analyze_prescription(db, payload, current_user)
-    await record_audit(
-        db,
-        user=current_user,
-        action="analyze_prescription",
-        resource_type="prescription",
-        resource_id=prescription.id,
-        request=request,
-    )
+    prescription = await service.analyze_prescription(db, payload)
     return PrescriptionRead.model_validate(prescription)
 
 
@@ -56,11 +41,9 @@ async def list_prescriptions(
         default=None, alias="status", pattern="^(pending|processing|done|error)$"
     ),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(_clinical),
 ) -> PrescriptionListResponse:
     items, total = await service.list_prescriptions(
         db,
-        current_user,
         page=page,
         page_size=page_size,
         patient_id=patient_id,
@@ -79,9 +62,8 @@ async def list_prescriptions(
 async def get_prescription(
     prescription_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(_clinical),
 ) -> PrescriptionRead:
-    prescription = await service.get_prescription(db, prescription_id, current_user)
+    prescription = await service.get_prescription(db, prescription_id)
     return PrescriptionRead.model_validate(prescription)
 
 
@@ -89,7 +71,6 @@ async def get_prescription(
 async def list_alerts(
     prescription_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(_clinical),
 ) -> list[AlertRead]:
-    alerts = await service.list_prescription_alerts(db, prescription_id, current_user)
+    alerts = await service.list_prescription_alerts(db, prescription_id)
     return [AlertRead.model_validate(a) for a in alerts]
