@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 import uuid
 from typing import Optional
 
@@ -13,7 +14,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.patients.models import Patient
 from app.patients.schemas import PatientCreate, PatientUpdate
-from app.users.models import User
+
+logger = logging.getLogger(__name__)
 
 
 def hash_cpf(cpf_digits: str) -> str:
@@ -21,15 +23,12 @@ def hash_cpf(cpf_digits: str) -> str:
     return hashlib.sha256(cpf_digits.encode("utf-8")).hexdigest()
 
 
-async def create_patient(
-    session: AsyncSession, payload: PatientCreate, created_by: User
-) -> Patient:
+async def create_patient(session: AsyncSession, payload: PatientCreate) -> Patient:
     patient = Patient(
         cpf_hash=hash_cpf(payload.cpf),
         full_name=payload.full_name,
         birth_date=payload.birth_date,
         sex=payload.sex,
-        created_by=created_by.id,
     )
     session.add(patient)
     try:
@@ -40,12 +39,11 @@ async def create_patient(
             status_code=status.HTTP_409_CONFLICT, detail="Paciente já cadastrado"
         )
     await session.refresh(patient)
+    logger.info("Paciente criado: %s", patient.id)
     return patient
 
 
-async def get_patient(
-    session: AsyncSession, patient_id: uuid.UUID, current_user: User
-) -> Patient:
+async def get_patient(session: AsyncSession, patient_id: uuid.UUID) -> Patient:
     patient = (
         await session.execute(select(Patient).where(Patient.id == patient_id))
     ).scalar_one_or_none()
@@ -53,23 +51,17 @@ async def get_patient(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Recurso não encontrado"
         )
-    _assert_access(patient, current_user)
     return patient
 
 
 async def list_patients(
     session: AsyncSession,
-    current_user: User,
     page: int,
     page_size: int,
     name: Optional[str] = None,
 ) -> tuple[list[Patient], int]:
     stmt = select(Patient)
     count_stmt = select(func.count(Patient.id))
-
-    if current_user.role != "admin":
-        stmt = stmt.where(Patient.created_by == current_user.id)
-        count_stmt = count_stmt.where(Patient.created_by == current_user.id)
 
     if name:
         like = f"%{name.lower()}%"
@@ -84,26 +76,12 @@ async def list_patients(
 
 
 async def update_patient(
-    session: AsyncSession,
-    patient_id: uuid.UUID,
-    payload: PatientUpdate,
-    current_user: User,
+    session: AsyncSession, patient_id: uuid.UUID, payload: PatientUpdate
 ) -> Patient:
-    patient = await get_patient(session, patient_id, current_user)
+    patient = await get_patient(session, patient_id)
     data = payload.model_dump(exclude_unset=True)
     for key, value in data.items():
         setattr(patient, key, value)
     await session.commit()
     await session.refresh(patient)
     return patient
-
-
-def _assert_access(patient: Patient, current_user: User) -> None:
-    if current_user.role == "admin":
-        return
-    if patient.created_by == current_user.id:
-        return
-    raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
-        detail="Sem permissão para este recurso",
-    )
