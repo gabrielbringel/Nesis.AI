@@ -41,7 +41,6 @@ class PrescriptionRead(BaseModel):
 
     id: uuid.UUID
     patient_id: uuid.UUID
-    created_by: uuid.UUID
     raw_text: str
     input_type: InputType
     status: Status

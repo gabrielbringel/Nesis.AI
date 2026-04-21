@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-import uuid
 from datetime import date
 
-from sqlalchemy import Date, ForeignKey, String, Uuid
+from sqlalchemy import Date, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.common import TimestampMixin, UUIDMixin
@@ -19,6 +18,3 @@ class Patient(UUIDMixin, TimestampMixin, Base):
     full_name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     birth_date: Mapped[date] = mapped_column(Date, nullable=False)
     sex: Mapped[str] = mapped_column(String(8), nullable=False)
-    created_by: Mapped[uuid.UUID] = mapped_column(
-        Uuid, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False, index=True
-    )
