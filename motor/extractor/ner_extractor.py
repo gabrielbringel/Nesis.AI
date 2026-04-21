@@ -119,9 +119,14 @@ class NERExtractor:
         return results
 
     def _extract_fallback(self, text: str) -> list[dict]:
+        from difflib import get_close_matches
+        from motor.text_utils import sanitize_drug_name
+
         text_na = _strip_accents(text)
         results: list[dict] = []
         seen: set[str] = set()
+        
+        # 1. Regex Exato
         for match in self._fallback_regex.finditer(text_na):
             key = match.group(0).lower()
             if key in seen:
@@ -135,6 +140,31 @@ class NERExtractor:
                     "end": match.end(),
                 }
             )
+            
+        # 2. Fuzzy Matching para capturar erros (ex: lbupr0fen0)
+        for match in re.finditer(r"\w+", text):
+            word = match.group(0)
+            if len(word) < 4:
+                continue
+                
+            sanitized = sanitize_drug_name(word)
+            if not sanitized or sanitized in seen or word.lower() in seen:
+                continue
+                
+            matches = get_close_matches(sanitized, FALLBACK_DRUG_LIST, n=1, cutoff=0.82)
+            if matches:
+                matched_drug = matches[0]
+                if matched_drug not in seen:
+                    seen.add(matched_drug)
+                    results.append(
+                        {
+                            "word": word,
+                            "score": 0.60,
+                            "start": match.start(),
+                            "end": match.end(),
+                        }
+                    )
+                    
         return results
 
 
