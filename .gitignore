@@ -1,41 +1,89 @@
 # Claude
 CLAUDE.md
 
-# Python
+# ── Python ──────────────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
-.Python
 *.egg
 *.egg-info/
 dist/
 build/
 .eggs/
+*.so
+*.dylib
+
+# Virtual environments
 venv/
 .venv/
 env/
-.env
-teste_pipeline.py
-test_batch.py
+.env/
+ENV/
 
-# Environment variables
+# ── Node / Frontend ──────────────────────────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.vite/
+*.tsbuildinfo
+
+# ── Environment variables ────────────────────────────────────────────────────
 .env
 .env.local
 .env.*.local
+*.env
 
-# IDE
+# ── Migrations (generated files) ─────────────────────────────────────────────
+backend/migrations/versions/
+
+# ── Test / Coverage ──────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+coverage/
+htmlcov/
+.nyc_output/
+*.lcov
+
+# ── IDE / Editors ─────────────────────────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
 *.swo
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-# OS
+# ── OS ───────────────────────────────────────────────────────────────────────
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
 Thumbs.db
+ehthumbs.db
+Desktop.ini
 
-# Logs
+# ── Logs ─────────────────────────────────────────────────────────────────────
 *.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# PDF test files (may contain patient data)
+# ── Temporary / Cache ─────────────────────────────────────────────────────────
+*.tmp
+*.temp
+.cache/
+*.local
+
+# ── Dados sensíveis ──────────────────────────────────────────────────────────
 *.pdf
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/

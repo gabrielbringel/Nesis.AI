@@ -15,19 +15,17 @@ from app.motor import mock_pipeline
 from app.patients.models import Patient
 from app.prescriptions.models import Alert, Prescription
 from app.prescriptions.schemas import PrescriptionCreate
-from app.users.models import User
 
 logger = logging.getLogger(__name__)
 
 
 async def analyze_prescription(
-    session: AsyncSession, payload: PrescriptionCreate, current_user: User
+    session: AsyncSession, payload: PrescriptionCreate
 ) -> Prescription:
-    await _ensure_patient_access(session, payload.patient_id, current_user)
+    await _ensure_patient_exists(session, payload.patient_id)
 
     prescription = Prescription(
         patient_id=payload.patient_id,
-        created_by=current_user.id,
         raw_text=payload.raw_text,
         input_type=payload.input_type,
         status="processing",
@@ -67,25 +65,29 @@ async def analyze_prescription(
     prescription.processing_time_ms = float(result.get("processing_time_ms", 0.0))
     prescription.pipeline_version = result.get("pipeline_version")
     await session.commit()
+    logger.info(
+        "Prescrição %s analisada em %.1fms — %d alertas",
+        prescription.id,
+        prescription.processing_time_ms or 0.0,
+        len(result.get("alerts", [])),
+    )
 
     return await _reload_with_alerts(session, prescription.id)
 
 
 async def get_prescription(
-    session: AsyncSession, prescription_id: uuid.UUID, current_user: User
+    session: AsyncSession, prescription_id: uuid.UUID
 ) -> Prescription:
     prescription = await _reload_with_alerts(session, prescription_id)
     if prescription is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Recurso não encontrado"
         )
-    _assert_access(prescription, current_user)
     return prescription
 
 
 async def list_prescriptions(
     session: AsyncSession,
-    current_user: User,
     *,
     page: int,
     page_size: int,
@@ -95,10 +97,6 @@ async def list_prescriptions(
 ) -> tuple[list[Prescription], int]:
     stmt = select(Prescription).options(selectinload(Prescription.alerts))
     count_stmt = select(func.count(func.distinct(Prescription.id)))
-
-    if current_user.role != "admin":
-        stmt = stmt.where(Prescription.created_by == current_user.id)
-        count_stmt = count_stmt.where(Prescription.created_by == current_user.id)
 
     if patient_id:
         stmt = stmt.where(Prescription.patient_id == patient_id)
@@ -121,9 +119,9 @@ async def list_prescriptions(
 
 
 async def list_prescription_alerts(
-    session: AsyncSession, prescription_id: uuid.UUID, current_user: User
+    session: AsyncSession, prescription_id: uuid.UUID
 ) -> list[Alert]:
-    prescription = await get_prescription(session, prescription_id, current_user)
+    prescription = await get_prescription(session, prescription_id)
     stmt = (
         select(Alert)
         .where(Alert.prescription_id == prescription.id)
@@ -132,8 +130,8 @@ async def list_prescription_alerts(
     return list((await session.execute(stmt)).scalars().all())
 
 
-async def _ensure_patient_access(
-    session: AsyncSession, patient_id: uuid.UUID, current_user: User
+async def _ensure_patient_exists(
+    session: AsyncSession, patient_id: uuid.UUID
 ) -> None:
     patient = (
         await session.execute(select(Patient).where(Patient.id == patient_id))
@@ -142,22 +140,6 @@ async def _ensure_patient_access(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Recurso não encontrado"
         )
-    if current_user.role != "admin" and patient.created_by != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Sem permissão para este recurso",
-        )
-
-
-def _assert_access(prescription: Prescription, current_user: User) -> None:
-    if current_user.role == "admin":
-        return
-    if prescription.created_by == current_user.id:
-        return
-    raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
-        detail="Sem permissão para este recurso",
-    )
 
 
 async def _reload_with_alerts(

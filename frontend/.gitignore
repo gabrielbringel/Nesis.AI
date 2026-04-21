@@ -1,0 +1,24 @@
+# Vite / Build
+dist/
+dist-ssr/
+.vite/
+*.tsbuildinfo
+
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Cache / Temp
+.cache/
+*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

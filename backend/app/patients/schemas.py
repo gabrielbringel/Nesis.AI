@@ -45,7 +45,6 @@ class PatientRead(BaseModel):
     full_name: str
     birth_date: date
     sex: Sex
-    created_by: uuid.UUID
     created_at: datetime
     updated_at: datetime
 
