@@ -1,4 +1,4 @@
-"""Tipos e helpers compartilhados entre os módulos do backend."""
+"""Helpers compartilhados entre os módulos do backend."""
 
 from __future__ import annotations
 
@@ -22,7 +22,4 @@ class UUIDMixin:
 class TimestampMixin:
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, nullable=False
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False
     )
