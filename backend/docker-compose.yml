@@ -15,21 +15,13 @@ services:
       timeout: 5s
       retries: 10
 
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-
   backend:
     build: .
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_started
     environment:
       DATABASE_URL: postgresql+asyncpg://prontuario_user:${POSTGRES_PASSWORD}@postgres:5432/prontuario_db
-      REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:-dev_secret_change_in_production}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000}
       APP_ENV: ${APP_ENV:-development}
