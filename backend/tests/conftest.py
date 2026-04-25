@@ -1,7 +1,8 @@
 """Fixtures compartilhadas dos testes.
 
-Usamos SQLite em memória via aiosqlite para não depender de PostgreSQL.
-O engine é reconfigurado por teste para garantir isolamento.
+Os testes usam SQLite em memória via aiosqlite — em produção o banco é
+PostgreSQL+asyncpg. O modelo `Analise` usa JSON com variant para SQLite
+permitindo que os mesmos schemas rodem nos dois.
 """
 
 from __future__ import annotations
@@ -46,12 +47,6 @@ async def engine():
 @pytest_asyncio.fixture
 async def session_factory(engine):
     return async_sessionmaker(bind=engine, expire_on_commit=False, class_=AsyncSession)
-
-
-@pytest_asyncio.fixture
-async def db_session(session_factory) -> AsyncGenerator[AsyncSession, None]:
-    async with session_factory() as session:
-        yield session
 
 
 @pytest_asyncio.fixture

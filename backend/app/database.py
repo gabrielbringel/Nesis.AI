@@ -15,8 +15,7 @@ class Base(DeclarativeBase):
 
 
 def _make_engine(url: str):
-    # SQLite em memória não suporta pool de conexões de múltiplas threads;
-    # usa StaticPool para manter uma única conexão viva por sessão de testes.
+    # SQLite em memória usado nos testes; produção sempre PostgreSQL+asyncpg.
     if url.startswith("sqlite"):
         from sqlalchemy.pool import StaticPool
 
@@ -42,9 +41,8 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def init_db() -> None:
-    """Cria todas as tabelas — usado pelos testes e pelo seed local."""
-    # Import com side-effect para garantir que os modelos foram registrados
-    from app import models  # noqa: F401
+    """Cria todas as tabelas — usado pelos testes."""
+    from app import models  # noqa: F401 — registra metadata
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
