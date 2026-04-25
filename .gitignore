@@ -1,5 +1,6 @@
 # Claude
 CLAUDE.md
+.claude/
 
 # ── Python ──────────────────────────────────────────────────────────────────
 __pycache__/
@@ -18,14 +19,16 @@ build/
 venv/
 .venv/
 env/
-.env/
 ENV/
+backend/venv/
+backend/.venv/
 
 # ── Node / Frontend ──────────────────────────────────────────────────────────
 node_modules/
 frontend/dist/
 frontend/dist-ssr/
 frontend/.vite/
+frontend/.next/
 *.tsbuildinfo
 
 # ── Environment variables ────────────────────────────────────────────────────
@@ -33,9 +36,7 @@ frontend/.vite/
 .env.local
 .env.*.local
 *.env
-
-# ── Migrations (generated files) ─────────────────────────────────────────────
-backend/migrations/versions/
+!.env.example
 
 # ── Test / Coverage ──────────────────────────────────────────────────────────
 .pytest_cache/
@@ -81,35 +82,29 @@ pnpm-debug.log*
 *.local
 
 # ── Dados sensíveis ──────────────────────────────────────────────────────────
-*.pdf
 *.pem
 *.key
 *.p12
 *.pfx
 secrets/
+*service-account*.json
+*credentials*.json
 
-# ── Banco de Dados (NOVO) ────────────────────────────────────────────────────
+# ── Banco de Dados ───────────────────────────────────────────────────────────
 *.db
 *.sqlite
 *.sqlite3
-backend/*.db
 *.db-journal
 
-# ── Arquivos temporários do backend (NOVO) ───────────────────────────────────
-backend/__pycache__/
-backend/app/__pycache__/
-backend/app/*/__pycache__/
+# ── Motor de IA / LangChain ──────────────────────────────────────────────────
+.langchain.db
+.chroma/
+backend/data/
+
+# ── Scripts temporários ──────────────────────────────────────────────────────
 backend/check_db.py
 backend/setup_db.py
 backend/temp_pip/
-
-# ── Configurações locais (NOVO) ──────────────────────────────────────────────
-backend/.env
-backend/alembic.ini
-backend/pytest.ini
-
-# ── Scripts temporários de teste (NOVO) ──────────────────────────────────────
 create_db.py
 init_db.py
-test_*.py
 temp_*.py
