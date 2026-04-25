@@ -11,7 +11,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import get_settings
-from app.patients.router import router as patients_router
 from app.prescriptions.router import router as prescriptions_router
 
 logger = logging.getLogger(__name__)
@@ -20,14 +19,18 @@ settings = get_settings()
 
 def create_app() -> FastAPI:
     app = FastAPI(
-        title="Nesis.AI — Prontuário API",
+        title="Nesis.AI — API",
         version=settings.app_version,
         description=(
             "Backend do sistema de verificação de interações medicamentosas. "
-            "Documentação interativa em /docs."
+            "Recebe dados scrapeados pela extensão Chrome e devolve alertas "
+            "classificados por severidade. Documentação em /docs."
         ),
     )
 
+    # Em desenvolvimento aceitamos qualquer origem porque o ID da extensão
+    # Chrome é gerado dinamicamente e ainda não pode ser fixado.
+    # PRODUÇÃO: restringir para o ID definitivo da extensão (chrome-extension://<id>).
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -36,9 +39,16 @@ def create_app() -> FastAPI:
     )
 
     _register_error_handlers(app)
-
-    app.include_router(patients_router)
     app.include_router(prescriptions_router)
+
+    @app.get("/", tags=["root"])
+    async def root() -> dict[str, str]:
+        return {
+            "name": "Nesis.AI API",
+            "version": settings.app_version,
+            "docs": "/docs",
+            "health": "/health",
+        }
 
     @app.get("/health", tags=["health"])
     async def health() -> dict[str, str]:
@@ -50,13 +60,10 @@ def create_app() -> FastAPI:
 def _register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(HTTPException)
     async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
-        detail = exc.detail
-        if exc.status_code == status.HTTP_404_NOT_FOUND:
-            detail = "Recurso não encontrado"
         headers = getattr(exc, "headers", None)
         return JSONResponse(
             status_code=exc.status_code,
-            content={"detail": detail},
+            content={"detail": exc.detail},
             headers=headers,
         )
 
