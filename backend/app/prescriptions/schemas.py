@@ -1,58 +1,52 @@
-"""Schemas Pydantic do módulo de prescrições."""
+"""Schemas Pydantic v2 para o endpoint /api/v1/analyze.
+
+Espelham o payload enviado pela extensão Chrome (dados scrapeados do prontuário)
+e a resposta agregada do motor de IA com os alertas classificados por severidade.
+"""
 
 from __future__ import annotations
 
-import uuid
-from datetime import datetime
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-InputType = Literal["text", "xml", "pdf"]
-Severity = Literal["GRAVE", "MODERADA", "LEVE"]
-Status = Literal["pending", "processing", "done", "error"]
+
+Severidade = Literal["GRAVE", "MODERADO", "LEVE"]
 
 
-class AlertRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+class Medicacao(BaseModel):
+    model_config = ConfigDict(extra="forbid")
 
-    id: uuid.UUID
-    prescription_id: uuid.UUID
-    drug_pair_1: str
-    drug_pair_2: str
-    severity: Severity
-    final_score: float
-    mechanism: str
-    recommendation: str
-    evidence: list[dict]
-    rule_ids: list[str]
-    component_scores: dict[str, float]
-    created_at: datetime
+    nome: str
+    dose: str
+    frequencia: str
+    via: str
 
 
-class PrescriptionCreate(BaseModel):
-    patient_id: uuid.UUID
-    raw_text: str = Field(min_length=1)
-    input_type: InputType = "text"
+class Paciente(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    nome: str
+    idade: int = Field(ge=0, le=130)
+    alergias: list[str] = Field(default_factory=list)
 
 
-class PrescriptionRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+class AnalyzeRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
 
-    id: uuid.UUID
-    patient_id: uuid.UUID
-    raw_text: str
-    input_type: InputType
-    status: Status
-    processing_time_ms: Optional[float] = None
-    pipeline_version: Optional[str] = None
-    created_at: datetime
-    updated_at: datetime
-    alerts: list[AlertRead] = Field(default_factory=list)
+    paciente: Paciente
+    medicacoes: list[Medicacao]
 
 
-class PrescriptionListResponse(BaseModel):
-    items: list[PrescriptionRead]
-    total: int
-    page: int
-    page_size: int
+class Alerta(BaseModel):
+    severidade: Severidade
+    descricao: str
+    medicamentos_envolvidos: list[str]
+    recomendacao: str
+
+
+class AnalyzeResponse(BaseModel):
+    alertas: list[Alerta]
+    total_grave: int
+    total_moderado: int
+    total_leve: int
