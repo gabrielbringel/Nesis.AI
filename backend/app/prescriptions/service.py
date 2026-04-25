@@ -11,7 +11,6 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.motor import mock_pipeline
 from app.patients.models import Patient
 from app.prescriptions.models import Alert, Prescription
 from app.prescriptions.schemas import PrescriptionCreate
@@ -34,16 +33,12 @@ async def analyze_prescription(
     await session.commit()
     await session.refresh(prescription)
 
-    try:
-        result = mock_pipeline.analyze(payload.raw_text)
-    except Exception as exc:  # noqa: BLE001
-        logger.exception("Falha no pipeline: %s", exc)
-        prescription.status = "error"
-        await session.commit()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Erro interno. Tente novamente.",
-        )
+    # TODO: integrar com o novo motor de IA quando disponível
+    result: dict = {
+        "alerts": [],
+        "processing_time_ms": 0.0,
+        "pipeline_version": None,
+    }
 
     for alert_data in result.get("alerts", []):
         pair = alert_data.get("drug_pair") or ["", ""]
