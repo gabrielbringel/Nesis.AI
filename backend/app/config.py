@@ -14,11 +14,11 @@ class Settings(BaseSettings):
     )
 
     database_url: str = Field(
-        default="sqlite+aiosqlite:///:memory:", alias="DATABASE_URL"
+        default="postgresql+asyncpg://nesis:nesis@localhost:5432/nesis",
+        alias="DATABASE_URL",
     )
-
     app_env: str = Field(default="development", alias="APP_ENV")
-    app_version: str = Field(default="0.1.0", alias="APP_VERSION")
+    app_version: str = Field(default="0.2.0", alias="APP_VERSION")
 
     @property
     def is_production(self) -> bool:
