@@ -44,6 +44,18 @@ def create_app() -> FastAPI:
     async def health() -> dict[str, str]:
         return {"status": "ok", "version": settings.app_version}
 
+    @app.get("/", tags=["root"])
+    async def root():
+        return {
+            "message": "Nesis.AI API",
+            "docs": "/docs",
+            "health": "/health",
+            "endpoints": {
+                "patients": "/patients",
+                "prescriptions": "/prescriptions"
+            }
+        }
+
     return app
 
 
