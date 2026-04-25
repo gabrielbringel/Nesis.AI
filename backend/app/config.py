@@ -20,6 +20,13 @@ class Settings(BaseSettings):
     app_env: str = Field(default="development", alias="APP_ENV")
     app_version: str = Field(default="0.2.0", alias="APP_VERSION")
 
+    gemini_api_key: str | None = Field(default=None, alias="GEMINI_API_KEY")
+    gemini_model: str = Field(default="gemini-2.0-flash", alias="GEMINI_MODEL")
+    pgvector_url: str = Field(
+        default="postgresql+psycopg://nesis:nesis@localhost:5432/nesis",
+        alias="PGVECTOR_URL",
+    )
+
     @property
     def is_production(self) -> bool:
         return self.app_env.lower() == "production"
