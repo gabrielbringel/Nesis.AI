@@ -17,14 +17,8 @@ class Settings(BaseSettings):
         default="sqlite+aiosqlite:///:memory:", alias="DATABASE_URL"
     )
 
-    redis_url: str = Field(default="redis://localhost:6379", alias="REDIS_URL")
-
     app_env: str = Field(default="development", alias="APP_ENV")
     app_version: str = Field(default="0.1.0", alias="APP_VERSION")
-
-    mlflow_tracking_uri: str = Field(
-        default="file:./mlruns", alias="MLFLOW_TRACKING_URI"
-    )
 
     @property
     def is_production(self) -> bool:
