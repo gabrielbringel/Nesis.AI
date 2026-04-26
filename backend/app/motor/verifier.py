@@ -15,7 +15,6 @@ from app.motor.prompts import (
     VERIFICATION_SYSTEM_PROMPT,
     VERIFICATION_USER_TEMPLATE,
 )
-from app.motor.vectorstore import search_context
 
 
 logger = logging.getLogger(__name__)
@@ -59,28 +58,29 @@ def _build_query(
 
 
 async def verify(
-    paciente: dict[str, Any], medicacoes: list[dict[str, Any]]
+    paciente: dict[str, Any],
+    medicacoes: list[dict[str, Any]],
+    contexto_rag: str = "",
 ) -> list[dict[str, Any]]:
-    """Gera alertas clínicos a partir do paciente e medicações normalizadas.
+    """Gera alertas clínicos a partir do paciente, medicações normalizadas
+    e contexto RAG já formatado.
 
-    Recupera contexto da base vetorial e injeta no prompt. Quando a base está
-    vazia ou indisponível, o LLM cai para o conhecimento do próprio modelo.
+    O `contexto_rag` é fornecido pelo pipeline (RAG local do banco SUS) e
+    injetado diretamente no prompt — o Gemini usa esse conhecimento clínico
+    estruturado para gerar alertas mais precisos e baseados em evidência.
     """
-    query = _build_query(paciente, medicacoes)
-    contexto_docs = await search_context(query, k=4)
-    contexto_rag = (
-        "\n\n---\n\n".join(contexto_docs)
-        if contexto_docs
-        else "(base de conhecimento vazia — usar conhecimento clínico do modelo)"
-    )
-
     alergias = paciente.get("alergias") or []
+
+    # Se não vier contexto, usa mensagem padrão para o LLM não ficar sem informação
+    contexto_final = contexto_rag if contexto_rag.strip() else (
+        "(base de conhecimento SUS indisponível — usar conhecimento clínico do modelo)"
+    )
     prompt = VERIFICATION_USER_TEMPLATE.format(
         paciente_nome=paciente.get("nome", ""),
         paciente_idade=paciente.get("idade", ""),
         paciente_alergias=", ".join(alergias) if alergias else "nenhuma",
         medicacoes_json=json.dumps(medicacoes, ensure_ascii=False, indent=2),
-        contexto_rag=contexto_rag,
+        contexto_rag=contexto_final,
     )
     messages = [
         SystemMessage(content=VERIFICATION_SYSTEM_PROMPT),
@@ -91,7 +91,7 @@ async def verify(
         response = await _llm().ainvoke(messages)
     except Exception:  # noqa: BLE001
         logger.exception("Chamada ao Gemini (verificação) falhou.")
-        return []
+        raise
 
     raw = _strip_code_fence(str(response.content))
     try:
