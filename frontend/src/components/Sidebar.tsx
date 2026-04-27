@@ -18,16 +18,12 @@ export function Sidebar({ state, onStart, onReanalyze }: Props) {
   return (
     <div
       style={{
-        width: '380px',
+        width: '100%',
+        height: '100vh',
         background: 'var(--color-surface)',
-        border: '1.5px solid var(--color-border)',
-        borderRadius: '24px',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        minHeight: '880px',
-        maxHeight: '880px',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
       }}
     >
       <SidebarHeader />
