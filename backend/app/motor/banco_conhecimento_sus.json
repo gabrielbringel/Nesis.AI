@@ -1,0 +1,263 @@
+[
+    {
+        "fonte": "CAD 28 - Atenção Básica (Volume II)",
+        "medicamento_alvo": "Dipirona",
+        "contraindicacoes": ["Porfiria hepática aguda intermitente", "Deficiência congênita da glicose-6-fosfato-desidrogenase (G6PD)", "Histórico de agranulocitose por pirazolonas"],
+        "interacoes_graves": [
+            {"com_medicamento": "Clorpromazina", "efeito": "Risco de hipotermia grave."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Sinvastatina",
+        "contraindicacoes": ["Doença hepática ativa", "Gravidez e Lactação (Categoria X)"],
+        "interacoes_graves": [
+            {"com_medicamento": "Claritromicina", "efeito": "Inibição forte do CYP3A4, aumentando drasticamente o nível de sinvastatina e o risco de miopatia/rabdomiólise fatal."},
+            {"com_medicamento": "Eritromicina", "efeito": "Aumento do risco de rabdomiólise e insuficiência renal secundária."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Amoxicilina",
+        "contraindicacoes": ["Histórico de choque anafilático a penicilinas"],
+        "interacoes_graves": [
+            {"com_medicamento": "Alopurinol", "efeito": "Aumento significativo do risco de rash cutâneo alérgico grave e exantema maculopapular."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Enalapril",
+        "contraindicacoes": ["Gravidez (Risco Fetal)", "Histórico de angioedema prévio com IECA"],
+        "interacoes_graves": [
+            {"com_medicamento": "Espironolactona", "efeito": "Hipercalemia grave (excesso de potássio) podendo causar parada cardíaca."},
+            {"com_medicamento": "Ibuprofeno", "efeito": "Risco elevado de insuficiência renal aguda."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Captopril",
+        "contraindicacoes": ["Gravidez", "Edema angioneurótico"],
+        "interacoes_graves": [
+            {"com_medicamento": "Diclofenaco", "efeito": "Deterioração da função renal e antagonismo do efeito anti-hipertensivo."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Losartana",
+        "contraindicacoes": ["Gravidez (Risco Fetal severo)", "Insuficiência hepática grave"],
+        "interacoes_graves": [
+            {"com_medicamento": "Espironolactona", "efeito": "Aumento perigoso dos níveis de potássio no sangue."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Espironolactona",
+        "contraindicacoes": ["Hipercalemia pré-existente", "Insuficiência renal aguda ou severa"],
+        "interacoes_graves": [
+            {"com_medicamento": "Enalapril", "efeito": "Risco de hipercalemia fatal e arritmias."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Amiodarona",
+        "contraindicacoes": ["Bradicardia sinusal severa", "Disfunção tireoidiana grave"],
+        "interacoes_graves": [
+            {"com_medicamento": "Varfarina", "efeito": "Aumento extremo do efeito anticoagulante, causando risco de hemorragia fatal."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Ibuprofeno",
+        "contraindicacoes": ["Úlcera gastrointestinal ativa", "Terceiro trimestre de gravidez"],
+        "interacoes_graves": [
+            {"com_medicamento": "Varfarina", "efeito": "Risco gravíssimo de sangramento gastrointestinal."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Diclofenaco",
+        "contraindicacoes": ["Úlcera péptica ativa", "Insuficiência cardíaca grave"],
+        "interacoes_graves": [
+            {"com_medicamento": "Enalapril", "efeito": "Risco de falência renal (Triple Whammy se associado a diurético)."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Paracetamol",
+        "contraindicacoes": ["Insuficiência hepática grave", "Doença hepática ativa"],
+        "interacoes_graves": [
+            {"com_medicamento": "Álcool", "efeito": "Hepatotoxicidade severa (destruição do fígado) e falência hepática fulminante."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Tramadol",
+        "contraindicacoes": ["Depressão respiratória severa", "Uso concomitante com inibidores da MAO"],
+        "interacoes_graves": [
+            {"com_medicamento": "Fluoxetina", "efeito": "Risco elevado de Síndrome Serotoninérgica (tremores, confusão mental, convulsões)."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Varfarina",
+        "contraindicacoes": ["Gravidez (Teratogênico)", "Hemorragia ativa", "Hipertensão grave não controlada"],
+        "interacoes_graves": [
+            {"com_medicamento": "Ibuprofeno", "efeito": "Aumento drástico do risco de sangramento fatal."},
+            {"com_medicamento": "Metronidazol", "efeito": "Inibição do metabolismo da Varfarina, elevando o INR e risco de hemorragia."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Clopidogrel",
+        "contraindicacoes": ["Sangramento patológico ativo (ex: úlcera péptica)"],
+        "interacoes_graves": [
+            {"com_medicamento": "Omeprazol", "efeito": "O Omeprazol bloqueia a ativação do Clopidogrel, cortando a proteção contra infartos e tromboses."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Fluoxetina",
+        "contraindicacoes": ["Uso concomitante com inibidores da MAO (IMAO)"],
+        "interacoes_graves": [
+            {"com_medicamento": "Tramadol", "efeito": "Síndrome Serotoninérgica grave e potencial redução do efeito analgésico do Tramadol."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Diazepam",
+        "contraindicacoes": ["Miastenia gravis", "Insuficiência respiratória grave", "Apneia do sono"],
+        "interacoes_graves": [
+            {"com_medicamento": "Tramadol", "efeito": "Depressão profunda do sistema nervoso central, risco de coma e parada respiratória."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Amoxicilina",
+        "contraindicacoes": ["Histórico de reações alérgicas severas (anafilaxia) a penicilinas"],
+        "interacoes_graves": [
+            {"com_medicamento": "Metotrexato", "efeito": "Redução da excreção do Metotrexato, causando toxicidade severa."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Metronidazol",
+        "contraindicacoes": ["Primeiro trimestre de gravidez", "Consumo de bebidas alcoólicas"],
+        "interacoes_graves": [
+            {"com_medicamento": "Álcool", "efeito": "Efeito Antabuse/Dissulfiram (náuseas severas, taquicardia, rubor, hipotensão)."},
+            {"com_medicamento": "Varfarina", "efeito": "Aumento do tempo de protrombina e risco de sangramento."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Ciprofloxacina",
+        "contraindicacoes": ["Uso concomitante com tizanidina", "Histórico de problemas nos tendões ligados a quinolonas"],
+        "interacoes_graves": [
+            {"com_medicamento": "Ibuprofeno", "efeito": "Pode aumentar o risco de estimulação do SNC e convulsões."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Sildenafila",
+        "contraindicacoes": ["Uso concomitante de doadores de óxido nítrico ou nitratos em qualquer forma"],
+        "interacoes_graves": [
+            {"com_medicamento": "Isossorbida", "efeito": "Hipotensão severa e isquemia miocárdica (infarto) potencialmente fatal."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Omeprazol",
+        "contraindicacoes": ["Uso concomitante com nelfinavir"],
+        "interacoes_graves": [
+            {"com_medicamento": "Clopidogrel", "efeito": "Inibe a enzima CYP2C19, anulando o efeito antiplaquetário do Clopidogrel."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Metotrexato",
+        "contraindicacoes": ["Gravidez (Teratogênico severo)", "Insuficiência renal severa", "Imunodeficiência"],
+        "interacoes_graves": [
+            {"com_medicamento": "Ibuprofeno", "efeito": "Aumento drástico e fatal da toxicidade do metotrexato no sangue."}
+    ]
+},
+{
+    "fonte": "CAD 37 - Hipertensão Sistêmica",
+        "medicamento_alvo": "Hidroclorotiazida",
+        "contraindicacoes": ["Pacientes com Gota (risco de crise aguda de hiperuricemia)"],
+        "interacoes_graves": [
+            {"com_medicamento": "Lítio", "efeito": "Reduz a excreção do Lítio, causando toxicidade neurológica severa."}
+        ]
+    },
+    {
+        "fonte": "CAD 36 - Diabetes Mellitus",
+        "medicamento_alvo": "Metformina",
+        "contraindicacoes": ["Insuficiência Renal Grave (Taxa de Filtração Glomerular < 30 mL/min)", "Alcoolismo ativo"],
+        "interacoes_graves": [
+            {"com_medicamento": "Contraste Iodado (Exames)", "efeito": "Risco elevadíssimo de Acidose Lática fatal. Suspender Metformina 48h antes do exame."}
+        ]
+    },
+    {
+        "fonte": "CAD 19 - Envelhecimento e Saúde da Pessoa Idosa",
+        "medicamento_alvo": "Glibenclamida",
+        "contraindicacoes": ["Pacientes Idosos (Alto risco de hipoglicemia prolongada e severa - Preferir Gliclazida)"],
+        "interacoes_graves": [
+            {"com_medicamento": "Fluconazol", "efeito": "Aumento extremo do efeito da Glibenclamida, resultando em coma hipoglicêmico."}
+        ]
+    },
+    {
+        "fonte": "CAD 19 - Envelhecimento e Saúde da Pessoa Idosa",
+        "medicamento_alvo": "Amitriptilina",
+        "contraindicacoes": ["Pacientes Idosos (Critérios de Beers: causa sedação extrema, confusão mental, retenção urinária e quedas)"],
+        "interacoes_graves": [
+            {"com_medicamento": "Clonazepam", "efeito": "Depressão do Sistema Nervoso Central exacerbada e risco severo de fraturas por quedas em idosos."}
+        ]
+    },
+    {
+        "fonte": "CAD 32 - Atenção ao Pré-Natal",
+        "medicamento_alvo": "Enalapril",
+        "contraindicacoes": ["Gestantes em qualquer trimestre (Teratogenicidade: causa oligoidrâmnio e insuficiência renal fetal)"],
+        "interacoes_graves": [
+            {"com_medicamento": "Espironolactona", "efeito": "Hipercalemia grave cruzada."}
+        ]
+    },
+    {
+        "fonte": "CAD 32 - Atenção ao Pré-Natal",
+        "medicamento_alvo": "Metildopa",
+        "contraindicacoes": ["Depressão grave", "Doença hepática ativa (risco de hepatite medicamentosa)"],
+        "interacoes_graves": [
+            {"com_medicamento": "Sulfato Ferroso", "efeito": "O ferro reduz drasticamente a absorção da Metildopa, descontrolando a pressão da gestante."}
+        ]
+    },
+    {
+        "fonte": "CAD 26 - Planejamento Familiar",
+        "medicamento_alvo": "Etinilestradiol",
+        "contraindicacoes": ["Mulheres fumantes com mais de 35 anos (risco extremo de Trombose/AVC)", "Histórico de Trombose Venosa Profunda"],
+        "interacoes_graves": [
+            {"com_medicamento": "Carbamazepina", "efeito": "Acelera o metabolismo do anticoncepcional, anulando o efeito e resultando em gravidez indesejada."},
+            {"com_medicamento": "Rifampicina", "efeito": "Falha total do método contraceptivo hormonal oral."}
+        ]
+    },
+    {
+        "fonte": "CAD - Doenças Respiratórias (Asma)",
+        "medicamento_alvo": "Propranolol",
+        "contraindicacoes": ["Pacientes com Asma Brônquica ou DPOC (Causa broncoespasmo severo e asfixia)"],
+        "interacoes_graves": [
+            {"com_medicamento": "Salbutamol", "efeito": "O Propranolol bloqueia completamente a ação broncodilatadora do Salbutamol, impedindo o resgate na crise de asma."}
+        ]
+    },
+    {
+        "fonte": "CAD 19 - Envelhecimento e Saúde da Pessoa Idosa",
+        "medicamento_alvo": "Diazepam",
+        "contraindicacoes": ["Pacientes Idosos (Meia-vida prolongada gera acúmulo tóxico, confusão mental e quedas)"],
+        "interacoes_graves": [
+            {"com_medicamento": "Álcool", "efeito": "Depressão respiratória severa, risco de parada cardiorrespiratória."}
+        ]
+    },
+    {
+        "fonte": "CAD - Tratamento da Tuberculose",
+        "medicamento_alvo": "Isoniazida",
+        "contraindicacoes": ["Pacientes com insuficiência hepática severa"],
+        "interacoes_graves": [
+            {"com_medicamento": "Paracetamol", "efeito": "Aumenta exponencialmente o risco de necrose hepática (destruição irreversível do fígado)."}
+        ]
+    }
+]
