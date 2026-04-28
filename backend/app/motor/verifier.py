@@ -71,7 +71,6 @@ async def verify(
     """
     alergias = paciente.get("alergias") or []
 
-    # Se não vier contexto, usa mensagem padrão para o LLM não ficar sem informação
     contexto_final = contexto_rag if contexto_rag.strip() else (
         "(base de conhecimento SUS indisponível — usar conhecimento clínico do modelo)"
     )
