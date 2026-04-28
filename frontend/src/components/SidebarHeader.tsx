@@ -1,6 +1,12 @@
+import { IconButton } from './IconButton'
 import { NesisWordmark } from './icons/NesisWordmark'
+import { SidebarClosedIcon } from './icons/SidebarClosedIcon'
 
-export function SidebarHeader() {
+interface Props {
+  onOpenDrawer: () => void
+}
+
+export function SidebarHeader({ onOpenDrawer }: Props) {
   return (
     <div
       style={{
@@ -12,37 +18,12 @@ export function SidebarHeader() {
         flexShrink: 0,
       }}
     >
-      {/* Hamburger */}
-      <button
-        style={{
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          padding: '2px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '4px',
-        }}
-        aria-label="Menu"
-      >
-        {[0, 1, 2].map((i) => (
-          <span
-            key={i}
-            style={{
-              display: 'block',
-              width: '18px',
-              height: '1.5px',
-              background: '#555',
-              borderRadius: '1px',
-            }}
-          />
-        ))}
-      </button>
+      <IconButton onClick={onOpenDrawer} ariaLabel="Abrir menu">
+        <SidebarClosedIcon size={18} color="#555" />
+      </IconButton>
 
-      {/* Wordmark */}
       <NesisWordmark height={16} fill="#1a1a1a" />
 
-      {/* Avatar */}
       <div
         style={{
           width: '28px',
