@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "NesisAI",
+  "version": "0.1.0",
+  "description": "Copiloto clínico para detecção de erros de prescrição no eSUS",
+  "permissions": ["sidePanel", "tabs", "scripting"],
+  "host_permissions": [
+    "https://*.esusaps.gov.br/*",
+    "https://*.saude.gov.br/*"
+  ],
+  "action": {
+    "default_title": "NesisAI"
+  },
+  "side_panel": {
+    "default_path": "index.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  }
+}
