@@ -1,6 +1,7 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { callAnalyze } from '../api/analyze'
 import { READING_ATTRIBUTES } from '../mock'
+import { getSettings } from '../stores/settingsStore'
 import type { Alert, AlertCounts, SidebarState } from '../types'
 
 const INITIAL_STATE: SidebarState = {
@@ -29,6 +30,7 @@ function sortAlerts(alerts: Alert[]): Alert[] {
 export function useSidebar() {
   const [state, setState] = useState<SidebarState>(INITIAL_STATE)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const autoStartedRef = useRef(false)
 
   const startReading = useCallback(() => {
     setState((prev) => ({
@@ -102,6 +104,17 @@ export function useSidebar() {
       }
     }, 500)
   }, [])
+
+  // Leitura automática: se a flag estiver ligada, pula o estado IDLE
+  // disparando startReading no primeiro render. autoStartedRef evita
+  // re-disparo no StrictMode (que executa effects duas vezes em dev).
+  useEffect(() => {
+    if (autoStartedRef.current) return
+    autoStartedRef.current = true
+    if (getSettings().autoRead) {
+      startReading()
+    }
+  }, [startReading])
 
   return { state, startReading, reanalyze }
 }
