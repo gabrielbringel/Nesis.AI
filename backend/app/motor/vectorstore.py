@@ -1,74 +1,106 @@
-"""Configuração do PGVector via langchain-postgres.
+"""RAG local baseado no banco_conhecimento_sus.json.
 
-A biblioteca cria automaticamente as tabelas internas
-(`langchain_pg_collection`, `langchain_pg_embedding`) na primeira inicialização —
-não há tabelas correspondentes no Alembic. A migração inicial só garante a
-extensão `vector`.
+Lê o JSON com conhecimento clínico do SUS/ANVISA, filtra os registros
+relevantes para os medicamentos presentes na prescrição e devolve um
+bloco de texto formatado para injeção no prompt do Gemini.
 
-A coleção é inicializada lazy (singleton) para evitar custo de bootstrap em
-chamadas repetidas e para permitir que o backend suba mesmo sem a base de
-conhecimento populada.
+Não depende de ChromaDB, PGVector ou qualquer banco externo — funciona
+100% offline e de forma determinística.
 """
 
 from __future__ import annotations
 
+import json
 import logging
+import os
 from functools import lru_cache
-
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain_postgres import PGVector
-
-from app.config import get_settings
-
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
-
-COLLECTION_NAME = "nesis_knowledge_base"
-EMBEDDING_MODEL = "models/embedding-001"
-
-
-@lru_cache(maxsize=1)
-def _embeddings() -> GoogleGenerativeAIEmbeddings:
-    settings = get_settings()
-    if not settings.gemini_api_key:
-        raise RuntimeError(
-            "GEMINI_API_KEY não configurada — defina no .env antes de subir o motor."
-        )
-    return GoogleGenerativeAIEmbeddings(
-        model=EMBEDDING_MODEL,
-        google_api_key=settings.gemini_api_key,
-    )
+# Caminho absoluto do JSON — sempre relativo a este arquivo
+_JSON_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "banco_conhecimento_sus.json")
 
 
 @lru_cache(maxsize=1)
-def get_vectorstore() -> PGVector | None:
-    """Devolve o PGVector configurado ou None se a infra não estiver pronta.
-
-    Falhas de conexão ao Postgres não devem derrubar o motor — o pipeline
-    segue sem RAG, apoiando-se apenas no conhecimento do LLM.
-    """
-    settings = get_settings()
+def _carregar_banco() -> list[dict[str, Any]]:
+    """Carrega e cacheia o JSON de conhecimento clínico na memória."""
     try:
-        return PGVector(
-            embeddings=_embeddings(),
-            collection_name=COLLECTION_NAME,
-            connection=settings.pgvector_url,
-            use_jsonb=True,
-        )
-    except Exception:  # noqa: BLE001 — degradação graciosa
-        logger.exception("Falha ao inicializar PGVector — seguindo sem RAG.")
-        return None
+        with open(_JSON_PATH, encoding="utf-8") as f:
+            dados = json.load(f)
+        logger.info("Banco SUS carregado: %d entradas.", len(dados))
+        return dados
+    except Exception:
+        logger.exception("Falha ao carregar banco_conhecimento_sus.json — RAG desativado.")
+        return []
 
+
+def buscar_contexto_sus(medicamentos: list[str]) -> str:
+    """Busca no banco SUS os registros relevantes para os medicamentos informados.
+
+    Faz correspondência case-insensitive: se qualquer medicamento da prescrição
+    aparecer como `medicamento_alvo` ou como `com_medicamento` em uma interação,
+    a entrada inteira é incluída no contexto.
+
+    Retorna uma string formatada pronta para ser injetada no prompt do Gemini,
+    ou uma string indicando base vazia caso não haja correspondência.
+    """
+    banco = _carregar_banco()
+    if not banco or not medicamentos:
+        return "(base de conhecimento SUS indisponível — usar conhecimento clínico do modelo)"
+
+    nomes_lower = {m.strip().lower() for m in medicamentos if m}
+
+    entradas_relevantes: list[dict[str, Any]] = []
+    for entrada in banco:
+        alvo = (entrada.get("medicamento_alvo") or "").lower()
+        interacoes = entrada.get("interacoes_graves") or []
+
+        # Inclui se o alvo for um dos medicamentos prescritos
+        if alvo in nomes_lower:
+            entradas_relevantes.append(entrada)
+            continue
+
+        # Inclui também se alguma interação envolve um dos medicamentos prescritos
+        for inter in interacoes:
+            parceiro = (inter.get("com_medicamento") or "").lower()
+            if parceiro in nomes_lower:
+                entradas_relevantes.append(entrada)
+                break
+
+    if not entradas_relevantes:
+        return "(nenhum registro encontrado no banco SUS para os medicamentos informados — usar conhecimento clínico do modelo)"
+
+    # Formata como texto estruturado para o prompt
+    blocos: list[str] = []
+    for entrada in entradas_relevantes:
+        alvo = entrada.get("medicamento_alvo", "?")
+        fonte = entrada.get("fonte", "SUS/ANVISA")
+        contraindicacoes = entrada.get("contraindicacoes") or []
+        interacoes = entrada.get("interacoes_graves") or []
+
+        linhas = [f"📋 MEDICAMENTO: {alvo} (Fonte: {fonte})"]
+
+        if contraindicacoes:
+            linhas.append("  Contraindicações:")
+            for c in contraindicacoes:
+                linhas.append(f"    • {c}")
+
+        if interacoes:
+            linhas.append("  Interações Graves:")
+            for inter in interacoes:
+                com = inter.get("com_medicamento", "?")
+                efeito = inter.get("efeito", "?")
+                linhas.append(f"    ⚠️  Com {com}: {efeito}")
+
+        blocos.append("\n".join(linhas))
+
+    return "\n\n".join(blocos)
+
+
+# ── Compatibilidade com PGVector (search_context assíncrono) ─────────────────
+# Mantido para não quebrar imports existentes, mas delegado ao RAG local.
 
 async def search_context(query: str, k: int = 4) -> list[str]:
-    """Busca documentos relevantes; devolve lista vazia se vector store indisponível."""
-    store = get_vectorstore()
-    if store is None:
-        return []
-    try:
-        docs = await store.asimilarity_search(query, k=k)
-    except Exception:  # noqa: BLE001 — coleção vazia ou erro de conexão
-        logger.exception("asimilarity_search falhou — seguindo sem contexto.")
-        return []
-    return [d.page_content for d in docs]
+    """Stub de compatibilidade — o RAG agora é feito via buscar_contexto_sus()."""
+    return []

@@ -1,5 +1,30 @@
 [
     {
+        "fonte": "CAD 28 - Atenção Básica (Volume II)",
+        "medicamento_alvo": "Dipirona",
+        "contraindicacoes": ["Porfiria hepática aguda intermitente", "Deficiência congênita da glicose-6-fosfato-desidrogenase (G6PD)", "Histórico de agranulocitose por pirazolonas"],
+        "interacoes_graves": [
+            {"com_medicamento": "Clorpromazina", "efeito": "Risco de hipotermia grave."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Sinvastatina",
+        "contraindicacoes": ["Doença hepática ativa", "Gravidez e Lactação (Categoria X)"],
+        "interacoes_graves": [
+            {"com_medicamento": "Claritromicina", "efeito": "Inibição forte do CYP3A4, aumentando drasticamente o nível de sinvastatina e o risco de miopatia/rabdomiólise fatal."},
+            {"com_medicamento": "Eritromicina", "efeito": "Aumento do risco de rabdomiólise e insuficiência renal secundária."}
+        ]
+    },
+    {
+        "fonte": "Bula ANVISA Profissional",
+        "medicamento_alvo": "Amoxicilina",
+        "contraindicacoes": ["Histórico de choque anafilático a penicilinas"],
+        "interacoes_graves": [
+            {"com_medicamento": "Alopurinol", "efeito": "Aumento significativo do risco de rash cutâneo alérgico grave e exantema maculopapular."}
+        ]
+    },
+    {
         "fonte": "Bula ANVISA Profissional",
         "medicamento_alvo": "Enalapril",
         "contraindicacoes": ["Gravidez (Risco Fetal)", "Histórico de angioedema prévio com IECA"],
