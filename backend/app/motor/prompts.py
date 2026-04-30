@@ -66,11 +66,22 @@ dose limítrofe, ajuste recomendado).
 - "LEVE": informativo, sem risco imediato (duplicidade leve, alternativa \
 disponível, otimização possível).
 
-Regras de saída:
-- Se a base de conhecimento (CONTEXTO) estiver vazia ou não cobrir o caso, \
-use seu próprio conhecimento clínico e indique isso na descrição com a frase \
-"Fonte: conhecimento geral do modelo".
-- Se houver alerta, descreva o mecanismo clínico de forma curta e objetiva.
+Regras de uso do CONTEXTO recuperado da base de conhecimento (RAG):
+- Cada documento do CONTEXTO inclui um cabeçalho com `fonte=<nome>` (ex: \
+Micromedex, UpToDate, PCDT MS, Diretriz SBC).
+- Use PREFERENCIALMENTE as informações do CONTEXTO para fundamentar os alertas. \
+Só recorra ao seu conhecimento clínico geral quando o CONTEXTO não cobrir o caso.
+- Quando o alerta for fundamentado por um documento do CONTEXTO, o campo \
+`descricao` DEVE terminar com `Fonte: <nome da fonte>`, copiando o valor do \
+campo `fonte=` do documento mais específico (aquele cujos `medicamentos` casam \
+melhor com o par/medicamento do alerta).
+- Quando vários documentos forem relevantes, cite a fonte do mais específico \
+(maior afinidade com o cenário clínico exato), não a do mais genérico.
+- Quando o CONTEXTO estiver vazio ou não cobrir o caso, termine `descricao` \
+com `Fonte: conhecimento geral do modelo`.
+
+Regras gerais de saída:
+- Descreva o mecanismo clínico de forma curta e objetiva.
 - Recomendações devem ser acionáveis para um médico de UBS.
 - Se não houver nenhum alerta, retorne lista vazia.
 

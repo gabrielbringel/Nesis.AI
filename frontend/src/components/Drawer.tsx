@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { UseDrawerReturn } from '../hooks/useDrawer'
 import { DrawerHeader } from './DrawerHeader'
 import { HistoryView } from './HistoryView'
@@ -11,6 +12,7 @@ interface Props {
 
 export function Drawer({ drawer }: Props) {
   const { isOpen, view, close, setView } = drawer
+  const [searchQuery, setSearchQuery] = useState('')
 
   const toggleSettings = () => {
     setView(view === 'settings' ? 'history' : 'settings')
@@ -30,18 +32,17 @@ export function Drawer({ drawer }: Props) {
         zIndex: 10,
         display: 'flex',
         flexDirection: 'column',
-        transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
+        opacity: isOpen ? 1 : 0,
         transition: isOpen
-          ? 'transform 200ms ease-out'
-          : 'transform 180ms ease-in',
-        // Quando fechado, evitar interação acidental nos elementos atrás.
+          ? 'opacity 180ms ease-out'
+          : 'opacity 150ms ease-in',
         pointerEvents: isOpen ? 'auto' : 'none',
       }}
       aria-hidden={!isOpen}
     >
-      <DrawerHeader onClose={close} />
+      <DrawerHeader onClose={close} searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
-      {view === 'history' && <HistoryView />}
+      {view === 'history' && <HistoryView searchQuery={searchQuery} />}
       {view === 'settings' && <SettingsView />}
 
       <div
