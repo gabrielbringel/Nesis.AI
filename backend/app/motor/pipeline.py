@@ -1,12 +1,11 @@
-"""Orquestrador do motor de IA: normalização → RAG local → verificação LLM → fallback.
+"""Orquestrador do motor de IA: normalização → verificação RAG (PGVector + LLM) → fallback.
 
 Fluxo:
-  1. normalize()          — Gemini padroniza os nomes dos medicamentos para DCB
-  2. buscar_contexto_sus()— RAG local lê o banco_conhecimento_sus.json e filtra
-                           as entradas relevantes para os medicamentos prescritos
-  3. verify()             — Gemini analisa a prescrição COM o contexto injetado
-  4. [fallback]           — Se o Gemini falhar, o ClinicalRulesEngine hardcoded
-                           avalia os pares de medicamentos deterministicamente
+  1. normalize() — Gemini padroniza os nomes dos medicamentos para DCB
+  2. verify()    — Recupera contexto via PGVector e o Gemini analisa a prescrição
+                   com o conhecimento clínico injetado no prompt
+  3. [fallback]  — Se o Gemini falhar, o ClinicalRulesEngine hardcoded avalia
+                   os pares de medicamentos deterministicamente
 
 Mantém a assinatura `async def analyze(payload: dict) -> list[dict]`
 para preservar contrato com `app.prescriptions.service`.
@@ -19,13 +18,11 @@ from itertools import combinations
 from typing import Any
 
 from app.motor.normalizer import normalize
-from app.motor.verifier import verify
-from app.motor.vectorstore import buscar_contexto_sus
 from app.motor.rules_engine import ClinicalRulesEngine, Medication
+from app.motor.verifier import verify
 
 logger = logging.getLogger(__name__)
 
-# Instância singleton do motor de regras (fallback determinístico)
 _motor_regras = ClinicalRulesEngine()
 
 
@@ -35,25 +32,11 @@ async def analyze(payload: dict[str, Any]) -> list[dict[str, Any]]:
     medicacoes_raw = payload.get("medicacoes") or []
 
     try:
-        logger.info("Iniciando análise com motor LLM + RAG local...")
-
-        # Etapa 1: Normaliza os nomes para DCB via Gemini
         medicacoes_normalizadas = await normalize(medicacoes_raw)
-
-        # Etapa 2: Busca contexto clínico no banco SUS (RAG local)
-        nomes_medicamentos = [
-            med.get("nome") for med in medicacoes_normalizadas if med.get("nome")
-        ]
-        logger.info("Buscando contexto SUS para: %s", nomes_medicamentos)
-        contexto_rag = buscar_contexto_sus(nomes_medicamentos)
-        logger.debug("Contexto RAG injetado:\n%s", contexto_rag)
-
-        # Etapa 3: Verificação clínica pelo Gemini com o contexto injetado
-        alertas = await verify(paciente, medicacoes_normalizadas, contexto_rag)
+        alertas = await verify(paciente, medicacoes_normalizadas)
         return alertas
 
     except Exception as exc:
-        # Etapa 4: Fallback determinístico com o motor de regras local
         logger.error("LLM falhou (%s). Acionando fallback (Rules Engine)...", exc)
         return _fallback_rules_engine(paciente, medicacoes_raw)
 
