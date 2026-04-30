@@ -1,106 +1,85 @@
-"""RAG local baseado no banco_conhecimento_sus.json.
+"""Configuração do PGVector via langchain-postgres.
 
-Lê o JSON com conhecimento clínico do SUS/ANVISA, filtra os registros
-relevantes para os medicamentos presentes na prescrição e devolve um
-bloco de texto formatado para injeção no prompt do Gemini.
+A coleção `nesis_knowledge_base` é populada pelo script
+`scripts/ingest_knowledge.py`. As tabelas internas
+(`langchain_pg_collection`, `langchain_pg_embedding`) são criadas
+automaticamente pelo langchain-postgres na primeira inicialização.
 
-Não depende de ChromaDB, PGVector ou qualquer banco externo — funciona
-100% offline e de forma determinística.
+Decisão de driver:
+  Usamos o PGVector síncrono (driver psycopg) e envolvemos a busca em
+  asyncio.to_thread() para não bloquear o event loop do FastAPI. O modo
+  async nativo (asyncpg) quebra na inicialização: o langchain-postgres
+  envia múltiplos comandos SQL juntos (pg_advisory_xact_lock + CREATE
+  EXTENSION) num único execute, e o asyncpg não suporta multi-statement
+  em prepared statements.
+
+IMPORTANTE — PGVECTOR_URL:
+  Dentro do Docker, o host é "postgres" (serviço do docker-compose).
+  Fora do Docker, é "localhost". Configure o .env conforme o cenário.
 """
 
 from __future__ import annotations
 
-import json
+import asyncio
 import logging
-import os
+import traceback
 from functools import lru_cache
-from typing import Any
+
+from langchain_core.documents import Document
+from langchain_postgres import PGVector
+
+from app.config import get_settings
+from app.motor.embeddings import GeminiEmbeddings
+
 
 logger = logging.getLogger(__name__)
 
-# Caminho absoluto do JSON — sempre relativo a este arquivo
-_JSON_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "banco_conhecimento_sus.json")
+
+COLLECTION_NAME = "nesis_knowledge_base"
 
 
 @lru_cache(maxsize=1)
-def _carregar_banco() -> list[dict[str, Any]]:
-    """Carrega e cacheia o JSON de conhecimento clínico na memória."""
+def _embeddings() -> GeminiEmbeddings:
+    settings = get_settings()
+    if not settings.gemini_api_key:
+        raise RuntimeError(
+            "GEMINI_API_KEY não configurada — defina no .env antes de subir o motor."
+        )
+    return GeminiEmbeddings(api_key=settings.gemini_api_key)
+
+
+@lru_cache(maxsize=1)
+def get_vectorstore() -> PGVector | None:
+    """Devolve o PGVector síncrono (lazy/singleton) ou None se a infra falhar."""
+    settings = get_settings()
     try:
-        with open(_JSON_PATH, encoding="utf-8") as f:
-            dados = json.load(f)
-        logger.info("Banco SUS carregado: %d entradas.", len(dados))
-        return dados
-    except Exception:
-        logger.exception("Falha ao carregar banco_conhecimento_sus.json — RAG desativado.")
-        return []
+        return PGVector(
+            embeddings=_embeddings(),
+            collection_name=COLLECTION_NAME,
+            connection=settings.pgvector_url,
+            use_jsonb=True,
+        )
+    except Exception as e:
+        logger.error("Falha ao inicializar PGVector: %s", e)
+        logger.error(traceback.format_exc())
+        return None
 
 
-def buscar_contexto_sus(medicamentos: list[str]) -> str:
-    """Busca no banco SUS os registros relevantes para os medicamentos informados.
+async def search_context(query: str, k: int = 4) -> list[Document]:
+    """Busca os k documentos mais relevantes; lista vazia se indisponível.
 
-    Faz correspondência case-insensitive: se qualquer medicamento da prescrição
-    aparecer como `medicamento_alvo` ou como `com_medicamento` em uma interação,
-    a entrada inteira é incluída no contexto.
-
-    Retorna uma string formatada pronta para ser injetada no prompt do Gemini,
-    ou uma string indicando base vazia caso não haja correspondência.
+    Roda a busca síncrona em thread separada via asyncio.to_thread() para
+    não bloquear o event loop.
     """
-    banco = _carregar_banco()
-    if not banco or not medicamentos:
-        return "(base de conhecimento SUS indisponível — usar conhecimento clínico do modelo)"
-
-    nomes_lower = {m.strip().lower() for m in medicamentos if m}
-
-    entradas_relevantes: list[dict[str, Any]] = []
-    for entrada in banco:
-        alvo = (entrada.get("medicamento_alvo") or "").lower()
-        interacoes = entrada.get("interacoes_graves") or []
-
-        # Inclui se o alvo for um dos medicamentos prescritos
-        if alvo in nomes_lower:
-            entradas_relevantes.append(entrada)
-            continue
-
-        # Inclui também se alguma interação envolve um dos medicamentos prescritos
-        for inter in interacoes:
-            parceiro = (inter.get("com_medicamento") or "").lower()
-            if parceiro in nomes_lower:
-                entradas_relevantes.append(entrada)
-                break
-
-    if not entradas_relevantes:
-        return "(nenhum registro encontrado no banco SUS para os medicamentos informados — usar conhecimento clínico do modelo)"
-
-    # Formata como texto estruturado para o prompt
-    blocos: list[str] = []
-    for entrada in entradas_relevantes:
-        alvo = entrada.get("medicamento_alvo", "?")
-        fonte = entrada.get("fonte", "SUS/ANVISA")
-        contraindicacoes = entrada.get("contraindicacoes") or []
-        interacoes = entrada.get("interacoes_graves") or []
-
-        linhas = [f"📋 MEDICAMENTO: {alvo} (Fonte: {fonte})"]
-
-        if contraindicacoes:
-            linhas.append("  Contraindicações:")
-            for c in contraindicacoes:
-                linhas.append(f"    • {c}")
-
-        if interacoes:
-            linhas.append("  Interações Graves:")
-            for inter in interacoes:
-                com = inter.get("com_medicamento", "?")
-                efeito = inter.get("efeito", "?")
-                linhas.append(f"    ⚠️  Com {com}: {efeito}")
-
-        blocos.append("\n".join(linhas))
-
-    return "\n\n".join(blocos)
-
-
-# ── Compatibilidade com PGVector (search_context assíncrono) ─────────────────
-# Mantido para não quebrar imports existentes, mas delegado ao RAG local.
-
-async def search_context(query: str, k: int = 4) -> list[str]:
-    """Stub de compatibilidade — o RAG agora é feito via buscar_contexto_sus()."""
-    return []
+    store = get_vectorstore()
+    if store is None:
+        logger.warning("get_vectorstore() devolveu None — RAG desativado nesta chamada.")
+        return []
+    try:
+        docs = await asyncio.to_thread(store.similarity_search, query, k)
+        logger.info("RAG recuperou %d documentos para: %s", len(docs), query[:60])
+        return docs
+    except Exception as e:
+        logger.error("search_context falhou: %s", e)
+        logger.error(traceback.format_exc())
+        return []

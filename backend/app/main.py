@@ -13,6 +13,13 @@ from fastapi.responses import JSONResponse
 from app.config import get_settings
 from app.prescriptions.router import router as prescriptions_router
 
+# Sem basicConfig, o nível default é WARNING e os logger.info() do motor
+# ficam suprimidos. Configurar antes de qualquer logger ser instanciado.
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+
 logger = logging.getLogger(__name__)
 settings = get_settings()
 

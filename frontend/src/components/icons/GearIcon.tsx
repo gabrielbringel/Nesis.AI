@@ -3,21 +3,34 @@ interface Props {
   color?: string
 }
 
-export function GearIcon({ size = 14, color = 'currentColor' }: Props) {
+export function GearIcon({ size = 18, color = '#000000ff' }: Props) {
   return (
     <svg
-      viewBox="0 0 16 16"
+      viewBox="0 0 32 32"
       width={size}
       height={size}
       fill="none"
-      stroke={color}
-      strokeWidth="1.2"
-      strokeLinecap="round"
       xmlns="http://www.w3.org/2000/svg"
-      style={{ display: 'block' }}
+      style={{ display: 'block', color }}
     >
-      <circle cx="8" cy="8" r="2" />
-      <path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1.05 1.05M11.55 11.55l1.05 1.05M12.6 3.4l-1.05 1.05M4.45 11.55l-1.05 1.05" />
+      <circle
+        cx="16"
+        cy="16"
+        r="4"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeMiterlimit="10"
+      />
+      <path
+        d="M27.758,10.366l-1-1.732c-0.552-0.957-1.775-1.284-2.732-0.732L23.5,8.206C21.5,9.36,19,7.917,19,5.608V5c0-1.105-0.895-2-2-2h-2c-1.105,0-2,0.895-2,2v0.608c0,2.309-2.5,3.753-4.5,2.598L7.974,7.902C7.017,7.35,5.794,7.677,5.242,8.634l-1,1.732c-0.552,0.957-0.225,2.18,0.732,2.732L5.5,13.402c2,1.155,2,4.041,0,5.196l-0.526,0.304c-0.957,0.552-1.284,1.775-0.732,2.732l1,1.732c0.552,0.957,1.775,1.284,2.732,0.732L8.5,23.794c2-1.155,4.5,0.289,4.5,2.598V27c0,1.105,0.895,2,2,2h2c1.105,0,2-0.895,2-2v-0.608c0-2.309,2.5-3.753,4.5-2.598l0.526,0.304c0.957,0.552,2.18,0.225,2.732-0.732l1-1.732c0.552-0.957,0.225-2.18-0.732-2.732L26.5,18.598c-2-1.155-2-4.041,0-5.196l0.526-0.304C27.983,12.546,28.311,11.323,27.758,10.366z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeMiterlimit="10"
+      />
     </svg>
   )
 }
