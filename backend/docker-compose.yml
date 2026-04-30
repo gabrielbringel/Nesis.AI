@@ -8,8 +8,11 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nesis}
     ports:
       - "5432:5432"
-    # volumes:
-    #   - postgres_data:/var/lib/postgresql/data
+    volumes:
+      # Named volume gerenciado pelo Docker — sobrevive a `docker compose down`
+      # e não tem problema de permissão no Mac (bind mounts ./postgres-data:/...
+      # quebram com "Operation not permitted" em alguns setups).
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nesis} -d ${POSTGRES_DB:-nesis}" ]
       interval: 5s
@@ -32,5 +35,5 @@ services:
       sh -c "alembic upgrade head &&
              uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
-# volumes:
-#   postgres_data:
+volumes:
+  pgdata:
