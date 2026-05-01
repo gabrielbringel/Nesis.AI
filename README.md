@@ -290,3 +290,23 @@ Os testes do motor cobrem: extrator NER, normalizaÃ§Ã£o, pipeline completo, moto
 ## LicenÃ§a
 
 Veja [LICENSE](LICENSE).
+
+
+---
+
+## ?? Relatório Técnico: Deploy e Infraestrutura (Bug Report #2)
+Projeto: Extensão Chrome de Análise de Prescrições (e-SUS)
+Fase: Containerização (Docker) e Conformidade de Segurança (Manifest V3)
+
+?? **Resumo Executivo**
+Durante a preparação do projeto para o ambiente de demonstração (Pitch/Hackathon), deparámo-nos com falhas arquiteturais ligadas ao isolamento de rede do Docker e às rígidas políticas de segurança do Google Chrome (Manifest V3). Os problemas foram mapeados para falhas de binding de rede e violações de User Gesture, sendo todos resolvidos com ajustes de configuração, sem necessidade de reescrever a lógica de negócio.
+
+??? **Detalhamento dos Erros e Soluções**
+
+**1. Bloqueio de Abertura Automática da Extensão (Security Policy)**
+- **Sintoma:** O Service Worker da extensão falhava silenciosamente ou apresentava o erro "Error: sidePanel.open() may only be called in response to a user gesture" no console do Chrome, impedindo a extensão de funcionar ao carregar o e-SUS.
+- **Causa Raiz:** No Manifest V3, a Google implementou regras estritas contra injeções visuais não solicitadas. O código tentava usar o evento de carregamento da página (chrome.tabs.onUpdated) para forçar a abertura do Painel Lateral automaticamente. O navegador bloqueia isso por não identificar uma intenção explícita do utilizador (clique).
+- **Solução:** 
+  1. Remoção do script de automação (onUpdated) do Service Worker.
+  2. Implementação da API declarativa chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).
+  3. **Resultado:** A extensão passou a respeitar as diretrizes da Web Store, abrindo o painel de forma estável e segura quando o médico clica no ícone da extensão (User Gesture validado).
