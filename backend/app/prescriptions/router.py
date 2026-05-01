@@ -7,10 +7,9 @@ from fastapi import APIRouter
 from app.prescriptions.schemas import AnalyzeRequest, AnalyzeResponse
 from app.prescriptions.service import analisar
 
-router = APIRouter(prefix="/api/v1", tags=["analyze"])
+router = APIRouter(tags=["analyze"])
 
-
-@router.post("/analyze", response_model=AnalyzeResponse)
+@router.post("/api/avaliar", response_model=AnalyzeResponse)
 async def analyze(payload: AnalyzeRequest) -> AnalyzeResponse:
     """Recebe os dados scrapeados pela extensão Chrome e devolve alertas.
 

@@ -93,7 +93,14 @@ async def verify(
     docs = await search_context(query, k=_RAG_K)
     contexto_rag = _formatar_contexto(docs)
 
+
+    # Se não vier contexto, usa mensagem padrão para o LLM não ficar sem informação
+#6048758c376255e4eb71f062ed45ffdb53afffeb
+    contexto_final = contexto_rag if contexto_rag.strip() else (
+        "(base de conhecimento SUS indisponível — usar conhecimento clínico do modelo)"
+    )
     alergias = paciente.get("alergias") or []
+#a293a7c227596e2a0f57fce221237b2b7ba00a25
     prompt = VERIFICATION_USER_TEMPLATE.format(
         paciente_nome=paciente.get("nome", ""),
         paciente_idade=paciente.get("idade", ""),
