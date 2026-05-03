@@ -80,6 +80,16 @@ melhor com o par/medicamento do alerta).
 - Quando o CONTEXTO estiver vazio ou não cobrir o caso, termine `descricao` \
 com `Fonte: conhecimento geral do modelo`.
 
+Alternativas Seguras (SUS/BNAFAR):
+- Para alertas com severidade "GRAVE" ou "MODERADO", inclua o campo \
+`alternativas_seguras` com EXATAMENTE 2 medicamentos substitutos disponíveis \
+no BNAFAR ou na Rename da ANVISA que possam substituir o(s) medicamento(s) \
+envolvido(s) no alerta, priorizando os disponíveis no SUS.
+- Cada alternativa deve ter `medicamento` (nome DCB) e `justificativa` (uma \
+frase objetiva explicando por que é uma alternativa segura neste contexto).
+- Para alertas "LEVE", omita o campo `alternativas_seguras` ou deixe como null.
+- Se não existir substituto seguro e disponível no SUS, omita o campo.
+
 Regras gerais de saída:
 - Descreva o mecanismo clínico de forma curta e objetiva.
 - Recomendações devem ser acionáveis para um médico de UBS.
@@ -109,8 +119,13 @@ Gere os alertas clínicos no formato JSON a seguir:
       "severidade": "GRAVE" | "MODERADO" | "LEVE",
       "descricao": "<descrição clínica curta e objetiva>",
       "medicamentos_envolvidos": ["<nome DCB>", ...],
-      "recomendacao": "<ação recomendada ao prescritor>"
+      "recomendacao": "<ação recomendada ao prescritor>",
+      "alternativas_seguras": [
+        {{"medicamento": "<nome DCB>", "justificativa": "<motivo objetivo>"}},
+        {{"medicamento": "<nome DCB>", "justificativa": "<motivo objetivo>"}}
+      ]
     }}
   ]
 }}
 """
+# Nota: `alternativas_seguras` só deve aparecer em alertas GRAVE ou MODERADO.

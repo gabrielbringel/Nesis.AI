@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Alert, Severity } from '../types'
+import type { Alert, AlternativaSegura, Severity } from '../types'
 
 const SEVERITY_STYLES: Record<
   Severity,
@@ -126,6 +126,74 @@ export function AlertCard({ alert }: Props) {
           <DetailRow label="Mecanismo" value={alert.descricao} />
           <DetailRow label="Fonte" value="Base de conhecimento" />
           <DetailRow label="Alternativa/Ação" value={alert.recomendacao} />
+
+          {/* ── Alternativas Seguras SUS/BNAFAR ── */}
+          {alert.alternativas_seguras && alert.alternativas_seguras.length > 0 && (
+            <div
+              style={{
+                marginTop: '10px',
+                borderRadius: '8px',
+                border: '1px solid #c6e0a4',
+                background: '#f4fbe8',
+                padding: '10px 12px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  marginBottom: '2px',
+                }}
+              >
+                <span style={{ fontSize: '13px' }}>🌿</span>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '10px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    color: '#3B6D11',
+                    fontWeight: 600,
+                  }}
+                >
+                  Alternativas Seguras — SUS / BNAFAR
+                </span>
+              </div>
+              {alert.alternativas_seguras.map((alt: AlternativaSegura, i: number) => (
+                <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '10px',
+                      background: '#c6e0a4',
+                      color: '#2d5a0e',
+                      padding: '2px 7px',
+                      borderRadius: '4px',
+                      flexShrink: 0,
+                      whiteSpace: 'nowrap',
+                      marginTop: '1px',
+                    }}
+                  >
+                    {alt.medicamento}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '11px',
+                      color: '#4a7c1e',
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {alt.justificativa}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -6,7 +6,7 @@ e a resposta agregada do motor de IA com os alertas classificados por severidade
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -38,11 +38,17 @@ class AnalyzeRequest(BaseModel):
     medicacoes: list[Medicacao]
 
 
+class AlternativaSegura(BaseModel):
+    medicamento: str
+    justificativa: str
+
+
 class Alerta(BaseModel):
     severidade: Severidade
     descricao: str
     medicamentos_envolvidos: list[str]
     recomendacao: str
+    alternativas_seguras: Optional[list[AlternativaSegura]] = None
 
 
 class AnalyzeResponse(BaseModel):

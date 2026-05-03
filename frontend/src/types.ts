@@ -1,10 +1,16 @@
 export type Severity = 'GRAVE' | 'MODERADO' | 'LEVE'
 
+export interface AlternativaSegura {
+  medicamento: string
+  justificativa: string
+}
+
 export interface Alert {
   severidade: Severity
   descricao: string
   medicamentos_envolvidos: string[]
   recomendacao: string
+  alternativas_seguras?: AlternativaSegura[]
 }
 
 export interface AnalyzeResponse {
