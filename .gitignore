@@ -99,7 +99,6 @@ secrets/
 # ── Motor de IA / LangChain ──────────────────────────────────────────────────
 .langchain.db
 .chroma/
-backend/data/
 
 # ── Scripts temporários ──────────────────────────────────────────────────────
 backend/check_db.py
