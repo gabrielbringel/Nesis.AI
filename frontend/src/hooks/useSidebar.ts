@@ -1,12 +1,23 @@
-declare var chrome: any;
+// Hook que gerencia a UI da sidebar.
+//
+// O scraping e a chamada ao backend são responsabilidade do content script
+// (src/content/content-script.ts), que extrai os dados via XPath no contexto
+// da página do eSUS e envia o resultado para cá via chrome.runtime.sendMessage.
+//
+// Aqui só fazemos:
+//   - manter o estado da view (idle/reading/analyzing/results)
+//   - ouvir ANALYSIS_COMPLETE / ANALYSIS_ERROR vindas do content script
+//   - disparar TRIGGER_SCRAPE quando o usuário clica em "Ler prontuário"
+
+declare const chrome: any
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { READING_ATTRIBUTES } from '../mock'
+import { READING_ATTRIBUTES, FALLBACK_ALERTS } from '../mock'
 import { getSettings } from '../stores/settingsStore'
 import type { Alert, AlertCounts, SidebarState } from '../types'
 
 const INITIAL_STATE: SidebarState = {
   view: 'idle',
-  patient: { abbreviated: 'Carregando...', age: 0 },
+  patient: null,
   loadedAttributes: [],
   totalAttributes: READING_ATTRIBUTES,
   alerts: [],
@@ -24,49 +35,25 @@ function countAlerts(alerts: Alert[]): AlertCounts {
 
 function sortAlerts(alerts: Alert[]): Alert[] {
   const order = { GRAVE: 0, MODERADO: 1, LEVE: 2 }
-  return [...alerts].sort((a, b) => (order[a.severidade as keyof typeof order] ?? 3) - (order[b.severidade as keyof typeof order] ?? 3))
+  return [...alerts].sort(
+    (a, b) =>
+      (order[a.severidade as keyof typeof order] ?? 3) -
+      (order[b.severidade as keyof typeof order] ?? 3),
+  )
 }
 
-// 💉 FUNÇÃO INJETADA: Lê o DOM da aba ativa do e-SUS procurando textos médicos
-function scrapeESUSData() {
-  const nameElement = document.querySelector('#root > div > div.css-1ylu0bo > main > header div:nth-child(1) h2');
-  const ageElement = document.querySelector('#root > div > div.css-1ylu0bo > main > header div:nth-child(2) span');
-
-  const paciente = nameElement ? nameElement.textContent?.trim() : 'Desconhecido';
-  const idadeMatch = ageElement ? ageElement.textContent?.match(/\d+/) : null;
-  const idade = idadeMatch ? parseInt(idadeMatch[0], 10) : 0;
-
-  const medicacoes: any[] = [];
-  const foundMeds = new Set<string>();
-
-  // Varre os textos da página atrás de dosagens (Apenas elementos sem filhos para evitar texto duplicado)
-  document.querySelectorAll('div, p, span, h4, h5, li').forEach((el) => {
-    if (el.children.length === 0) {
-      const text = el.textContent?.trim() || '';
-      const lowerText = text.toLowerCase();
-      
-      // Procura padrões de receita num tamanho razoável
-      if (
-        (lowerText.includes('mg') || lowerText.includes('ml') || lowerText.includes('comprimido') || lowerText.includes('gotas') || lowerText.includes('ui')) &&
-        text.length > 3 && text.length < 150
-      ) {
-        if (!lowerText.includes('pesquise') && !lowerText.includes('adicionar') && !lowerText.includes('nenhum')) {
-          foundMeds.add(text);
-        }
-      }
+function disparaTriggerScrape() {
+  if (typeof chrome === 'undefined' || !chrome.tabs) return
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs: any[]) => {
+    const tab = tabs?.[0]
+    if (tab?.id != null) {
+      chrome.tabs.sendMessage(tab.id, { type: 'TRIGGER_SCRAPE' }, () => {
+        // ignora chrome.runtime.lastError — content script pode ainda
+        // não estar carregado em abas que não sejam do eSUS.
+        void chrome.runtime.lastError
+      })
     }
-  });
-
-  Array.from(foundMeds).forEach((medText) => {
-    medicacoes.push({
-      nome: medText,
-      dose: 'Extraído do texto',
-      frequencia: 'Não especificada',
-      via: 'Não especificada'
-    });
-  });
-
-  return { paciente, idade, medicacoes };
+  })
 }
 
 export function useSidebar() {
@@ -74,62 +61,42 @@ export function useSidebar() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const autoStartedRef = useRef(false)
 
-  const performAnalysis = async () => {
-    let payload = null;
-    let realPatient = { abbreviated: 'Carregando...', age: 0 }; 
-    
-    try {
-      if (typeof chrome !== 'undefined' && chrome.tabs) {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (tab?.id) {
-          const injectionResults = await chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            func: scrapeESUSData
-          });
-          
-          const scraped = injectionResults[0]?.result;
-          if (scraped && scraped.paciente !== 'Desconhecido') {
-            realPatient = { abbreviated: scraped.paciente, age: scraped.idade };
-            
-            payload = {
-              paciente: {
-                nome: scraped.paciente,
-                idade: scraped.idade,
-                alergias: []
-              },
-              medicacoes: scraped.medicacoes
-            };
-          }
-        }
+  // Listener das mensagens enviadas pelo content script.
+  useEffect(() => {
+    if (typeof chrome === 'undefined' || !chrome.runtime?.onMessage) return
+
+    const handler = (message: any) => {
+      if (!message?.type) return
+
+      if (message.type === 'ANALYSIS_COMPLETE') {
+        const alertasRaw: Alert[] = message.payload?.alertas || []
+        const sorted = sortAlerts(alertasRaw)
+        setState((prev) => ({
+          ...prev,
+          view: 'results',
+          patient: message.paciente || prev.patient,
+          alerts: sorted,
+          counts: countAlerts(sorted),
+          lastAnalyzedAt: new Date(),
+        }))
       }
-    } catch (err) {
-      console.error("Erro ao ler dados do e-SUS:", err);
+
+      if (message.type === 'ANALYSIS_ERROR') {
+        const sorted = sortAlerts(FALLBACK_ALERTS)
+        setState((prev) => ({
+          ...prev,
+          view: 'results',
+          patient: message.paciente || prev.patient,
+          alerts: sorted,
+          counts: countAlerts(sorted),
+          lastAnalyzedAt: new Date(),
+        }))
+      }
     }
 
-    // Se estiver fora da extensão (testes locais), monta um payload genérico vazio para o backend resolver
-    if (!payload) {
-       payload = { paciente: { nome: 'Teste Local', idade: 30, alergias: [] }, medicacoes: [] };
-    }
-
-    setState(prev => ({ ...prev, patient: realPatient }));
-
-    try {
-      const res = await fetch('http://localhost:8000/api/avaliar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
-      const data = await res.json();
-      return { data, payload };
-
-    } catch (error) {
-      console.error("Erro de conexão com a API:", error);
-      // Retorna objeto vazio para não quebrar a UI caso o backend morra, mas não exibe os mocks falsos
-      return { data: { alertas: [] }, payload }; 
-    }
-  };
+    chrome.runtime.onMessage.addListener(handler)
+    return () => chrome.runtime.onMessage.removeListener(handler)
+  }, [])
 
   const startReading = useCallback(() => {
     setState((prev) => ({
@@ -138,9 +105,10 @@ export function useSidebar() {
       loadedAttributes: [],
     }))
 
-    const apiPromise = performAnalysis()
+    disparaTriggerScrape()
 
     let idx = 0
+    if (intervalRef.current) clearInterval(intervalRef.current)
     intervalRef.current = setInterval(() => {
       idx++
       setState((prev) => ({
@@ -151,17 +119,6 @@ export function useSidebar() {
       if (idx >= READING_ATTRIBUTES.length) {
         clearInterval(intervalRef.current!)
         setState((prev) => ({ ...prev, view: 'analyzing' }))
-
-        apiPromise.then(({ data: response }) => {
-          const sorted = sortAlerts(response?.alertas || [])
-          setState((prev) => ({
-            ...prev,
-            view: 'results',
-            alerts: sorted,
-            counts: countAlerts(sorted),
-            lastAnalyzedAt: new Date()
-          }))
-        })
       }
     }, 500)
   }, [])
