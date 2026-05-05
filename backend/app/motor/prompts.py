@@ -91,13 +91,15 @@ sem explicações antes ou depois.
 
 
 VERIFICATION_USER_TEMPLATE = """\
-PACIENTE:
-- Nome: {paciente_nome}
-- Idade: {paciente_idade} anos
-- Alergias declaradas: {paciente_alergias}
+PACIENTE (dados clínicos — sem identificação pessoal):
+{paciente_dados}
 
 MEDICAÇÕES PRESCRITAS (já normalizadas em DCB):
 {medicacoes_json}
+
+Cada medicação inclui um campo `posologia_completa` com o texto bruto extraído \
+do prontuário (ex: "Enalapril 10mg 1x ao dia via oral"). Use esse campo para \
+inferir dose, frequência e via quando os campos estruturados estiverem vazios.
 
 CONTEXTO RECUPERADO DA BASE DE CONHECIMENTO:
 {contexto_rag}
