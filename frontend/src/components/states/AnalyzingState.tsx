@@ -2,7 +2,7 @@ import type { Patient } from '../../types'
 import { READING_ATTRIBUTES } from '../../mock'
 
 interface Props {
-  patient: Patient
+  patient: Patient | null
 }
 
 export function AnalyzingState({ patient }: Props) {
@@ -16,8 +16,7 @@ export function AnalyzingState({ patient }: Props) {
           lineHeight: 1.2,
         }}
       >
-        {patient.abbreviated}
-        <em style={{ color: '#888', fontStyle: 'italic' }}>, {patient.age}a</em>
+        {patient?.displayLabel ?? 'Carregando paciente...'}
       </h2>
 
       <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '7px' }}>
