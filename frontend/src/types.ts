@@ -15,8 +15,7 @@ export interface AnalyzeResponse {
 }
 
 export interface Patient {
-  abbreviated: string
-  age: number
+  displayLabel: string
 }
 
 export type SidebarView = 'idle' | 'reading' | 'analyzing' | 'results'
