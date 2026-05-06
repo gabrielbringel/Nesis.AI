@@ -81,6 +81,10 @@ export function useSidebar() {
     try {
       if (typeof chrome !== 'undefined' && chrome.tabs && chrome.scripting) {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!tab?.id || !tab?.url?.startsWith('http')) {
+          console.error('[NesisAI] Aba inválida:', tab?.url);
+          return { data: { alertas: [] }, payload: null };
+        }
         if (tab?.id) {
           const injectionResults = await chrome.scripting.executeScript({
             target: { tabId: tab.id },
