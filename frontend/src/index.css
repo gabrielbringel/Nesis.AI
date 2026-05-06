@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-serif: 'Instrument Serif', Georgia, serif;
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'DM Mono', 'Courier New', monospace;
+
+  --color-surface: #ffffff;
+  --color-border: #ddd8d0;
+  --color-border-light: #ebe8e2;
+  --color-bg-muted: #faf9f7;
+  --color-bg-hover: #f0ede8;
+
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #444;
+  --color-text-muted: #555;
+  --color-text-faint: #999;
+  --color-text-placeholder: #aaa;
+
+  /* Severidade */
+  --color-grave-border: #E24B4A;
+  --color-grave-bg: #fefafa;
+  --color-grave-badge-bg: #fcebeb;
+  --color-grave-badge-text: #A32D2D;
+
+  --color-moderado-border: #EF9F27;
+  --color-moderado-bg: #fefdf9;
+  --color-moderado-badge-bg: #faeeda;
+  --color-moderado-badge-text: #854F0B;
+
+  --color-leve-border: #639922;
+  --color-leve-bg: #fafdf6;
+  --color-leve-badge-bg: #eaf3de;
+  --color-leve-badge-text: #3B6D11;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-surface);
+}
+
+/* Progress bar animation */
+@keyframes progress-sweep {
+  0%   { width: 15%; }
+  100% { width: 85%; }
+}
+
+.progress-bar-animated {
+  animation: progress-sweep 2.5s ease-in-out alternate infinite;
+}
+
+/* Dot blink animation */
+@keyframes blink {
+  0%, 100% { opacity: 0.2; }
+  50%       { opacity: 1; }
+}
+
+.dot-blink {
+  animation: blink 1.2s ease-in-out infinite;
+}
+
+/* Skeleton pulse */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 0.9; }
+}
+
+.skeleton-pulse {
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+/* AlertCard expand transition */
+.alert-details {
+  overflow: hidden;
+  transition: max-height 0.25s ease, opacity 0.2s ease;
+}
+
+.alert-details.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
+.alert-details.expanded {
+  max-height: 400px;
+  opacity: 1;
+}
+
+/* Chevron rotation */
+.chevron {
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+
+.chevron.open {
+  transform: rotate(180deg);
+}

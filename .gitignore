@@ -1,0 +1,109 @@
+# Claude
+CLAUDE.md
+.claude/
+
+# ── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.so
+*.dylib
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+backend/venv/
+backend/.venv/
+
+# ── Node / Frontend ──────────────────────────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.vite/
+frontend/.next/
+*.tsbuildinfo
+
+# ── Environment variables ────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.env
+!.env.example
+
+# ── Test / Coverage ──────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+coverage/
+htmlcov/
+.nyc_output/
+*.lcov
+
+# ── IDE / Editors ─────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ── Temporary / Cache ─────────────────────────────────────────────────────────
+*.tmp
+*.temp
+.cache/
+*.local
+
+# ── Dados sensíveis ──────────────────────────────────────────────────────────
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+*service-account*.json
+*credentials*.json
+
+# ── Banco de Dados ───────────────────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# ── Motor de IA / LangChain ──────────────────────────────────────────────────
+.langchain.db
+.chroma/
+
+# ── Scripts temporários ──────────────────────────────────────────────────────
+backend/check_db.py
+backend/setup_db.py
+backend/temp_pip/
+create_db.py
+init_db.py
+temp_*.py
