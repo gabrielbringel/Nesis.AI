@@ -2,7 +2,7 @@ import type { Patient } from '../../types'
 import { READING_ATTRIBUTES } from '../../mock'
 
 interface Props {
-  patient: Patient
+  patient: Patient | null
   loadedAttributes: string[]
 }
 
@@ -37,7 +37,7 @@ export function ReadingState({ patient, loadedAttributes }: Props) {
   )
 }
 
-function PatientHeading({ patient }: { patient: Patient }) {
+function PatientHeading({ patient }: { patient: Patient | null }) {
   return (
     <h2
       style={{
@@ -47,8 +47,7 @@ function PatientHeading({ patient }: { patient: Patient }) {
         lineHeight: 1.2,
       }}
     >
-      {patient.abbreviated}
-      <em style={{ color: '#888', fontStyle: 'italic' }}>, {patient.age}a</em>
+      {patient?.displayLabel ?? 'Carregando paciente...'}
     </h2>
   )
 }

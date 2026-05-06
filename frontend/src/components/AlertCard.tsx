@@ -106,7 +106,7 @@ export function AlertCard({ alert }: Props) {
           lineHeight: 1.45,
         }}
       >
-        {truncate(alert.descricao)}
+        {truncate(alert.titulo || alert.descricao.split('.')[0] + '.', 60)}
       </p>
 
       {/* Expanded details */}

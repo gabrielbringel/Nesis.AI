@@ -45,7 +45,7 @@ def _strip_code_fence(text: str) -> str:
     if cleaned.startswith("```"):
         cleaned = cleaned.split("\n", 1)[1] if "\n" in cleaned else cleaned[3:]
         if cleaned.endswith("```"):
-            cleaned = cleaned[: -3]
+            cleaned = cleaned[:-3]
     return cleaned.strip()
 
 
@@ -54,10 +54,32 @@ def _build_query(
 ) -> str:
     nomes = ", ".join(m.get("nome", "") for m in medicacoes)
     alergias = ", ".join(paciente.get("alergias", []) or []) or "nenhuma"
+    problemas = ", ".join(paciente.get("problemas_condicoes", []) or []) or "nenhum"
     return (
-        f"Paciente {paciente.get('idade', '?')} anos, "
-        f"alergias: {alergias}. Medicações: {nomes}."
+        f"Paciente {paciente.get('idade', '?')} anos, sexo {paciente.get('sexo', '?')}, "
+        f"alergias: {alergias}. Comorbidades: {problemas}. "
+        f"Medicações: {nomes}."
     )
+
+
+def _serializar_paciente(paciente: dict[str, Any]) -> str:
+    """Bloco textual com dados clínicos do paciente — sem incluir o nome.
+
+    O nome trafega no payload (uso local apenas para exibição na sidebar) mas
+    é redundante no prompt do LLM e poderia enviesar a resposta.
+    """
+    alergias = paciente.get("alergias") or []
+    problemas = paciente.get("problemas_condicoes") or []
+    return "\n".join([
+        f"- Idade: {paciente.get('idade', '?')} anos",
+        f"- Sexo: {paciente.get('sexo', '?')}",
+        f"- Peso: {paciente.get('peso') or 'não informado'}",
+        f"- Altura: {paciente.get('altura') or 'não informado'}",
+        f"- Alergias declaradas: {', '.join(alergias) if alergias else 'nenhuma'}",
+        f"- Problemas/condições: {', '.join(problemas) if problemas else 'nenhum'}",
+        f"- Motivo da consulta: {paciente.get('motivo_consulta') or 'não informado'}",
+        f"- Avaliação clínica: {paciente.get('avaliacao') or 'não informada'}",
+    ])
 
 
 def _formatar_contexto(docs: list[Document]) -> str:
@@ -93,20 +115,15 @@ async def verify(
     docs = await search_context(query, k=_RAG_K)
     contexto_rag = _formatar_contexto(docs)
 
-
     # Se não vier contexto, usa mensagem padrão para o LLM não ficar sem informação
-#6048758c376255e4eb71f062ed45ffdb53afffeb
     contexto_final = contexto_rag if contexto_rag.strip() else (
         "(base de conhecimento SUS indisponível — usar conhecimento clínico do modelo)"
     )
-    alergias = paciente.get("alergias") or []
-#a293a7c227596e2a0f57fce221237b2b7ba00a25
+
     prompt = VERIFICATION_USER_TEMPLATE.format(
-        paciente_nome=paciente.get("nome", ""),
-        paciente_idade=paciente.get("idade", ""),
-        paciente_alergias=", ".join(alergias) if alergias else "nenhuma",
+        paciente_dados=_serializar_paciente(paciente),
         medicacoes_json=json.dumps(medicacoes, ensure_ascii=False, indent=2),
-        contexto_rag=contexto_rag,
+        contexto_rag=contexto_final,
     )
     messages = [
         SystemMessage(content=VERIFICATION_SYSTEM_PROMPT),

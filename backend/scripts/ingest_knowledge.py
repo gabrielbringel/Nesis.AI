@@ -28,9 +28,7 @@ from pathlib import Path
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BACKEND_DIR))
 
-from dotenv import load_dotenv
-
-load_dotenv(BACKEND_DIR / ".env")
+# pydantic-settings em app.config já carrega o .env automaticamente
 
 from langchain_core.documents import Document
 from langchain_postgres import PGVector
@@ -86,11 +84,14 @@ def entrada_para_documento(entrada: dict) -> Document:
 
 
 def main() -> None:
-    api_key = os.environ.get("GEMINI_API_KEY")
+    from app.config import get_settings
+    settings = get_settings()
+    
+    api_key = settings.gemini_api_key
     if not api_key:
         raise SystemExit("GEMINI_API_KEY não definida no .env")
 
-    pgvector_url = os.environ.get("PGVECTOR_URL")
+    pgvector_url = settings.pgvector_url
     if not pgvector_url:
         raise SystemExit("PGVECTOR_URL não definida no .env")
 
@@ -117,7 +118,16 @@ def main() -> None:
 
     # add_documents com ids → upsert: re-rodar o script atualiza embeddings
     # ao invés de duplicar registros.
-    vectorstore.add_documents(documents=documentos, ids=ids)
+    # Fazemos a inserção em lotes pequenos com pausa para evitar 429 (Rate Limit) da API do Gemini
+    import time
+    batch_size = 5
+    for i in range(0, len(documentos), batch_size):
+        lote_docs = documentos[i : i + batch_size]
+        lote_ids = ids[i : i + batch_size]
+        logger.info("Inserindo lote de %d a %d de %d documentos...", i + 1, min(i + batch_size, len(documentos)), len(documentos))
+        vectorstore.add_documents(documents=lote_docs, ids=lote_ids)
+        time.sleep(2) # Pausa de 2 segundos entre os lotes
+
 
     logger.info("✓ %d documentos inseridos com sucesso.", len(documentos))
     logger.info("IDs: %s", ", ".join(ids))

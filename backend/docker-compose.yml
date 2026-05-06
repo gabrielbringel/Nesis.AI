@@ -26,6 +26,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-nesis}:${POSTGRES_PASSWORD:-nesis}@postgres:5432/${POSTGRES_DB:-nesis}
+      PGVECTOR_URL: postgresql+psycopg://${POSTGRES_USER:-nesis}:${POSTGRES_PASSWORD:-nesis}@postgres:5432/${POSTGRES_DB:-nesis}
       APP_ENV: ${APP_ENV:-development}
     ports:
       - "8000:8000"

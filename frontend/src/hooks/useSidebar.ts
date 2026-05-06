@@ -6,7 +6,7 @@ import type { Alert, AlertCounts, SidebarState } from '../types'
 
 const INITIAL_STATE: SidebarState = {
   view: 'idle',
-  patient: { abbreviated: 'Carregando...', age: 0 },
+  patient: { displayLabel: 'Carregando...' },
   loadedAttributes: [],
   totalAttributes: READING_ATTRIBUTES,
   alerts: [],
@@ -76,11 +76,15 @@ export function useSidebar() {
 
   const performAnalysis = async () => {
     let payload = null;
-    let realPatient = { abbreviated: 'Carregando...', age: 0 }; 
+    let realPatient = { displayLabel: 'Carregando...' }; 
     
     try {
-      if (typeof chrome !== 'undefined' && chrome.tabs) {
+      if (typeof chrome !== 'undefined' && chrome.tabs && chrome.scripting) {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!tab?.id || !tab?.url?.startsWith('http')) {
+          console.error('[NesisAI] Aba inválida:', tab?.url);
+          return { data: { alertas: [] }, payload: null };
+        }
         if (tab?.id) {
           const injectionResults = await chrome.scripting.executeScript({
             target: { tabId: tab.id },
@@ -89,7 +93,7 @@ export function useSidebar() {
           
           const scraped = injectionResults[0]?.result;
           if (scraped && scraped.paciente !== 'Desconhecido') {
-            realPatient = { abbreviated: scraped.paciente, age: scraped.idade };
+            realPatient = { displayLabel: `${scraped.paciente}, ${scraped.idade} anos` };
             
             payload = {
               paciente: {
@@ -114,7 +118,7 @@ export function useSidebar() {
     setState(prev => ({ ...prev, patient: realPatient }));
 
     try {
-      const res = await fetch('http://localhost:8000/api/avaliar', {
+      const res = await fetch('http://localhost:8000/api/v1/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -126,7 +130,7 @@ export function useSidebar() {
 
     } catch (error) {
       console.error("Erro de conexão com a API:", error);
-      // Retorna objeto vazio para não quebrar a UI caso o backend morra, mas não exibe os mocks falsos
+      // Retorna objeto vazio para não quebrar a UI caso o backend morra
       return { data: { alertas: [] }, payload }; 
     }
   };
