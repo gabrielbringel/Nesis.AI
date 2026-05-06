@@ -81,7 +81,8 @@ melhor com o par/medicamento do alerta).
 com `Fonte: conhecimento geral do modelo`.
 
 Regras gerais de saída:
-- Descreva o mecanismo clínico de forma curta e objetiva.
+- Crie um `titulo` curto e direto ao ponto (máximo de 40 caracteres) resumindo o risco do alerta.
+- Descreva o mecanismo clínico de forma curta e objetiva no campo `descricao`.
 - Recomendações devem ser acionáveis para um médico de UBS.
 - Se não houver nenhum alerta, retorne lista vazia.
 

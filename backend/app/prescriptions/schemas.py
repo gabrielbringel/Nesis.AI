@@ -48,6 +48,7 @@ class AnalyzeRequest(BaseModel):
 
 class Alerta(BaseModel):
     severidade: Severidade
+    titulo: str = Field(default="Alerta Clínico")
     descricao: str
     medicamentos_envolvidos: list[str]
     recomendacao: str
