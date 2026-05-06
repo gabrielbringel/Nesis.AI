@@ -2,6 +2,7 @@ export type Severity = 'GRAVE' | 'MODERADO' | 'LEVE'
 
 export interface Alert {
   severidade: Severity
+  titulo?: string
   descricao: string
   medicamentos_envolvidos: string[]
   recomendacao: string
