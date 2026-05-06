@@ -9,6 +9,7 @@ const ESUS_URL_PATTERNS = [
   /^https:\/\/.*\.saude\.gov\.br\//,
   /^http:\/\/.*\/lista-atendimento\/atendimento.*$/,
   /^http:\/\/localhost:\d+\//,
+  /^http:\/\/localhost:8080\//,
   /^http:\/\/127\.0\.0\.1:\d+\//
 ]
 

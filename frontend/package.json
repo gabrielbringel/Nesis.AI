@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && vite build --config vite.content.config.ts",
-    "build:extension": "tsc && vite build && vite build --config vite.content.config.ts && echo '✓ Extensão pronta em dist/. Carregue dist/ em chrome://extensions com Modo do Desenvolvedor ativado.'",
+    "build": "tsc && vite build",
+    "build:extension": "tsc && vite build && echo '✓ Extensão pronta em dist/. Carregue dist/ em chrome://extensions com Modo do Desenvolvedor ativado.'",
     "generate:icons": "node scripts/generate-icons.mjs",
     "preview": "vite preview"
   },
