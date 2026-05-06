@@ -7,6 +7,7 @@ export interface AlternativaSegura {
 
 export interface Alert {
   severidade: Severity
+  titulo?: string
   descricao: string
   medicamentos_envolvidos: string[]
   recomendacao: string
@@ -21,8 +22,7 @@ export interface AnalyzeResponse {
 }
 
 export interface Patient {
-  abbreviated: string
-  age: number
+  displayLabel: string
 }
 
 export type SidebarView = 'idle' | 'reading' | 'analyzing' | 'results'

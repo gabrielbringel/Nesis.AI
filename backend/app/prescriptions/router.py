@@ -9,7 +9,7 @@ from app.prescriptions.service import analisar
 
 router = APIRouter(tags=["analyze"])
 
-@router.post("/api/avaliar", response_model=AnalyzeResponse)
+@router.post("/api/v1/analyze", response_model=AnalyzeResponse)
 async def analyze(payload: AnalyzeRequest) -> AnalyzeResponse:
     """Recebe os dados scrapeados pela extensão Chrome e devolve alertas.
 

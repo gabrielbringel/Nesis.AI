@@ -15,24 +15,32 @@ Severidade = Literal["GRAVE", "MODERADO", "LEVE"]
 
 
 class Medicacao(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
     nome: str
-    dose: str
-    frequencia: str
-    via: str
+    dose: str = ""
+    frequencia: str = ""
+    via: str = ""
+    posologia_completa: str | None = None
 
 
 class Paciente(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
     nome: str
     idade: int = Field(ge=0, le=130)
     alergias: list[str] = Field(default_factory=list)
+    sexo: str = "?"
+    peso: str | None = None
+    altura: str | None = None
+    motivo_consulta: str | None = None
+    objetivo: str | None = None
+    avaliacao: str | None = None
+    problemas_condicoes: list[str] = Field(default_factory=list)
 
 
 class AnalyzeRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
     paciente: Paciente
     medicacoes: list[Medicacao]
@@ -45,6 +53,7 @@ class AlternativaSegura(BaseModel):
 
 class Alerta(BaseModel):
     severidade: Severidade
+    titulo: str = Field(default="Alerta Clínico")
     descricao: str
     medicamentos_envolvidos: list[str]
     recomendacao: str

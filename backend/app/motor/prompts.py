@@ -91,7 +91,8 @@ frase objetiva explicando por que é uma alternativa segura neste contexto).
 - Se não existir substituto seguro e disponível no SUS, omita o campo.
 
 Regras gerais de saída:
-- Descreva o mecanismo clínico de forma curta e objetiva.
+- Crie um `titulo` curto e direto ao ponto (máximo de 40 caracteres) resumindo o risco do alerta.
+- Descreva o mecanismo clínico de forma curta e objetiva no campo `descricao`.
 - Recomendações devem ser acionáveis para um médico de UBS.
 - Se não houver nenhum alerta, retorne lista vazia.
 
@@ -101,13 +102,15 @@ sem explicações antes ou depois.
 
 
 VERIFICATION_USER_TEMPLATE = """\
-PACIENTE:
-- Nome: {paciente_nome}
-- Idade: {paciente_idade} anos
-- Alergias declaradas: {paciente_alergias}
+PACIENTE (dados clínicos — sem identificação pessoal):
+{paciente_dados}
 
 MEDICAÇÕES PRESCRITAS (já normalizadas em DCB):
 {medicacoes_json}
+
+Cada medicação inclui um campo `posologia_completa` com o texto bruto extraído \
+do prontuário (ex: "Enalapril 10mg 1x ao dia via oral"). Use esse campo para \
+inferir dose, frequência e via quando os campos estruturados estiverem vazios.
 
 CONTEXTO RECUPERADO DA BASE DE CONHECIMENTO:
 {contexto_rag}

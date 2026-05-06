@@ -44,13 +44,13 @@ export function Sidebar({ state, onStart, onReanalyze }: Props) {
 
         {view === 'idle' && <IdleState onStart={onStart} />}
 
-        {view === 'reading' && patient && (
+        {view === 'reading' && (
           <ReadingState patient={patient} loadedAttributes={state.loadedAttributes} />
         )}
 
-        {view === 'analyzing' && patient && <AnalyzingState patient={patient} />}
+        {view === 'analyzing' && <AnalyzingState patient={patient} />}
 
-        {view === 'results' && patient && (
+        {view === 'results' && (
           <ResultsState patient={patient} alerts={state.alerts} />
         )}
 

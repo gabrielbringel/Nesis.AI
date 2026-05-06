@@ -2,7 +2,7 @@ import type { Alert, Patient } from '../../types'
 import { AlertCard } from '../AlertCard'
 
 interface Props {
-  patient: Patient
+  patient: Patient | null
   alerts: Alert[]
 }
 
@@ -19,8 +19,7 @@ export function ResultsState({ patient, alerts }: Props) {
           flexShrink: 0,
         }}
       >
-        {patient.abbreviated}
-        <em style={{ color: '#888', fontStyle: 'italic' }}>, {patient.age}a</em>
+        {patient?.displayLabel ?? 'Paciente'}
       </h2>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
