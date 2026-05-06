@@ -1,23 +1,23 @@
-# Nesis.AI — Sistema de Apoio à Decisão Clínica
+# Nesis.AI â Sistema de Apoio Ã  DecisÃ£o ClÃ­nica
 
-Ferramenta de apoio para médicos da Atenção Primária à Saúde (APS) do SUS, focada na **detecção de interações medicamentosas** e **erros de prescrição** a partir de prontuários colados diretamente na interface.
+Ferramenta de apoio para mÃ©dicos da AtenÃ§Ã£o PrimÃ¡ria Ã  SaÃºde (APS) do SUS, focada na **detecÃ§Ã£o de interaÃ§Ãµes medicamentosas** e **erros de prescriÃ§Ã£o** a partir de prontuÃ¡rios colados diretamente na interface.
 
-A ferramenta opera de forma externa ao eSUS APS — o médico copia o texto ou exporta o XML do prontuário e o insere manualmente. Nenhum dado de saúde trafega para APIs externas; apenas identificadores padronizados (RxNorm ID, SMILES) cruzam a fronteira de privacidade.
+A ferramenta opera de forma externa ao eSUS APS â o mÃ©dico copia o texto ou exporta o XML do prontuÃ¡rio e o insere manualmente. Nenhum dado de saÃºde trafega para APIs externas; apenas identificadores padronizados (RxNorm ID, SMILES) cruzam a fronteira de privacidade.
 
 ---
 
 ## Funcionalidades
 
-- **Análise de texto livre** — cole o texto da prescrição; o BioBERTpt extrai medicamentos, doses, frequências e vias automaticamente
-- **Análise de XML do eSUS** — parsing direto dos campos de medicação, sem NER
-- **Detecção de interações medicamentosas** — três fontes de sinal combinadas em ensemble: base DrugBank/OpenFDA, predição por GNN (ChemicalX) e motor de regras clínicas
-- **Alertas graduados** — severidade GRAVE / MODERADA / LEVE com mecanismo, recomendação clínica e evidência citada
-- **Normalização de nomes brasileiros** — nomes comerciais e genéricos resolvidos via RxNorm → DrugBank → base ANVISA/BNAFAR local → busca fuzzy
-- **Gestão de pacientes** — cadastro e histórico vinculado a análises anteriores
-- **Histórico de análises** — todas as análises são persistidas para auditoria e rastreabilidade
-- **Configurações por usuário** — threshold de severidade mínima configurável, preferências de exibição
-- **Modo de severidade mínima** — alertas LEVE suprimidos por padrão (configurável via `MIN_SEVERITY_TO_ALERT`)
-- **Rastreamento de experimentos** — integração opcional com MLflow para log de métricas por execução do pipeline
+- **AnÃ¡lise de texto livre** â cole o texto da prescriÃ§Ã£o; o BioBERTpt extrai medicamentos, doses, frequÃªncias e vias automaticamente
+- **AnÃ¡lise de XML do eSUS** â parsing direto dos campos de medicaÃ§Ã£o, sem NER
+- **DetecÃ§Ã£o de interaÃ§Ãµes medicamentosas** â trÃªs fontes de sinal combinadas em ensemble: base DrugBank/OpenFDA, prediÃ§Ã£o por GNN (ChemicalX) e motor de regras clÃ­nicas
+- **Alertas graduados** â severidade GRAVE / MODERADA / LEVE com mecanismo, recomendaÃ§Ã£o clÃ­nica e evidÃªncia citada
+- **NormalizaÃ§Ã£o de nomes brasileiros** â nomes comerciais e genÃ©ricos resolvidos via RxNorm â DrugBank â base ANVISA/BNAFAR local â busca fuzzy
+- **GestÃ£o de pacientes** â cadastro e histÃ³rico vinculado a anÃ¡lises anteriores
+- **HistÃ³rico de anÃ¡lises** â todas as anÃ¡lises sÃ£o persistidas para auditoria e rastreabilidade
+- **ConfiguraÃ§Ãµes por usuÃ¡rio** â threshold de severidade mÃ­nima configurÃ¡vel, preferÃªncias de exibiÃ§Ã£o
+- **Modo de severidade mÃ­nima** â alertas LEVE suprimidos por padrÃ£o (configurÃ¡vel via `MIN_SEVERITY_TO_ALERT`)
+- **Rastreamento de experimentos** â integraÃ§Ã£o opcional com MLflow para log de mÃ©tricas por execuÃ§Ã£o do pipeline
 
 ---
 
@@ -25,13 +25,13 @@ A ferramenta opera de forma externa ao eSUS APS — o médico copia o texto ou e
 
 ```
 Nesis.AI/
-├── frontend/         # SPA React 18 + Vite (interface médica)
-├── frontend-v2/      # Protótipo HTML/CSS/JS (design e telas)
-├── backend/          # API REST FastAPI + PostgreSQL
-└── motor/            # Motor de IA (NER → normalização → sinais → scoring)
+âââ frontend/         # SPA React 18 + Vite (interface mÃ©dica)
+âââ frontend-v2/      # ProtÃ³tipo HTML/CSS/JS (design e telas)
+âââ backend/          # API REST FastAPI + PostgreSQL
+âââ motor/            # Motor de IA (NER â normalizaÃ§Ã£o â sinais â scoring)
 ```
 
-O **motor** é independente do backend e pode ser usado como biblioteca Python pura. O backend o consome via Celery para processamento assíncrono de análises pesadas.
+O **motor** Ã© independente do backend e pode ser usado como biblioteca Python pura. O backend o consome via Celery para processamento assÃ­ncrono de anÃ¡lises pesadas.
 
 ---
 
@@ -39,205 +39,217 @@ O **motor** é independente do backend e pode ser usado como biblioteca Python p
 
 ### Frontend (`frontend/`)
 
-| Tecnologia | Versão | Papel |
+| Tecnologia | VersÃ£o | Papel |
 |---|---|---|
 | React | 18.3 | UI declarativa |
-| TypeScript | 5.4 | Tipagem estática |
+| TypeScript | 5.4 | Tipagem estÃ¡tica |
 | Vite | 5.3 | Bundler e dev server |
-| Tailwind CSS | 3.4 | Utilitários de estilo |
+| Tailwind CSS | 3.4 | UtilitÃ¡rios de estilo |
 | Zustand | 4.5 | Gerenciamento de estado global |
 | React Router DOM | 6.24 | Roteamento SPA |
 | Axios | 1.7 | Cliente HTTP |
-| Recharts | 2.12 | Gráficos e visualizações |
-| Lucide React | 0.400 | Ícones SVG |
-| react-hot-toast | 2.4 | Notificações |
-| Space Mono | — | Tipografia display/UI |
-| JetBrains Mono | — | Tipografia mono/código |
+| Recharts | 2.12 | GrÃ¡ficos e visualizaÃ§Ãµes |
+| Lucide React | 0.400 | Ãcones SVG |
+| react-hot-toast | 2.4 | NotificaÃ§Ãµes |
+| Space Mono | â | Tipografia display/UI |
+| JetBrains Mono | â | Tipografia mono/cÃ³digo |
 
-O design segue um sistema **neumórfico** — superfícies extrudadas com sombras suaves internas e externas sobre fundo monocromático (`#E7E5E4`), sem bordas explícitas.
+O design segue um sistema **neumÃ³rfico** â superfÃ­cies extrudadas com sombras suaves internas e externas sobre fundo monocromÃ¡tico (`#E7E5E4`), sem bordas explÃ­citas.
 
 ### Frontend v2 (`frontend-v2/`)
 
-Protótipo estático em HTML, CSS e JavaScript vanilla. Contém a landing page, tela de login e dashboard. Sem dependências de build — abre direto no browser.
+ProtÃ³tipo estÃ¡tico em HTML, CSS e JavaScript vanilla. ContÃ©m a landing page, tela de login e dashboard. Sem dependÃªncias de build â abre direto no browser.
 
 ### Backend (`backend/`)
 
-| Tecnologia | Versão | Papel |
+| Tecnologia | VersÃ£o | Papel |
 |---|---|---|
-| FastAPI | 0.111+ | API REST assíncrona |
+| FastAPI | 0.111+ | API REST assÃ­ncrona |
 | Uvicorn | 0.29+ | ASGI server |
-| SQLAlchemy (async) | 2.0+ | ORM assíncrono |
-| asyncpg | 0.29+ | Driver PostgreSQL assíncrono |
-| Alembic | 1.13+ | Migrações de banco |
-| Pydantic v2 | 2.6+ | Validação e serialização |
-| pydantic-settings | 2.2+ | Configuração via `.env` |
-| httpx | 0.27+ | Cliente HTTP assíncrono |
+| SQLAlchemy (async) | 2.0+ | ORM assÃ­ncrono |
+| asyncpg | 0.29+ | Driver PostgreSQL assÃ­ncrono |
+| Alembic | 1.13+ | MigraÃ§Ãµes de banco |
+| Pydantic v2 | 2.6+ | ValidaÃ§Ã£o e serializaÃ§Ã£o |
+| pydantic-settings | 2.2+ | ConfiguraÃ§Ã£o via `.env` |
+| httpx | 0.27+ | Cliente HTTP assÃ­ncrono |
 | MLflow | 2.11+ | Rastreamento de experimentos |
-| PostgreSQL 16 + pgvector | — | Banco principal + embeddings |
-| Redis 7 | — | Cache de pares de fármacos |
+| PostgreSQL 16 + pgvector | â | Banco principal + embeddings |
+| Redis 7 | â | Cache de pares de fÃ¡rmacos |
 
-**Módulos de domínio:**
+**MÃ³dulos de domÃ­nio:**
 
-- `app/patients/` — CRUD de pacientes (router, service, schemas, models)
-- `app/prescriptions/` — CRUD de prescrições e disparo de análises
-- `app/motor/` — adaptador que invoca o motor Python via mock ou Celery
+- `app/patients/` â CRUD de pacientes (router, service, schemas, models)
+- `app/prescriptions/` â CRUD de prescriÃ§Ãµes e disparo de anÃ¡lises
+- `app/motor/` â adaptador que invoca o motor Python via mock ou Celery
 
 ### Motor de IA (`motor/`)
 
-| Tecnologia | Versão | Papel |
+| Tecnologia | VersÃ£o | Papel |
 |---|---|---|
 | Transformers (HuggingFace) | 4.40+ | Carregamento do BioBERTpt |
-| PyTorch | 2.2+ | Inferência NER |
-| RDKit | 2023.9+ | Manipulação de SMILES/estruturas moleculares |
-| ChemicalX (AstraZeneca) | 0.1+ | GNN para predição de interações DDI |
-| Neo4j Python Driver | 5.18+ | Consultas ao grafo de interações |
+| PyTorch | 2.2+ | InferÃªncia NER |
+| RDKit | 2023.9+ | ManipulaÃ§Ã£o de SMILES/estruturas moleculares |
+| ChemicalX (AstraZeneca) | 0.1+ | GNN para prediÃ§Ã£o de interaÃ§Ãµes DDI |
+| Neo4j Python Driver | 5.18+ | Consultas ao grafo de interaÃ§Ãµes |
 | Pydantic v2 | 2.6+ | Modelos de dados internos |
-| python-dotenv | 1.0+ | Variáveis de ambiente |
-| MLflow | 2.11+ | Log de métricas por execução |
+| python-dotenv | 1.0+ | VariÃ¡veis de ambiente |
+| MLflow | 2.11+ | Log de mÃ©tricas por execuÃ§Ã£o |
 
 **Modelos de IA utilizados:**
 
-- `pucpr/biobertpt-all` — único modelo BERT clínico treinado em português brasileiro; usado para NER de medicamentos, doses, frequências e vias
-- ChemicalX EPGCNDS — GNN treinada em DDI pela AstraZeneca; generaliza para interações não catalogadas a partir da estrutura molecular (SMILES)
+- `pucpr/biobertpt-all` â Ãºnico modelo BERT clÃ­nico treinado em portuguÃªs brasileiro; usado para NER de medicamentos, doses, frequÃªncias e vias
+- ChemicalX EPGCNDS â GNN treinada em DDI pela AstraZeneca; generaliza para interaÃ§Ãµes nÃ£o catalogadas a partir da estrutura molecular (SMILES)
 
-**Bancos de dados de referência:**
+**Bancos de dados de referÃªncia:**
 
-- DrugBank XML + OpenFDA → Neo4j (grafo de interações conhecidas e validadas)
-- RxNorm API → normalização de nomes para IDs padronizados
-- Base ANVISA/BNAFAR local (`data/anvisa_rxnorm_map.csv`) → medicamentos brasileiros ausentes no RxNorm
-- PubChem API → obtenção de SMILES para entradas no ChemicalX
+- DrugBank XML + OpenFDA â Neo4j (grafo de interaÃ§Ãµes conhecidas e validadas)
+- RxNorm API â normalizaÃ§Ã£o de nomes para IDs padronizados
+- Base ANVISA/BNAFAR local (`data/anvisa_rxnorm_map.csv`) â medicamentos brasileiros ausentes no RxNorm
+- PubChem API â obtenÃ§Ã£o de SMILES para entradas no ChemicalX
 
 ---
 
 ## Pipeline do Motor de IA
 
 ```
-Texto do prontuário
-       │
-       ▼
-┌─────────────────────────────────┐
-│  Etapa 1 — Extração (BioBERTpt) │  pucpr/biobertpt-all
-│  medicamentos · doses · vias    │
-└────────────────┬────────────────┘
-                 │
-                 ▼
-┌─────────────────────────────────┐
-│  Etapa 2 — Normalização         │  RxNorm → DrugBank → ANVISA → fuzzy
-│  nome comercial → RxNorm ID     │  SMILES via PubChem
-│  nome genérico → ATC code       │
-└────────────────┬────────────────┘
-                 │
-        ┌────────┴────────┐
-        │   Par de fármacos por combinação (n choose 2)
-        │
-  ┌─────┴──────┬──────────────┬──────────────┐
-  ▼            ▼              ▼
-DrugBank    ChemicalX    Regras Clínicas
+Texto do prontuÃ¡rio
+       â
+       â¼
+âââââââââââââââââââââââââââââââââââ
+â  Etapa 1 â ExtraÃ§Ã£o (BioBERTpt) â  pucpr/biobertpt-all
+â  medicamentos Â· doses Â· vias    â
+ââââââââââââââââââ¬âââââââââââââââââ
+                 â
+                 â¼
+âââââââââââââââââââââââââââââââââââ
+â  Etapa 2 â NormalizaÃ§Ã£o         â  RxNorm â DrugBank â ANVISA â fuzzy
+â  nome comercial â RxNorm ID     â  SMILES via PubChem
+â  nome genÃ©rico â ATC code       â
+ââââââââââââââââââ¬âââââââââââââââââ
+                 â
+        ââââââââââ´âââââââââ
+        â   Par de fÃ¡rmacos por combinaÃ§Ã£o (n choose 2)
+        â
+  âââââââ´âââââââ¬âââââââââââââââ¬âââââââââââââââ
+  â¼            â¼              â¼
+DrugBank    ChemicalX    Regras ClÃ­nicas
 (Neo4j)      (GNN)        (Python)
-  │            │              │
-  └─────┬──────┴──────────────┘
-        │
-        ▼
-┌─────────────────────────────────┐
-│  Etapa 4 — Scoring Ensemble     │
-│  0.40 × DrugBank                │
-│  0.30 × ChemicalX               │
-│  0.30 × Regras                  │
-│                                 │
-│  ≥ 0.70 → GRAVE                 │
-│  0.40–0.69 → MODERADA           │
-│  < 0.40 → LEVE                  │
-└────────────────┬────────────────┘
-                 │
-                 ▼
+  â            â              â
+  âââââââ¬âââââââ´âââââââââââââââ
+        â
+        â¼
+âââââââââââââââââââââââââââââââââââ
+â  Etapa 4 â Scoring Ensemble     â
+â  0.40 Ã DrugBank                â
+â  0.30 Ã ChemicalX               â
+â  0.30 Ã Regras                  â
+â                                 â
+â  â¥ 0.70 â GRAVE                 â
+â  0.40â0.69 â MODERADA           â
+â  < 0.40 â LEVE                  â
+ââââââââââââââââââ¬âââââââââââââââââ
+                 â
+                 â¼
         Alertas estruturados
   (par, severidade, mecanismo,
-   recomendação, evidência, score)
+   recomendaÃ§Ã£o, evidÃªncia, score)
 ```
 
-**Motor de regras clínicas** (hardcoded, sem ML): dose máxima diária, duplicidade terapêutica por código ATC, contraindicações absolutas, ajuste renal, via de administração inadequada, anticoagulante + antiagregante, IECA em gestante, entre outros.
+**Motor de regras clÃ­nicas** (hardcoded, sem ML): dose mÃ¡xima diÃ¡ria, duplicidade terapÃªutica por cÃ³digo ATC, contraindicaÃ§Ãµes absolutas, ajuste renal, via de administraÃ§Ã£o inadequada, anticoagulante + antiagregante, IECA em gestante, entre outros.
 
-Os pesos do ensemble são configuráveis via variáveis de ambiente (`DRUGBANK_WEIGHT`, `CHEMICALX_WEIGHT`, `RULES_WEIGHT`) e normalizados automaticamente para somar 1.0.
+Os pesos do ensemble sÃ£o configurÃ¡veis via variÃ¡veis de ambiente (`DRUGBANK_WEIGHT`, `CHEMICALX_WEIGHT`, `RULES_WEIGHT`) e normalizados automaticamente para somar 1.0.
 
 ---
 
-## Configuração e execução
+## Como Rodar o Sistema (Passo a Passo)
 
-### Pré-requisitos
+### 1. Pré-requisitos
+- **Node.js** (para construir a extensão Chrome)
+- **Python 3.10+** (para rodar scripts de manutenção)
+- **Docker e Docker Compose** (para rodar o banco de dados e a API)
+- Uma chave de API do **Google Gemini** (Gemini 2.5 Flash)
 
-- Node.js 20+
-- Python 3.11+
-- Docker e Docker Compose
+### 2. Configurando o Backend e o RAG
+O backend utiliza o PostgreSQL com a extensão PGVector para o RAG, e uma API em FastAPI. Tudo já está configurado no Docker Compose.
 
-### Backend + infraestrutura
+Abra o seu terminal na raiz do projeto e execute:
 
 ```bash
 cd backend
 
-# Copie e ajuste as variáveis de ambiente
-cp .env.example .env
+# 1. Crie o arquivo .env
+# Copie o conteúdo de .env.example para um novo arquivo chamado .env
+# IMPORTANTE: Preencha a variável GEMINI_API_KEY com a sua chave do Google AI Studio.
 
-# Suba PostgreSQL e Redis
-docker-compose up postgres redis -d
+# 2. Suba a infraestrutura (API + Banco de Dados)
+docker compose up -d
 
-# Instale dependências e aplique migrações
-pip install -r requirements.txt
-alembic upgrade head
+# 3. Prepare o seu ambiente Python local (necessário para rodar o script de ingestão)
+python -m venv venv
+# Ative no Windows (PowerShell): .\venv\Scripts\Activate.ps1
+# Ative no Linux/Mac/WSL: source venv/bin/activate
 
-# Inicie o servidor
-uvicorn app.main:app --reload --port 8000
-```
-
-A documentação interativa da API fica disponível em `http://localhost:8000/docs`.
-
-### Motor de IA
-
-```bash
-cd motor
-
-cp .env.example .env
-# Ajuste NEO4J_URI, BIOBERTPT_MODEL, CHEMICALX_MODEL_PATH etc.
-
+# 4. Instale as dependências
 pip install -r requirements.txt
 
-# Popule o grafo Neo4j com DrugBank + OpenFDA
-python scripts/populate_neo4j.py
+# 5. Popule o Banco de Conhecimento (RAG)
+# Isso vai ler o JSON local e gerar os embeddings usando o Gemini, salvando no PGVector.
+python scripts/ingest_knowledge.py
 ```
 
-### Frontend
+Após isso, o backend estará rodando e acessível em `http://localhost:8000/docs` (Swagger).
+
+### 3. Configurando e Instalando a Extensão (Frontend)
+O frontend é uma extensão do Google Chrome construída em React + Vite.
+
+Abra um NOVO terminal na raiz do projeto e execute:
 
 ```bash
 cd frontend
 
+# 1. Instale as dependências do Node
 npm install
-npm run dev
-# Disponível em http://localhost:5173
+
+# 2. Construa a versão final da extensão
+npm run build:extension
 ```
 
-### Variáveis de ambiente — Motor (`motor/.env`)
+Após rodar o comando acima, a pasta `frontend/dist/` conterá a extensão pronta.
 
-| Variável | Padrão | Descrição |
+**Para instalar no Chrome:**
+1. Abra o navegador Chrome e acesse `chrome://extensions/`
+2. Ative o **Modo do Desenvolvedor** (no canto superior direito).
+3. Clique em **"Carregar sem compactação"** (Load unpacked).
+4. Selecione a pasta `frontend/dist/` do projeto.
+
+Pronto! A extensão do Nesis.AI estará ativa. Sempre que você modificar o código do frontend, lembre-se de rodar `npm run build:extension` novamente e clicar no ícone de "Atualizar" (🔄) no card da extensão dentro do Chrome.
+
+---
+
+### VariÃ¡veis de ambiente â Motor (`motor/.env`)
+
+| VariÃ¡vel | PadrÃ£o | DescriÃ§Ã£o |
 |---|---|---|
-| `NEO4J_URI` | `bolt://localhost:7687` | Endereço do Neo4j |
-| `NEO4J_USER` | `neo4j` | Usuário Neo4j |
-| `NEO4J_PASSWORD` | — | Senha Neo4j |
+| `NEO4J_URI` | `bolt://localhost:7687` | EndereÃ§o do Neo4j |
+| `NEO4J_USER` | `neo4j` | UsuÃ¡rio Neo4j |
+| `NEO4J_PASSWORD` | â | Senha Neo4j |
 | `BIOBERTPT_MODEL` | `pucpr/biobertpt-all` | Modelo HuggingFace |
 | `CHEMICALX_MODEL_PATH` | `models/chemicalx_ddi.pt` | Caminho do modelo GNN |
 | `USE_GPU` | `false` | Habilita CUDA |
-| `PIPELINE_VERSION` | `0.1.0` | Versão logada no MLflow |
+| `PIPELINE_VERSION` | `0.1.0` | VersÃ£o logada no MLflow |
 | `MIN_SEVERITY_TO_ALERT` | `MODERADA` | `LEVE` \| `MODERADA` \| `GRAVE` |
 | `DRUGBANK_WEIGHT` | `0.40` | Peso do sinal DrugBank |
 | `CHEMICALX_WEIGHT` | `0.30` | Peso do sinal ChemicalX |
 | `RULES_WEIGHT` | `0.30` | Peso do motor de regras |
 
-### Variáveis de ambiente — Backend (`backend/.env`)
+### VariÃ¡veis de ambiente â Backend (`backend/.env`)
 
-| Variável | Descrição |
+| VariÃ¡vel | DescriÃ§Ã£o |
 |---|---|
 | `DATABASE_URL` | URL asyncpg do PostgreSQL |
 | `REDIS_URL` | URL do Redis |
 | `APP_ENV` | `development` \| `production` |
-| `APP_VERSION` | Versão da API |
+| `APP_VERSION` | VersÃ£o da API |
 | `MLFLOW_TRACKING_URI` | URI do servidor MLflow (opcional) |
 
 ---
@@ -252,7 +264,7 @@ cd backend && pytest
 cd motor && pytest
 ```
 
-Os testes do motor cobrem: extrator NER, normalização, pipeline completo, motor de regras e scorer ensemble.
+Os testes do motor cobrem: extrator NER, normalizaÃ§Ã£o, pipeline completo, motor de regras e scorer ensemble.
 
 ---
 
@@ -261,7 +273,7 @@ Os testes do motor cobrem: extrator NER, normalização, pipeline completo, moto
 | Formato | Mecanismo |
 |---|---|
 | Texto livre | BioBERTpt (NER) |
-| XML do eSUS APS | Parsing estruturado direto nos campos de medicação |
+| XML do eSUS APS | Parsing estruturado direto nos campos de medicaÃ§Ã£o |
 | PDF | OCR + NER (qualidade depende da qualidade do scan) |
 
 ---
@@ -269,44 +281,44 @@ Os testes do motor cobrem: extrator NER, normalização, pipeline completo, moto
 ## Privacidade e conformidade (LGPD)
 
 - Apenas identificadores padronizados (RxNorm ID, SMILES) saem da fronteira de privacidade para consultas a APIs externas (RxNorm, PubChem)
-- Dados de pacientes são transmitidos via TLS; o servidor deve estar hospedado no Brasil
-- Dados são pseudonimizados antes de qualquer log de auditoria
-- Nenhum dado de paciente é usado para retreinar modelos sem consentimento explícito
-- Versão desktop futura (Electron) processará tudo localmente, sem que nenhum dado saia do equipamento do médico
+- Dados de pacientes sÃ£o transmitidos via TLS; o servidor deve estar hospedado no Brasil
+- Dados sÃ£o pseudonimizados antes de qualquer log de auditoria
+- Nenhum dado de paciente Ã© usado para retreinar modelos sem consentimento explÃ­cito
+- VersÃ£o desktop futura (Electron) processarÃ¡ tudo localmente, sem que nenhum dado saia do equipamento do mÃ©dico
 
 ---
 
 ## Roadmap
 
-| Fase | Entregável | Status |
+| Fase | EntregÃ¡vel | Status |
 |---|---|---|
 | MVP | Motor de IA funcional + interface web com texto livre | Em andamento |
 | v1 | Suporte a XML do eSUS + parsing estruturado | Planejado |
-| v2 | Versão desktop Electron (processamento offline) | Planejado |
-| v3 | Proposta formal de integração via API DATASUS | Baixa prioridade |
+| v2 | VersÃ£o desktop Electron (processamento offline) | Planejado |
+| v3 | Proposta formal de integraÃ§Ã£o via API DATASUS | Baixa prioridade |
 
 ---
 
-## Licença
+## LicenÃ§a
 
 Veja [LICENSE](LICENSE).
 
 
 ---
 
-## ?? Relat�rio T�cnico: Deploy e Infraestrutura (Bug Report #2)
-Projeto: Extens�o Chrome de An�lise de Prescri��es (e-SUS)
-Fase: Containeriza��o (Docker) e Conformidade de Seguran�a (Manifest V3)
+## ?? Relatório Técnico: Deploy e Infraestrutura (Bug Report #2)
+Projeto: Extensão Chrome de Análise de Prescrições (e-SUS)
+Fase: Containerização (Docker) e Conformidade de Segurança (Manifest V3)
 
 ?? **Resumo Executivo**
-Durante a prepara��o do projeto para o ambiente de demonstra��o (Pitch/Hackathon), depar�mo-nos com falhas arquiteturais ligadas ao isolamento de rede do Docker e �s r�gidas pol�ticas de seguran�a do Google Chrome (Manifest V3). Os problemas foram mapeados para falhas de binding de rede e viola��es de User Gesture, sendo todos resolvidos com ajustes de configura��o, sem necessidade de reescrever a l�gica de neg�cio.
+Durante a preparação do projeto para o ambiente de demonstração (Pitch/Hackathon), deparámo-nos com falhas arquiteturais ligadas ao isolamento de rede do Docker e às rígidas políticas de segurança do Google Chrome (Manifest V3). Os problemas foram mapeados para falhas de binding de rede e violações de User Gesture, sendo todos resolvidos com ajustes de configuração, sem necessidade de reescrever a lógica de negócio.
 
-??? **Detalhamento dos Erros e Solu��es**
+??? **Detalhamento dos Erros e Soluções**
 
-**1. Bloqueio de Abertura Autom�tica da Extens�o (Security Policy)**
-- **Sintoma:** O Service Worker da extens�o falhava silenciosamente ou apresentava o erro "Error: sidePanel.open() may only be called in response to a user gesture" no console do Chrome, impedindo a extens�o de funcionar ao carregar o e-SUS.
-- **Causa Raiz:** No Manifest V3, a Google implementou regras estritas contra inje��es visuais n�o solicitadas. O c�digo tentava usar o evento de carregamento da p�gina (chrome.tabs.onUpdated) para for�ar a abertura do Painel Lateral automaticamente. O navegador bloqueia isso por n�o identificar uma inten��o expl�cita do utilizador (clique).
-- **Solu��o:** 
-  1. Remo��o do script de automa��o (onUpdated) do Service Worker.
-  2. Implementa��o da API declarativa chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).
-  3. **Resultado:** A extens�o passou a respeitar as diretrizes da Web Store, abrindo o painel de forma est�vel e segura quando o m�dico clica no �cone da extens�o (User Gesture validado).
+**1. Bloqueio de Abertura Automática da Extensão (Security Policy)**
+- **Sintoma:** O Service Worker da extensão falhava silenciosamente ou apresentava o erro "Error: sidePanel.open() may only be called in response to a user gesture" no console do Chrome, impedindo a extensão de funcionar ao carregar o e-SUS.
+- **Causa Raiz:** No Manifest V3, a Google implementou regras estritas contra injeções visuais não solicitadas. O código tentava usar o evento de carregamento da página (chrome.tabs.onUpdated) para forçar a abertura do Painel Lateral automaticamente. O navegador bloqueia isso por não identificar uma intenção explícita do utilizador (clique).
+- **Solução:** 
+  1. Remoção do script de automação (onUpdated) do Service Worker.
+  2. Implementação da API declarativa chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).
+  3. **Resultado:** A extensão passou a respeitar as diretrizes da Web Store, abrindo o painel de forma estável e segura quando o médico clica no ícone da extensão (User Gesture validado).
