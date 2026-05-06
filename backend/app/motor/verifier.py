@@ -115,10 +115,15 @@ async def verify(
     docs = await search_context(query, k=_RAG_K)
     contexto_rag = _formatar_contexto(docs)
 
+    # Se não vier contexto, usa mensagem padrão para o LLM não ficar sem informação
+    contexto_final = contexto_rag if contexto_rag.strip() else (
+        "(base de conhecimento SUS indisponível — usar conhecimento clínico do modelo)"
+    )
+
     prompt = VERIFICATION_USER_TEMPLATE.format(
         paciente_dados=_serializar_paciente(paciente),
         medicacoes_json=json.dumps(medicacoes, ensure_ascii=False, indent=2),
-        contexto_rag=contexto_rag,
+        contexto_rag=contexto_final,
     )
     messages = [
         SystemMessage(content=VERIFICATION_SYSTEM_PROMPT),
