@@ -35,6 +35,28 @@ function sortAlerts(alerts: Alert[]): Alert[] {
   )
 }
 
+function parsePosologia(posologia: string | null) {
+  if (!posologia) return { dose: '', frequencia: '', via: '' }
+  
+  const parts = posologia.split('|').map(s => s.trim())
+  const doseFreq = parts[0] || ''
+  const via = parts[1] || ''
+  
+  let dose = ''
+  let frequencia = ''
+  
+  if (doseFreq.includes(',')) {
+    const dfParts = doseFreq.split(',')
+    dose = dfParts[0].trim()
+    frequencia = dfParts.slice(1).join(',').trim()
+  } else {
+    // Fallback if no comma is found
+    dose = doseFreq
+  }
+  
+  return { dose, frequencia, via }
+}
+
 function buildPayload(scraped: ReturnType<typeof scrapeESUSData>) {
   const p = scraped.paciente
   return {
@@ -50,13 +72,16 @@ function buildPayload(scraped: ReturnType<typeof scrapeESUSData>) {
       avaliacao: p.avaliacao,
       problemas_condicoes: p.problemasCondicoes,
     },
-    medicacoes: scraped.medicacoes.map((m) => ({
-      nome: m.nome,
-      dose: '',
-      frequencia: '',
-      via: '',
-      posologia_completa: m.posologia || null,
-    })),
+    medicacoes: scraped.medicacoes.map((m) => {
+      const parsed = parsePosologia(m.posologia)
+      return {
+        nome: m.nome,
+        dose: parsed.dose,
+        frequencia: parsed.frequencia,
+        via: parsed.via,
+        posologia_completa: m.posologia || null,
+      }
+    }),
   }
 }
 
