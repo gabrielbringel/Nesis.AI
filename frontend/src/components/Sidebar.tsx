@@ -1,4 +1,4 @@
-import type { SidebarState } from '../types'
+import type { EditablePayload, SidebarState } from '../types'
 import { useDrawer } from '../hooks/useDrawer'
 import { SidebarHeader } from './SidebarHeader'
 import { SidebarFooter } from './SidebarFooter'
@@ -12,9 +12,10 @@ interface Props {
   state: SidebarState
   onStart: () => void
   onReanalyze: () => void
+  onReanalyzeWithData: (payload: EditablePayload) => void
 }
 
-export function Sidebar({ state, onStart, onReanalyze }: Props) {
+export function Sidebar({ state, onStart, onReanalyze, onReanalyzeWithData }: Props) {
   const { view, patient } = state
   const drawer = useDrawer()
 
@@ -45,13 +46,18 @@ export function Sidebar({ state, onStart, onReanalyze }: Props) {
         {view === 'idle' && <IdleState onStart={onStart} />}
 
         {view === 'reading' && (
-          <ReadingState patient={patient} loadedAttributes={state.loadedAttributes} />
+          <ReadingState patient={patient} attributes={state.attributes} loadedAttributes={state.loadedAttributes} />
         )}
 
-        {view === 'analyzing' && <AnalyzingState patient={patient} />}
+        {view === 'analyzing' && <AnalyzingState patient={patient} attributes={state.attributes} />}
 
         {view === 'results' && (
-          <ResultsState patient={patient} alerts={state.alerts} />
+          <ResultsState
+            patient={patient}
+            alerts={state.alerts}
+            scrapedPayload={state.scrapedPayload}
+            onReanalyzeWithData={onReanalyzeWithData}
+          />
         )}
 
         <SidebarFooter state={state} onReanalyze={onReanalyze} />
