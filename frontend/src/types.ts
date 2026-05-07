@@ -4,6 +4,7 @@ export interface Alert {
   severidade: Severity
   titulo?: string
   descricao: string
+  fonte?: string
   medicamentos_envolvidos: string[]
   recomendacao: string
 }
@@ -42,16 +43,36 @@ export interface AlertCounts {
   leve: number
 }
 
+export interface AttributeNode {
+  id: string
+  text: string
+  isSubItem?: boolean
+}
+
+export interface EditablePayload {
+  nome: string
+  idade: string
+  sexo: string
+  peso: string
+  altura: string
+  alergias: string[]
+  motivoConsulta: string
+  objetivo: string
+  avaliacao: string
+  problemasCondicoes: string[]
+  medicacoes: Array<{ nome: string; posologia: string }>
+}
+
 export interface SidebarState {
   view: SidebarView
   patient: Patient | null
-  loadedAttributes: string[]
-  totalAttributes: string[]
+  loadedAttributes: AttributeNode[]
+  attributes: AttributeNode[]
   alerts: Alert[]
   counts: AlertCounts
   lastAnalyzedAt: Date | null
+  scrapedPayload: EditablePayload | null
   errorType: ErrorType
   errorStatus?: number
   missingFields?: string[]
-  pendingPayload?: object
 }

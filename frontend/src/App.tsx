@@ -2,16 +2,9 @@ import { useSidebar } from './hooks/useSidebar'
 import { Sidebar } from './components/Sidebar'
 
 export function App() {
-  const { state, startReading, reanalyze, analyzeAnyway, fillManually, goToIdle } = useSidebar()
+  const { state, startReading, reanalyze, reanalyzeWithData } = useSidebar()
 
   return (
-    <Sidebar
-      state={state}
-      onStart={startReading}
-      onReanalyze={reanalyze}
-      onAnalyzeAnyway={analyzeAnyway}
-      onFillManually={fillManually}
-      onGoToIdle={goToIdle}
-    />
+    <Sidebar state={state} onStart={startReading} onReanalyze={reanalyze} onReanalyzeWithData={reanalyzeWithData} />
   )
 }

@@ -37,6 +37,7 @@ class Paciente(BaseModel):
     objetivo: str | None = None
     avaliacao: str | None = None
     problemas_condicoes: list[str] = Field(default_factory=list)
+    med_em_uso: list[str] = Field(default_factory=list)
 
 
 class AnalyzeRequest(BaseModel):
@@ -50,6 +51,7 @@ class Alerta(BaseModel):
     severidade: Severidade
     titulo: str = Field(default="Alerta Clínico")
     descricao: str
+    fonte: str = Field(default="Base de conhecimento")
     medicamentos_envolvidos: list[str]
     recomendacao: str
 

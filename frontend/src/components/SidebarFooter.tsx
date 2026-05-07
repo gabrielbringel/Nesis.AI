@@ -109,7 +109,12 @@ export function SidebarFooter({ state, onReanalyze }: Props) {
         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
           <div>
             <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 700, color: 'var(--color-text-primary)' }}>
-              {counts.grave + counts.moderado + counts.leve} alertas
+              {(() => {
+                const total = counts.grave + counts.moderado + counts.leve;
+                if (total === 0) return 'Nenhum alerta';
+                if (total === 1) return '1 alerta';
+                return `${total} alertas`;
+              })()}
             </p>
             <div style={{ display: 'flex', gap: '8px', marginTop: '3px', alignItems: 'center' }}>
               <SeverityDot color="#E24B4A" count={counts.grave} />

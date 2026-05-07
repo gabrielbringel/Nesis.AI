@@ -42,7 +42,9 @@
   padding: 0;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
 }
 
@@ -53,8 +55,13 @@ body {
 
 /* Progress bar animation */
 @keyframes progress-sweep {
-  0%   { width: 15%; }
-  100% { width: 85%; }
+  0% {
+    width: 15%;
+  }
+
+  100% {
+    width: 85%;
+  }
 }
 
 .progress-bar-animated {
@@ -63,8 +70,15 @@ body {
 
 /* Dot blink animation */
 @keyframes blink {
-  0%, 100% { opacity: 0.2; }
-  50%       { opacity: 1; }
+
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+
+  50% {
+    opacity: 1;
+  }
 }
 
 .dot-blink {
@@ -73,8 +87,15 @@ body {
 
 /* Skeleton pulse */
 @keyframes skeleton-pulse {
-  0%, 100% { opacity: 0.4; }
-  50%       { opacity: 0.9; }
+
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+
+  50% {
+    opacity: 0.9;
+  }
 }
 
 .skeleton-pulse {
@@ -97,6 +118,15 @@ body {
   opacity: 1;
 }
 
+.alert-details.patient-drawer.expanded {
+  max-height: 440px;
+}
+
+.patient-drawer input:focus {
+  border-color: var(--color-text-primary) !important;
+  outline: none;
+}
+
 /* Chevron rotation */
 .chevron {
   transition: transform 0.2s ease;
@@ -107,22 +137,67 @@ body {
   transform: rotate(180deg);
 }
 
-/* State enter animation */
+/* ─── State transition ─── */
 @keyframes fadeSlideIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .state-enter {
-  animation: fadeSlideIn 220ms ease-out forwards;
+  animation: fadeSlideIn 880ms ease-out forwards;
 }
 
-/* Icon pop animation */
-@keyframes iconPop {
-  from { opacity: 0; transform: scale(0.8); }
-  to   { opacity: 1; transform: scale(1); }
+/* ─── Bullet entrance ─── */
+@keyframes bulletIn {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-.icon-enter {
-  animation: iconPop 260ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+.bullet-enter {
+  animation: bulletIn 880ms ease-out forwards;
+}
+
+/* ─── Alert card stagger entrance ─── */
+@keyframes alertIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.alert-enter {
+  opacity: 0;
+  animation: alertIn 880ms ease-out forwards;
+}
+
+/* ─── Ellipsis animation (. → .. → ...) ─── */
+@keyframes ellipsis {
+  0%   { content: '.'; }
+  33%  { content: '..'; }
+  66%  { content: '...'; }
+  100% { content: '.'; }
+}
+
+.ellipsis-animate::after {
+  content: '.';
+  animation: ellipsis 1.2s steps(1) infinite;
 }

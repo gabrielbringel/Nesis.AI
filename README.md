@@ -333,3 +333,13 @@ Durante a preparação do projeto para o ambiente de demonstração (Pitch/Hacka
 - **Payload Clínico Rico (`useSidebar.ts`)**: O frontend agora captura e envia dados fisiológicos e de evolução clínica completos (peso, altura, alergias, SOAP, problemas/condições, posologia completa) para o backend. Isso aumenta drasticamente o contexto médico na verificação das interações pelo Gemini.
 - **Auto-Start Inteligente**: Injeção do scraper atrelada rigidamente a validação de aba (URL precisa conter `/lista-atendimento/atendimento/`), poupando processamento e aberturas falsas. Em ambiente dev, a extensão entra diretamente no fluxo de mockup local.
 - **Mock e UI Refinados**: `HistoryView` e `HistoryItem` refatorados para consumir os novos labels dinâmicos. Problemas com sufixos genéricos de texto (`Xa`) no mock foram varridos e eliminados. O backend também já está sincronizado para aceitar e computar a riqueza extra de dados neste novo esquema.
+
+**Correções e Refinamentos (Scraper de Medicações):**
+- **XPath Principal Refatorado:** O XPath utilizado para iterar as medicações na tela do e-SUS foi atualizado para um caminho absoluto mais estável, contornando a mudança/dinamismo do ID `accordion__panel-raa-801` que quebrava o scraper original.
+- **Heurística de Fallback Aprimorada:** A busca de emergência por medicamentos varrendo a tela agora usa Regex com limites de palavra (`\b`) para checar `mg`, `ml`, `ui`, `gotas`. Isso eliminou um bug crítico que trazia strings de interface aleatórias como "Equipe E**MUL**TI" ou "Arq**UI**vos" por coincidência silábica.
+- **Parsing Automático de Posologia:** Implementada a função `parsePosologia` em `useSidebar.ts` que quebra de forma automática a string híbrida recebida do e-SUS (`"Dose, Frequência | Via | Forma Farmacêutica"`) em campos padronizados independentes (`dose`, `frequencia`, `via`), mantendo o campo `posologia_completa` intacto como evidência secundária.
+
+**Ajustes Visuais e de Motor de IA:**
+- **Prompt Estruturado (Fonte):** O motor de IA (Prompt RAG) foi atualizado para que o LLM não incorpore o nome da fonte clínica no final do texto do mecanismo. Em vez disso, o LLM popula o novo campo `fonte` puramente no JSON validado pelo Pydantic, garantindo que o frontend exiba a origem do RAG no local exato do card.
+- **UI do Alerta Clínico:** Simplificação do label de `"Alternativa/Ação"` para `"Alternativa"`, garantindo o alinhamento visual correto dos campos no `AlertCard.tsx`.
+- **Extração de Medicamentos em Uso:** O scraper agora extrai automaticamente a lista contida na aba lateral "Medicamentos em uso" via XPath estruturado, e o frontend passa essa lista dentro do array `med_em_uso` no schema `Paciente` do Pydantic para dar contexto histórico ao Gemini.
