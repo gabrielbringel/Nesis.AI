@@ -19,7 +19,22 @@ export interface Patient {
   displayLabel: string
 }
 
-export type SidebarView = 'idle' | 'reading' | 'analyzing' | 'results'
+export type SidebarView =
+  | 'idle'
+  | 'reading'
+  | 'analyzing'
+  | 'results'
+  | 'wrong-domain'
+  | 'incomplete-data'
+  | 'error'
+  | 'no-alerts'
+
+export type ErrorType =
+  | 'api-unreachable'
+  | 'api-error'
+  | 'scraping-failed'
+  | 'invalid-response'
+  | null
 
 export interface AlertCounts {
   grave: number
@@ -35,4 +50,8 @@ export interface SidebarState {
   alerts: Alert[]
   counts: AlertCounts
   lastAnalyzedAt: Date | null
+  errorType: ErrorType
+  errorStatus?: number
+  missingFields?: string[]
+  pendingPayload?: object
 }

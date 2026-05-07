@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 interface Props {
   onClick?: () => void
-  icon: ReactNode
+  icon?: ReactNode
   children: ReactNode
 }
 

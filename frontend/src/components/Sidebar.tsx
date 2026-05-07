@@ -7,16 +7,35 @@ import { IdleState } from './states/IdleState'
 import { ReadingState } from './states/ReadingState'
 import { AnalyzingState } from './states/AnalyzingState'
 import { ResultsState } from './states/ResultsState'
+import { WrongDomainState } from './states/WrongDomainState'
+import { IncompleteDataState } from './states/IncompleteDataState'
+import { ErrorState } from './states/ErrorState'
+import { NoAlertsState } from './states/NoAlertsState'
 
 interface Props {
   state: SidebarState
   onStart: () => void
   onReanalyze: () => void
+  onAnalyzeAnyway: () => void
+  onFillManually: () => void
+  onGoToIdle: () => void
 }
 
-export function Sidebar({ state, onStart, onReanalyze }: Props) {
+export function Sidebar({
+  state,
+  onStart,
+  onReanalyze,
+  onAnalyzeAnyway,
+  onFillManually,
+  onGoToIdle,
+}: Props) {
   const { view, patient } = state
   const drawer = useDrawer()
+
+  const handleFillManually = () => {
+    onFillManually()
+    drawer.open()
+  }
 
   return (
     <div
@@ -52,6 +71,28 @@ export function Sidebar({ state, onStart, onReanalyze }: Props) {
 
         {view === 'results' && (
           <ResultsState patient={patient} alerts={state.alerts} />
+        )}
+
+        {view === 'wrong-domain' && <WrongDomainState onRetry={onStart} />}
+
+        {view === 'incomplete-data' && (
+          <IncompleteDataState
+            missingFields={state.missingFields ?? []}
+            onFillManually={handleFillManually}
+            onAnalyzeAnyway={onAnalyzeAnyway}
+          />
+        )}
+
+        {view === 'error' && (
+          <ErrorState
+            errorType={state.errorType}
+            errorStatus={state.errorStatus}
+            onRetry={onGoToIdle}
+          />
+        )}
+
+        {view === 'no-alerts' && (
+          <NoAlertsState patient={patient} onReanalyze={onReanalyze} />
         )}
 
         <SidebarFooter state={state} onReanalyze={onReanalyze} />

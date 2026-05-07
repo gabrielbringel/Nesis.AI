@@ -1,5 +1,5 @@
 import type { Patient } from '../../types'
-import { READING_ATTRIBUTES } from '../../mock'
+import { READING_ATTRIBUTES } from '../../constants'
 
 interface Props {
   patient: Patient | null
