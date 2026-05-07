@@ -10,7 +10,7 @@ interface Props {
 export function HistoryView({ searchQuery }: Props) {
   const filtered = searchQuery
     ? MOCK_HISTORY.filter((entry) =>
-        normalizeText(entry.name).includes(normalizeText(searchQuery))
+        normalizeText(entry.fullName).includes(normalizeText(searchQuery))
       )
     : MOCK_HISTORY
 

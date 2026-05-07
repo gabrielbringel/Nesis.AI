@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { HistoryEntry } from '../data/mockHistory'
+import { buildPatientLabel } from '../utils/format'
 
 interface Props {
   entry: HistoryEntry
@@ -65,7 +66,7 @@ export function HistoryItem({ entry, active = false, onClick }: Props) {
           lineHeight: 1.35,
         }}
       >
-        {entry.name}
+        {buildPatientLabel(entry.fullName, entry.sexo, entry.idade)}
       </p>
       <div
         style={{
