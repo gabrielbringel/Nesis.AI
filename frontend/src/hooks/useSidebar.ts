@@ -71,6 +71,7 @@ function buildPayload(scraped: ReturnType<typeof scrapeESUSData>) {
       objetivo: p.objetivo,
       avaliacao: p.avaliacao,
       problemas_condicoes: p.problemasCondicoes,
+      med_em_uso: p.medEmUso || [],
     },
     medicacoes: scraped.medicacoes.map((m) => {
       const parsed = parsePosologia(m.posologia)
@@ -136,6 +137,7 @@ export function useSidebar() {
           objetivo: null,
           avaliacao: null,
           problemas_condicoes: [],
+          med_em_uso: [],
         },
         medicacoes: [],
       }
