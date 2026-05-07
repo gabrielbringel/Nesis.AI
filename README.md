@@ -322,3 +322,14 @@ Durante a preparação do projeto para o ambiente de demonstração (Pitch/Hacka
   1. Remoção do script de automação (onUpdated) do Service Worker.
   2. Implementação da API declarativa chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).
   3. **Resultado:** A extensão passou a respeitar as diretrizes da Web Store, abrindo o painel de forma estável e segura quando o médico clica no ícone da extensão (User Gesture validado).
+
+---
+
+## 🚀 Atualização de Features: Refatoração do Scraping do eSUS (Manifest V3)
+
+**Resumo das Alterações Arquiteturais e Novas Funcionalidades:**
+- **Scraper Self-Contained (`esus-scraper.ts`)**: Implementação de extração 100% isolada via 10 XPaths precisos (nome, idade, sexo, peso, altura, alergias, motivos de consulta, avaliação, problemas e medicações iteradas). Inclui também fallback heurístico via varredura de texto caso a estrutura falhe ou atrase.
+- **Utilitários de Formatação (`format.ts`)**: Lógica padronizada para encurtamento de nomes (`abbreviateName`), normalização de gênero biológico (`normalizeSexo`) e construção limpa do `displayLabel` do paciente (`buildPatientLabel`).
+- **Payload Clínico Rico (`useSidebar.ts`)**: O frontend agora captura e envia dados fisiológicos e de evolução clínica completos (peso, altura, alergias, SOAP, problemas/condições, posologia completa) para o backend. Isso aumenta drasticamente o contexto médico na verificação das interações pelo Gemini.
+- **Auto-Start Inteligente**: Injeção do scraper atrelada rigidamente a validação de aba (URL precisa conter `/lista-atendimento/atendimento/`), poupando processamento e aberturas falsas. Em ambiente dev, a extensão entra diretamente no fluxo de mockup local.
+- **Mock e UI Refinados**: `HistoryView` e `HistoryItem` refatorados para consumir os novos labels dinâmicos. Problemas com sufixos genéricos de texto (`Xa`) no mock foram varridos e eliminados. O backend também já está sincronizado para aceitar e computar a riqueza extra de dados neste novo esquema.
