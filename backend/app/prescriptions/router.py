@@ -10,6 +10,8 @@ from app.prescriptions.service import analisar
 
 logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(tags=["analyze"])
 
 @router.post("/api/v1/analyze", response_model=AnalyzeResponse)
