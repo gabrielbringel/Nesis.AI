@@ -122,12 +122,29 @@ export function scrapeESUSData(): ScrapedResult {
 
   // ─── Medicações ───
   const medicacoes: ScrapedMedicacao[] = []
+  
+  // O XPath base fornecido para o container de medicações (onde os div[i] estão)
+  const basePathAbsolute = '/html/body/div[1]/div/div[3]/main/div[1]/form/div[1]/div/div/div[2]/div/div/div[5]/div[2]/div/div/div[4]/div/div[2]/div[3]/div/div/div[2]'
+  
   for (let i = 1; i < 50; i++) {
-    const nomeXPath = `//*[@id="accordion__panel-raa-801"]/div[${i}]/div/div[1]/div/h5`
-    const posologiaXPath = `//*[@id="accordion__panel-raa-801"]/div[${i}]/div/div[1]/span`
-    const nomeMed = getByXPath(nomeXPath)
+    // 1. Tenta o XPath novo e mais robusto (baseado no DOM atual)
+    let nomeXPath = `${basePathAbsolute}/div[${i}]/div/div[1]/div/h5`
+    let posologiaXPath = `${basePathAbsolute}/div[${i}]/div/div[1]/span`
+    
+    let nomeMed = getByXPath(nomeXPath)
+    let posologia = getByXPath(posologiaXPath) || ''
+
+    // 2. Se falhar, tenta o XPath antigo baseado no ID que costumava existir
+    if (!nomeMed) {
+      const oldNomeXPath = `//*[@id="accordion__panel-raa-801"]/div[${i}]/div/div[1]/div/h5`
+      const oldPosXPath = `//*[@id="accordion__panel-raa-801"]/div[${i}]/div/div[1]/span`
+      nomeMed = getByXPath(oldNomeXPath)
+      if (nomeMed) {
+        posologia = getByXPath(oldPosXPath) || ''
+      }
+    }
+
     if (!nomeMed) break
-    const posologia = getByXPath(posologiaXPath) || ''
     medicacoes.push({ nome: nomeMed, posologia })
   }
 
@@ -138,12 +155,7 @@ export function scrapeESUSData(): ScrapedResult {
       if (el.children.length !== 0) return
       const text = el.textContent?.trim() || ''
       const lower = text.toLowerCase()
-      const looksLikeDose =
-        lower.includes('mg') ||
-        lower.includes('ml') ||
-        lower.includes('comprimido') ||
-        lower.includes('gotas') ||
-        lower.includes('ui')
+      const looksLikeDose = /\b(mg|ml|mcg|g|comprimidos?|gotas?|ui|cps|cápsulas?|ampolas?|frascos?)\b/i.test(text)
       if (!looksLikeDose) return
       if (text.length <= 3 || text.length >= 150) return
       if (
