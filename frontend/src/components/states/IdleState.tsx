@@ -8,6 +8,7 @@ interface Props {
 export function IdleState({ onStart }: Props) {
   return (
     <div
+      className="state-enter"
       style={{
         flex: 1,
         display: 'flex',
