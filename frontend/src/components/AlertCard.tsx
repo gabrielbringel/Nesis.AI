@@ -124,8 +124,8 @@ export function AlertCard({ alert }: Props) {
         >
           <DetailRow label="Prescrição" value={medName} />
           <DetailRow label="Mecanismo" value={alert.descricao} />
-          <DetailRow label="Fonte" value="Base de conhecimento" />
-          <DetailRow label="Alternativa/Ação" value={alert.recomendacao} />
+          <DetailRow label="Fonte" value={alert.fonte || "Base de conhecimento"} />
+          <DetailRow label="Alternativa" value={alert.recomendacao} />
         </div>
       </div>
     </div>

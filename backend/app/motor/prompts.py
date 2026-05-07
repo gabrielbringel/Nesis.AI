@@ -71,14 +71,13 @@ Regras de uso do CONTEXTO recuperado da base de conhecimento (RAG):
 Micromedex, UpToDate, PCDT MS, Diretriz SBC).
 - Use PREFERENCIALMENTE as informações do CONTEXTO para fundamentar os alertas. \
 Só recorra ao seu conhecimento clínico geral quando o CONTEXTO não cobrir o caso.
-- Quando o alerta for fundamentado por um documento do CONTEXTO, o campo \
-`descricao` DEVE terminar com `Fonte: <nome da fonte>`, copiando o valor do \
-campo `fonte=` do documento mais específico (aquele cujos `medicamentos` casam \
-melhor com o par/medicamento do alerta).
+- Quando o alerta for fundamentado por um documento do CONTEXTO, preencha o campo \
+`fonte` com o valor do campo `fonte=` do documento mais específico (aquele cujos \
+`medicamentos` casam melhor com o par/medicamento do alerta).
 - Quando vários documentos forem relevantes, cite a fonte do mais específico \
 (maior afinidade com o cenário clínico exato), não a do mais genérico.
-- Quando o CONTEXTO estiver vazio ou não cobrir o caso, termine `descricao` \
-com `Fonte: conhecimento geral do modelo`.
+- Quando o CONTEXTO estiver vazio ou não cobrir o caso, preencha o campo \
+`fonte` com "Conhecimento geral do modelo".
 
 Regras gerais de saída:
 - Crie um `titulo` curto e direto ao ponto (máximo de 40 caracteres) resumindo o risco do alerta.
@@ -111,6 +110,7 @@ Gere os alertas clínicos no formato JSON a seguir:
     {{
       "severidade": "GRAVE" | "MODERADO" | "LEVE",
       "descricao": "<descrição clínica curta e objetiva>",
+      "fonte": "<nome da fonte que baseou o alerta>",
       "medicamentos_envolvidos": ["<nome DCB>", ...],
       "recomendacao": "<ação recomendada ao prescritor>"
     }}

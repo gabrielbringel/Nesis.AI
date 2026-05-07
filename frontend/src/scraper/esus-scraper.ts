@@ -16,6 +16,7 @@ export interface ScrapedPaciente {
   objetivo: string | null
   avaliacao: string | null
   problemasCondicoes: string[]
+  medEmUso: string[]
 }
 
 export interface ScrapedMedicacao {
@@ -120,6 +121,27 @@ export function scrapeESUSData(): ScrapedResult {
     problemasCondicoes.push(text)
   }
 
+  // ─── Medicamentos em uso ───
+  const medEmUso: string[] = []
+  try {
+    const boxXPath = '/html/body/div[1]/div/div[3]/main/div[1]/form/div[1]/div/div/div[1]/div/aside/div/div/div/div/div/div[5]'
+    const boxNode = document.evaluate(boxXPath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue as HTMLElement | null
+    
+    if (boxNode) {
+      // Pega todos os textos dentro do container separando por quebra de linha visual
+      const rawTexts = (boxNode.innerText || '').split('\n').map(s => s.trim()).filter(s => s.length > 3)
+      
+      rawTexts.forEach(text => {
+        const lower = text.toLowerCase()
+        if (!lower.includes('medicamentos em uso') && !lower.includes('nenhum')) {
+          medEmUso.push(text)
+        }
+      })
+    }
+  } catch (err) {
+    // Falha silenciosa se der erro no XPath
+  }
+
   // ─── Medicações ───
   const medicacoes: ScrapedMedicacao[] = []
   
@@ -187,6 +209,7 @@ export function scrapeESUSData(): ScrapedResult {
       objetivo,
       avaliacao,
       problemasCondicoes,
+      medEmUso,
     },
     medicacoes,
   }
