@@ -4,6 +4,7 @@ export interface Alert {
   severidade: Severity
   titulo?: string
   descricao: string
+  fonte?: string
   medicamentos_envolvidos: string[]
   recomendacao: string
 }
