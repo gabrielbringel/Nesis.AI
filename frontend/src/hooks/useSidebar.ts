@@ -1,8 +1,12 @@
-declare var chrome: any;
+declare var chrome: any
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { READING_ATTRIBUTES } from '../mock'
+import { scrapeESUSData } from '../scraper/esus-scraper'
 import { getSettings } from '../stores/settingsStore'
+import { buildPatientLabel, normalizeSexo } from '../utils/format'
 import type { Alert, AlertCounts, SidebarState } from '../types'
+
+const ESUS_URL_RE = /lista-atendimento\/atendimento/
 
 const INITIAL_STATE: SidebarState = {
   view: 'idle',
@@ -24,49 +28,36 @@ function countAlerts(alerts: Alert[]): AlertCounts {
 
 function sortAlerts(alerts: Alert[]): Alert[] {
   const order = { GRAVE: 0, MODERADO: 1, LEVE: 2 }
-  return [...alerts].sort((a, b) => (order[a.severidade as keyof typeof order] ?? 3) - (order[b.severidade as keyof typeof order] ?? 3))
+  return [...alerts].sort(
+    (a, b) =>
+      (order[a.severidade as keyof typeof order] ?? 3) -
+      (order[b.severidade as keyof typeof order] ?? 3),
+  )
 }
 
-// 💉 FUNÇÃO INJETADA: Lê o DOM da aba ativa do e-SUS procurando textos médicos
-function scrapeESUSData() {
-  const nameElement = document.querySelector('#root > div > div.css-1ylu0bo > main > header div:nth-child(1) h2');
-  const ageElement = document.querySelector('#root > div > div.css-1ylu0bo > main > header div:nth-child(2) span');
-
-  const paciente = nameElement ? nameElement.textContent?.trim() : 'Desconhecido';
-  const idadeMatch = ageElement ? ageElement.textContent?.match(/\d+/) : null;
-  const idade = idadeMatch ? parseInt(idadeMatch[0], 10) : 0;
-
-  const medicacoes: any[] = [];
-  const foundMeds = new Set<string>();
-
-  // Varre os textos da página atrás de dosagens (Apenas elementos sem filhos para evitar texto duplicado)
-  document.querySelectorAll('div, p, span, h4, h5, li').forEach((el) => {
-    if (el.children.length === 0) {
-      const text = el.textContent?.trim() || '';
-      const lowerText = text.toLowerCase();
-      
-      // Procura padrões de receita num tamanho razoável
-      if (
-        (lowerText.includes('mg') || lowerText.includes('ml') || lowerText.includes('comprimido') || lowerText.includes('gotas') || lowerText.includes('ui')) &&
-        text.length > 3 && text.length < 150
-      ) {
-        if (!lowerText.includes('pesquise') && !lowerText.includes('adicionar') && !lowerText.includes('nenhum')) {
-          foundMeds.add(text);
-        }
-      }
-    }
-  });
-
-  Array.from(foundMeds).forEach((medText) => {
-    medicacoes.push({
-      nome: medText,
-      dose: 'Extraído do texto',
-      frequencia: 'Não especificada',
-      via: 'Não especificada'
-    });
-  });
-
-  return { paciente, idade, medicacoes };
+function buildPayload(scraped: ReturnType<typeof scrapeESUSData>) {
+  const p = scraped.paciente
+  return {
+    paciente: {
+      nome: p.nome || 'Desconhecido',
+      idade: p.idade ?? 0,
+      sexo: normalizeSexo(p.sexo),
+      peso: p.peso,
+      altura: p.altura,
+      alergias: p.alergias,
+      motivo_consulta: p.motivoConsulta,
+      objetivo: p.objetivo,
+      avaliacao: p.avaliacao,
+      problemas_condicoes: p.problemasCondicoes,
+    },
+    medicacoes: scraped.medicacoes.map((m) => ({
+      nome: m.nome,
+      dose: '',
+      frequencia: '',
+      via: '',
+      posologia_completa: m.posologia || null,
+    })),
+  }
 }
 
 export function useSidebar() {
@@ -75,65 +66,73 @@ export function useSidebar() {
   const autoStartedRef = useRef(false)
 
   const performAnalysis = async () => {
-    let payload = null;
-    let realPatient = { displayLabel: 'Carregando...' }; 
-    
+    let payload: ReturnType<typeof buildPayload> | null = null
+    let realPatient = { displayLabel: 'Carregando...' }
+
     try {
       if (typeof chrome !== 'undefined' && chrome.tabs && chrome.scripting) {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
         if (!tab?.id || !tab?.url?.startsWith('http')) {
-          console.error('[NesisAI] Aba inválida:', tab?.url);
-          return { data: { alertas: [] }, payload: null };
+          console.error('[NesisAI] Aba inválida:', tab?.url)
+          return { data: { alertas: [] }, payload: null }
         }
-        if (tab?.id) {
-          const injectionResults = await chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            func: scrapeESUSData
-          });
-          
-          const scraped = injectionResults[0]?.result;
-          if (scraped && scraped.paciente !== 'Desconhecido') {
-            realPatient = { displayLabel: `${scraped.paciente}, ${scraped.idade} anos` };
-            
-            payload = {
-              paciente: {
-                nome: scraped.paciente,
-                idade: scraped.idade,
-                alergias: []
-              },
-              medicacoes: scraped.medicacoes
-            };
+        const injectionResults = await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          func: scrapeESUSData,
+        })
+
+        const scraped = injectionResults[0]?.result
+        if (scraped && scraped.paciente?.nome) {
+          realPatient = {
+            displayLabel: buildPatientLabel(
+              scraped.paciente.nome,
+              scraped.paciente.sexo,
+              scraped.paciente.idade,
+            ),
           }
+          payload = buildPayload(scraped)
         }
       }
     } catch (err) {
-      console.error("Erro ao ler dados do e-SUS:", err);
+      console.error('Erro ao ler dados do e-SUS:', err)
     }
 
-    // Se estiver fora da extensão (testes locais), monta um payload genérico vazio para o backend resolver
+    // Fora da extensão (dev local): payload mínimo para o backend resolver.
     if (!payload) {
-       payload = { paciente: { nome: 'Teste Local', idade: 30, alergias: [] }, medicacoes: [] };
+      payload = {
+        paciente: {
+          nome: 'Teste Local',
+          idade: 30,
+          sexo: '?',
+          peso: null,
+          altura: null,
+          alergias: [],
+          motivo_consulta: null,
+          objetivo: null,
+          avaliacao: null,
+          problemas_condicoes: [],
+        },
+        medicacoes: [],
+      }
     }
 
-    setState(prev => ({ ...prev, patient: realPatient }));
+    setState((prev) => ({ ...prev, patient: realPatient }))
 
     try {
       const res = await fetch('http://localhost:8000/api/v1/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+        body: JSON.stringify(payload),
+      })
 
-      if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
-      const data = await res.json();
-      return { data, payload };
-
+      if (!res.ok) throw new Error(`HTTP Error: ${res.status}`)
+      const data = await res.json()
+      return { data, payload }
     } catch (error) {
-      console.error("Erro de conexão com a API:", error);
-      // Retorna objeto vazio para não quebrar a UI caso o backend morra
-      return { data: { alertas: [] }, payload }; 
+      console.error('Erro de conexão com a API:', error)
+      return { data: { alertas: [] }, payload }
     }
-  };
+  }
 
   const startReading = useCallback(() => {
     setState((prev) => ({
@@ -163,7 +162,7 @@ export function useSidebar() {
             view: 'results',
             alerts: sorted,
             counts: countAlerts(sorted),
-            lastAnalyzedAt: new Date()
+            lastAnalyzedAt: new Date(),
           }))
         })
       }
@@ -175,12 +174,29 @@ export function useSidebar() {
     startReading()
   }, [startReading])
 
+  // Auto-start: dispara apenas se autoRead estiver ativo E a aba ativa for
+  // uma página de atendimento do eSUS. Em tabs fora do eSUS o panel fica idle.
   useEffect(() => {
     if (autoStartedRef.current) return
     autoStartedRef.current = true
-    if (getSettings().autoRead) {
-      startReading()
+
+    if (!getSettings().autoRead) return
+
+    const tryAutoStart = async () => {
+      try {
+        if (typeof chrome === 'undefined' || !chrome.tabs) {
+          startReading()
+          return
+        }
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+        if (tab?.url && ESUS_URL_RE.test(tab.url)) {
+          startReading()
+        }
+      } catch (err) {
+        console.error('[NesisAI] auto-start falhou:', err)
+      }
     }
+    tryAutoStart()
   }, [startReading])
 
   return { state, startReading, reanalyze }
