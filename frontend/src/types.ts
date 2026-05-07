@@ -72,7 +72,10 @@ export interface SidebarState {
   counts: AlertCounts
   lastAnalyzedAt: Date | null
   scrapedPayload: EditablePayload | null
+<<<<<<< HEAD
   errorType: ErrorType
   errorStatus?: number
   missingFields?: string[]
+=======
+>>>>>>> 20ddf52a9480dcebe1e3f22966816f1c0efc38c7
 }
