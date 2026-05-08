@@ -77,9 +77,9 @@ Em `chrome://extensions` → Modo do desenvolvedor → Carregar sem compactaçã
 
 Para detalhes de desenvolvimento e build, ver [`frontend/README.md`](frontend/README.md).
 
-## Base de Conhecimento
+## Base de Conhecimento (Banco vetorial)
 
-41 entradas curadas no domínio cardiovascular brasileiro (`backend/data/cardio_knowledge.json`):
+41 entradas curadas no domínio cardiovascular brasileiro, com enfoque maior em interações medicamentosas entre antiarritímicos e anti-hipertensivos (`backend/data/cardio_knowledge.json`):
 
 | Prefixo | Categoria | Quantidade |
 |---|---|---|
