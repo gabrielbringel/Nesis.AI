@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Alert, EditablePayload, Patient } from '../../types'
 import { AlertCard } from '../AlertCard'
+import { PatientLabel } from '../PatientLabel'
 
 interface Props {
   patient: Patient | null
@@ -128,15 +129,8 @@ export function ResultsState({ patient, alerts, scrapedPayload, onReanalyzeWithD
           onClick={() => setDrawerOpen((o) => !o)}
           style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
         >
-          <h2
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '22px',
-              color: 'var(--color-text-primary)',
-              lineHeight: 1.2,
-            }}
-          >
-            {patient?.displayLabel ?? 'Paciente'}
+          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', lineHeight: 1.2 }}>
+            <PatientLabel label={patient?.displayLabel ?? 'Paciente'} />
           </h2>
           <span
             className={`chevron ${drawerOpen ? 'open' : ''}`}
@@ -148,9 +142,9 @@ export function ResultsState({ patient, alerts, scrapedPayload, onReanalyzeWithD
 
         {/* Editable drawer */}
         <div className={`alert-details patient-drawer ${drawerOpen ? 'expanded' : 'collapsed'}`}>
-          {/* Scrollable form sections */}
+          {/* Form sections — sem limite vertical, rola junto com a página */}
           <div
-            style={{ maxHeight: '370px', overflowY: 'auto', paddingTop: '10px' }}
+            style={{ paddingTop: '10px' }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Identificação */}
@@ -257,7 +251,8 @@ export function ResultsState({ patient, alerts, scrapedPayload, onReanalyzeWithD
             <button
               onClick={handleReanalyze}
               style={{
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-button)',
+                fontWeight: 400,
                 fontSize: '15px',
                 border: '0.5px solid var(--color-border)',
                 borderRadius: '8px',

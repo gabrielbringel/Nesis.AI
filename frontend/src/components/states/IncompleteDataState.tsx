@@ -42,6 +42,7 @@ export function IncompleteDataState({ missingFields, onFillManually, onAnalyzeAn
       <h2
         style={{
           fontFamily: 'var(--font-serif)',
+          fontWeight: 600,
           fontSize: '20px',
           color: 'var(--color-text-primary)',
         }}
@@ -80,7 +81,7 @@ export function IncompleteDataState({ missingFields, onFillManually, onAnalyzeAn
         style={{
           fontFamily: 'var(--font-sans)',
           fontSize: '12px',
-          color: '#888',
+          color: 'var(--color-text-faint)',
           lineHeight: 1.5,
           maxWidth: '200px',
         }}

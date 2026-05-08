@@ -1,4 +1,6 @@
 import type { Patient, AttributeNode } from '../../types'
+import { NesisMark } from '../icons/NesisMark'
+import { PatientLabel } from '../PatientLabel'
 
 interface Props {
   patient: Patient | null
@@ -7,16 +9,9 @@ interface Props {
 
 export function AnalyzingState({ patient, attributes }: Props) {
   return (
-    <div className="state-enter" style={{ flex: 1, padding: '20px 16px', overflowY: 'auto' }}>
-      <h2
-        style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: '22px',
-          color: 'var(--color-text-primary)',
-          lineHeight: 1.2,
-        }}
-      >
-        {patient?.displayLabel ?? 'Carregando paciente...'}
+    <div style={{ flex: 1, padding: '20px 16px', overflowY: 'auto' }}>
+      <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', lineHeight: 1.2 }}>
+        <PatientLabel label={patient?.displayLabel ?? 'Carregando paciente...'} />
       </h2>
 
       <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '7px' }}>
@@ -63,17 +58,28 @@ export function AnalyzingState({ patient, attributes }: Props) {
         })}
       </div>
 
-      <p
+      <div
         style={{
-          fontFamily: 'var(--font-mono)',
-          fontStyle: 'italic',
-          fontSize: '13px',
-          color: 'var(--color-text-placeholder)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '7px',
           marginTop: '14px',
         }}
       >
-        <span className="ellipsis-animate">analisando</span>
-      </p>
+        <span className="nesis-spin" style={{ display: 'flex' }}>
+          <NesisMark size={13} color="var(--color-text-placeholder)" />
+        </span>
+        <span
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontStyle: 'italic',
+            fontSize: '13px',
+            color: 'var(--color-text-placeholder)',
+          }}
+        >
+          Analisando...
+        </span>
+      </div>
     </div>
   )
 }

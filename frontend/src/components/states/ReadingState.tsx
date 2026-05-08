@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import type { Patient, AttributeNode } from '../../types'
+import { PatientLabel } from '../PatientLabel'
 
 interface Props {
   patient: Patient | null
@@ -9,6 +10,16 @@ interface Props {
 
 export function ReadingState({ patient, attributes, loadedAttributes }: Props) {
   const pending = attributes.slice(loadedAttributes.length)
+
+  const nextLabel = (() => {
+    const next = pending.find((a) => !a.isSubItem) ?? pending[0]
+    if (!next) return null
+    const colon = next.text.indexOf(':')
+    if (colon > 0) return next.text.slice(0, colon)
+    const dash = next.text.indexOf(' —')
+    if (dash > 0) return next.text.slice(0, dash)
+    return next.text.slice(0, 28)
+  })()
   // enterClass só é aplicada uma vez (na montagem). Refs não causam re-render.
   const enterClassRef = useRef('state-enter')
 
@@ -27,17 +38,19 @@ export function ReadingState({ patient, attributes, loadedAttributes }: Props) {
         ))}
       </div>
 
-      <p
-        style={{
-          fontFamily: 'var(--font-mono)',
-          fontStyle: 'italic',
-          fontSize: '13px',
-          color: 'var(--color-text-placeholder)',
-          marginTop: '14px',
-        }}
-      >
-        carregando atributos...
-      </p>
+      {nextLabel && (
+        <p
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontStyle: 'italic',
+            fontSize: '13px',
+            color: 'var(--color-text-placeholder)',
+            marginTop: '14px',
+          }}
+        >
+          Carregando {nextLabel}...
+        </p>
+      )}
     </div>
   )
 }
@@ -48,11 +61,10 @@ function PatientHeading({ patient }: { patient: Patient | null }) {
       style={{
         fontFamily: 'var(--font-serif)',
         fontSize: '22px',
-        color: 'var(--color-text-primary)',
         lineHeight: 1.2,
       }}
     >
-      {patient?.displayLabel ?? 'Carregando paciente...'}
+      <PatientLabel label={patient?.displayLabel ?? 'Carregando paciente...'} />
     </h2>
   )
 }
@@ -77,7 +89,7 @@ function AttributeRow({ node, loaded, isNew }: { node: AttributeNode; loaded: bo
           style={{
             fontFamily: 'var(--font-sans)',
             fontSize: '12px',
-            color: loaded ? 'var(--color-text-faint)' : '#ccc',
+            color: loaded ? 'var(--color-text-faint)' : 'var(--color-text-placeholder)',
             flexShrink: 0,
             lineHeight: 1,
           }}
@@ -91,7 +103,7 @@ function AttributeRow({ node, loaded, isNew }: { node: AttributeNode; loaded: bo
             width: '6px',
             height: '6px',
             borderRadius: '50%',
-            background: loaded ? 'var(--color-text-primary)' : '#ccc',
+            background: loaded ? 'var(--color-text-primary)' : 'var(--color-text-placeholder)',
             flexShrink: 0,
           }}
         />
@@ -112,7 +124,7 @@ function AttributeRow({ node, loaded, isNew }: { node: AttributeNode; loaded: bo
             display: 'block',
             height: isSubItem ? '10px' : '12px',
             width: isSubItem ? '100px' : '120px',
-            background: '#e8e4de',
+            background: 'var(--color-bg-hover)',
             borderRadius: '4px',
           }}
         />

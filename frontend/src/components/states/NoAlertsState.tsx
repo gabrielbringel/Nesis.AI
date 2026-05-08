@@ -1,13 +1,10 @@
 import type { Patient } from '../../types'
-import { ActionButton } from '../ActionButton'
-import { ReloadIcon } from '../icons/ReloadIcon'
 
 interface Props {
   patient: Patient | null
-  onReanalyze: () => void
 }
 
-export function NoAlertsState({ patient, onReanalyze }: Props) {
+export function NoAlertsState({ patient }: Props) {
   return (
     <div
       className="state-enter"
@@ -43,6 +40,7 @@ export function NoAlertsState({ patient, onReanalyze }: Props) {
       <h2
         style={{
           fontFamily: 'var(--font-serif)',
+          fontWeight: 600,
           fontSize: '20px',
           color: 'var(--color-text-primary)',
           lineHeight: 1.3,
@@ -50,7 +48,7 @@ export function NoAlertsState({ patient, onReanalyze }: Props) {
       >
         Nenhum alerta
         <br />
-        encontrado
+        identificado
       </h2>
 
       {patient && (
@@ -69,7 +67,7 @@ export function NoAlertsState({ patient, onReanalyze }: Props) {
         style={{
           fontFamily: 'var(--font-sans)',
           fontSize: '12px',
-          color: '#888',
+          color: 'var(--color-text-faint)',
           lineHeight: 1.5,
           maxWidth: '220px',
         }}
@@ -77,9 +75,6 @@ export function NoAlertsState({ patient, onReanalyze }: Props) {
         Nenhuma interação, contraindicação ou problema foi identificado na prescrição atual.
       </p>
 
-      <ActionButton onClick={onReanalyze} icon={<ReloadIcon size={13} color="#555" />}>
-        Reanalisar
-      </ActionButton>
     </div>
   )
 }

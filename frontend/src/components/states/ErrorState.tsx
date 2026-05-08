@@ -63,6 +63,7 @@ export function ErrorState({ errorType, errorStatus, onRetry }: Props) {
       <h2
         style={{
           fontFamily: 'var(--font-serif)',
+          fontWeight: 600,
           fontSize: '20px',
           color: 'var(--color-text-primary)',
         }}
