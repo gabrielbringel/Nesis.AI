@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { UseDrawerReturn } from '../hooks/useDrawer'
+import type { AnalysisRecord } from '../stores/historyStore'
 import { DrawerHeader } from './DrawerHeader'
 import { HistoryView } from './HistoryView'
 import { SettingsView } from './SettingsView'
@@ -8,9 +9,10 @@ import { GearIcon } from './icons/GearIcon'
 
 interface Props {
   drawer: UseDrawerReturn
+  onLoadRecord: (record: AnalysisRecord) => void
 }
 
-export function Drawer({ drawer }: Props) {
+export function Drawer({ drawer, onLoadRecord }: Props) {
   const { isOpen, view, close, setView } = drawer
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -26,7 +28,7 @@ export function Drawer({ drawer }: Props) {
         left: 0,
         bottom: 0,
         width: '78%',
-        background: '#fafaf8',
+        background: 'var(--color-surface)',
         borderRight: '0.5px solid var(--color-border)',
         boxShadow: '2px 0 12px rgba(0,0,0,0.04)',
         zIndex: 10,
@@ -42,7 +44,7 @@ export function Drawer({ drawer }: Props) {
     >
       <DrawerHeader onClose={close} searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
-      {view === 'history' && <HistoryView searchQuery={searchQuery} />}
+      {view === 'history' && <HistoryView searchQuery={searchQuery} onLoadRecord={onLoadRecord} onClose={close} />}
       {view === 'settings' && <SettingsView />}
 
       <div
@@ -60,13 +62,13 @@ export function Drawer({ drawer }: Props) {
             fontFamily: 'var(--font-mono)',
             fontStyle: 'italic',
             fontSize: '9px',
-            color: '#bbb',
+            color: 'var(--color-text-placeholder)',
           }}
         >
           [ perfil do médico — em breve ]
         </span>
         <IconButton onClick={toggleSettings} ariaLabel="Configurações" size={24}>
-          <GearIcon size={14} color={view === 'settings' ? '#1a1a1a' : '#999'} />
+          <GearIcon size={14} color={view === 'settings' ? 'var(--color-text-primary)' : 'var(--color-text-faint)'} />
         </IconButton>
       </div>
     </div>

@@ -19,24 +19,24 @@ export function SidebarHeader({ onOpenDrawer }: Props) {
       }}
     >
       <IconButton onClick={onOpenDrawer} ariaLabel="Abrir menu">
-        <SidebarClosedIcon size={18} color="#555" />
+        <SidebarClosedIcon size={18} color="var(--color-text-muted)" />
       </IconButton>
 
-      <NesisWordmark height={16} fill="#1a1a1a" />
+      <NesisWordmark height={16} />
 
       <div
         style={{
           width: '28px',
           height: '28px',
           borderRadius: '50%',
-          background: '#e8e4de',
+          background: 'var(--color-bg-hover)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           fontFamily: 'var(--font-sans)',
           fontSize: '12px',
           fontWeight: 500,
-          color: '#555',
+          color: 'var(--color-text-muted)',
           flexShrink: 0,
         }}
       >

@@ -11,12 +11,12 @@ export interface ScrapedPaciente {
   sexo: string | null
   peso: string | null
   altura: string | null
-  alergias: string[]
+  alergias: string[] | null
   motivoConsulta: string | null
   objetivo: string | null
   avaliacao: string | null
-  problemasCondicoes: string[]
-  medEmUso: string[]
+  problemasCondicoes: string[] | null
+  medEmUso: string[] | null
 }
 
 export interface ScrapedMedicacao {
@@ -84,8 +84,8 @@ export function scrapeESUSData(): ScrapedResult {
   const peso = getByXPath(PESO_XPATH)
   const altura = getByXPath(ALTURA_XPATH)
 
-  // Alergias: o container tem múltiplos filhos (cada div é uma alergia).
-  const alergias: string[] = []
+  // Alergias: null = container não encontrado; [] = encontrado mas vazio.
+  let alergias: string[] | null = null
   const alergiaContainerResult = document.evaluate(
     ALERGIAS_CONTAINER_XPATH,
     document,
@@ -95,9 +95,10 @@ export function scrapeESUSData(): ScrapedResult {
   )
   const alergiaContainer = alergiaContainerResult.singleNodeValue as Element | null
   if (alergiaContainer) {
+    alergias = []
     Array.from(alergiaContainer.children).forEach((child) => {
       const text = child.textContent?.trim()
-      if (text) alergias.push(text)
+      if (text) alergias!.push(text)
     })
   }
 
@@ -112,29 +113,38 @@ export function scrapeESUSData(): ScrapedResult {
     '//*[@id="accordion__panel-A"]/div/div/div[2]/div/div/div/div/div[1]/div/div[2]/div/div/div/div/div/div/span/span',
   )
 
-  // Problemas/condições: itera div[3], div[4], ... até não encontrar mais
-  const problemasCondicoes: string[] = []
-  for (let i = 3; i < 30; i++) {
-    const xpath = `//*[@id="accordion__panel-A"]/div/div/div[3]/div/div/div/div/div[1]/div/div[2]/div/div[${i}]`
-    const text = getByXPath(xpath)
-    if (!text) break
-    problemasCondicoes.push(text)
+  // Problemas/condições: null = seção não encontrada; [] = encontrada mas vazia.
+  let problemasCondicoes: string[] | null = null
+  const firstProblem = getByXPath(`//*[@id="accordion__panel-A"]/div/div/div[3]/div/div/div/div/div[1]/div/div[2]/div/div[3]`)
+  if (firstProblem !== null) {
+    problemasCondicoes = [firstProblem]
+    for (let i = 4; i < 30; i++) {
+      const xpath = `//*[@id="accordion__panel-A"]/div/div/div[3]/div/div/div/div/div[1]/div/div[2]/div/div[${i}]`
+      const text = getByXPath(xpath)
+      if (!text) break
+      problemasCondicoes.push(text)
+    }
+  } else {
+    // Tenta encontrar o container raiz para distinguir null de []
+    const containerCheck = getByXPath(`//*[@id="accordion__panel-A"]/div/div/div[3]`)
+    if (containerCheck !== null) problemasCondicoes = []
   }
 
   // ─── Medicamentos em uso ───
-  const medEmUso: string[] = []
+  // null = container não encontrado; [] = encontrado mas vazio.
+  let medEmUso: string[] | null = null
   try {
     const boxXPath = '/html/body/div[1]/div/div[3]/main/div[1]/form/div[1]/div/div/div[1]/div/aside/div/div/div/div/div/div[5]'
     const boxNode = document.evaluate(boxXPath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue as HTMLElement | null
     
     if (boxNode) {
-      // Pega todos os textos dentro do container separando por quebra de linha visual
+      medEmUso = []
       const rawTexts = (boxNode.innerText || '').split('\n').map(s => s.trim()).filter(s => s.length > 3)
       
       rawTexts.forEach(text => {
         const lower = text.toLowerCase()
         if (!lower.includes('medicamentos em uso') && !lower.includes('nenhum')) {
-          medEmUso.push(text)
+          medEmUso!.push(text)
         }
       })
     }

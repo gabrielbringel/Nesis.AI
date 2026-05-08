@@ -15,7 +15,7 @@ export function ToggleSwitch({ checked, onChange, ariaLabel }: Props) {
         width: '28px',
         height: '16px',
         borderRadius: '10px',
-        background: checked ? '#1a1a1a' : '#ddd8d0',
+        background: checked ? 'var(--color-text-primary)' : 'var(--color-border)',
         border: 'none',
         cursor: 'pointer',
         position: 'relative',

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 interface Props {
   onClick?: () => void
-  icon: ReactNode
+  icon?: ReactNode
   children: ReactNode
 }
 
@@ -14,7 +14,8 @@ export function ActionButton({ onClick, icon, children }: Props) {
         display: 'inline-flex',
         alignItems: 'center',
         gap: '7px',
-        fontFamily: 'var(--font-serif)',
+        fontFamily: 'var(--font-button)',
+        fontWeight: 400,
         fontSize: '15px',
         color: 'var(--color-text-muted)',
         padding: '6px 13px',

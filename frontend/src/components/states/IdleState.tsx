@@ -8,6 +8,7 @@ interface Props {
 export function IdleState({ onStart }: Props) {
   return (
     <div
+      className="state-enter"
       style={{
         flex: 1,
         display: 'flex',
@@ -18,19 +19,20 @@ export function IdleState({ onStart }: Props) {
         padding: '24px 20px',
       }}
     >
-      <h1
+      <div
         style={{
           fontFamily: 'var(--font-serif)',
-          fontSize: '32px',
-          lineHeight: 1.2,
-          color: 'var(--color-text-primary)',
-          textAlign: 'center',
+          fontSize: '28px',
+          lineHeight: 1.25,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          gap: '2px',
         }}
       >
-        Vamos
-        <br />
-        <em style={{ color: '#888', fontStyle: 'italic' }}>começar?</em>
-      </h1>
+        <span style={{ fontWeight: 500, fontStyle: 'italic', color: 'var(--color-text-placeholder)' }}>Nesis.AI</span>
+        <span style={{ fontWeight: 400, color: 'var(--color-text-secondary)' }}>Nenhuma decisão sem revisão</span>
+      </div>
       <ActionButton onClick={onStart} icon={<NesisMark size={13} color="#555" />}>
         Ler prontuário
       </ActionButton>

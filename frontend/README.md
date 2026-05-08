@@ -1,99 +1,86 @@
-# NesisAI — Sidebar (Chrome Extension)
+# NesisAI — Frontend (Chrome Extension)
 
-Sidebar React do NesisAI, embarcada como extensão Chrome (Manifest V3 + Side Panel API). A mesma SPA roda também como site standalone via Vite, o que mantém o ciclo de UI rápido sem precisar reinstalar a extensão a cada mudança.
-
----
+Sidebar React do NesisAI, empacotada como extensão Chrome (Manifest V3 + Side Panel API). A mesma SPA roda como site standalone via Vite para iteração rápida de UI.
 
 ## Desenvolvimento (SPA standalone)
 
-Para iterar na UI sem o overhead da extensão:
-
-```sh
+```bash
 npm install
 npm run dev
 ```
 
-Abre em [http://localhost:5173](http://localhost:5173). Nesse modo a SPA preenche toda a janela do navegador (esperado — sem o Chrome controlando o panel, ela ocupa o viewport inteiro). A chamada para `POST /api/v1/analyze` é proxiada para `http://localhost:8000` via Vite.
+Abre em `http://localhost:5173`. Nesse modo a SPA preenche o viewport inteiro (esperado — sem o Chrome controlando o panel). Chamadas para `POST /api/v1/analyze` esperam o backend em `http://localhost:8000`.
 
----
+## Build e instalação como extensão
 
-## Build e instalação como extensão Chrome
-
-```sh
+```bash
 npm run build:extension
 ```
 
-Gera `frontend/dist/` com:
-
-```
-dist/
-├── manifest.json
-├── background.js
-├── index.html
-├── assets/
-│   ├── index-<hash>.js
-│   └── index-<hash>.css
-└── icons/
-    ├── icon-16.png
-    ├── icon-32.png
-    ├── icon-48.png
-    └── icon-128.png
-```
-
-Para instalar:
+Gera `frontend/dist/`. Para instalar:
 
 1. Abrir `chrome://extensions`
-2. Ativar **Modo do desenvolvedor** (canto superior direito)
+2. Ativar **Modo do desenvolvedor**
 3. Clicar **Carregar sem compactação**
 4. Selecionar a pasta `frontend/dist/`
 
----
-
 ## Ativação automática
 
-Após instalar, navegar para qualquer URL que case com `host_permissions` no `manifest.json` abre o side panel automaticamente:
+Navegar para qualquer URL que case com `host_permissions` no `manifest.json` abre o side panel automaticamente:
 
 - `https://*.esusaps.gov.br/*`
 - `https://*.saude.gov.br/*`
+- `http://*/lista-atendimento/atendimento*`
+- `http://localhost/*` (desenvolvimento)
 
-Como **fallback manual**, clicar no ícone da extensão na barra de ferramentas também abre o side panel em qualquer aba.
+Clicar no ícone da extensão na barra também abre o side panel em qualquer aba.
 
----
+## Estrutura
 
-## ⚠️ Placeholders a substituir antes da demo
+```
+frontend/
+├── src/
+│   ├── components/             # UI da sidebar (AlertCard, Drawer, states/…)
+│   ├── hooks/                  # useSidebar (fluxo principal), useDrawer
+│   ├── scraper/
+│   │   └── esus-scraper.ts     # XPaths e fallback heurístico do DOM eSUS
+│   ├── stores/
+│   │   ├── settingsStore.ts    # autoRead, darkMode (localStorage)
+│   │   └── historyStore.ts     # histórico de análises (localStorage)
+│   ├── utils/                  # Formatação, agregação, normalização
+│   └── data/seedHistory.ts     # 10 registros seed para demonstração
+├── public/
+│   ├── manifest.json           # Manifest V3 (sidePanel + host_permissions)
+│   ├── background.js           # Service worker
+│   └── icons/                  # PNGs gerados a partir do NesisMark
+└── scripts/
+    └── generate-icons.mjs      # npm run generate:icons
+```
 
-As URLs do eSUS em **dois lugares** são placeholders e precisam ser ajustadas para o domínio real do eSUS APS quando ele for confirmado:
+## Fluxo de estados da sidebar
 
-1. `public/manifest.json` → chave `host_permissions`
-2. `public/background.js` → constante `ESUS_URL_PATTERNS`
+```
+idle → lendo → analisando → resultado
+                                ↑
+                                └── reanalisar (sem novo scraping,
+                                    com dados editados pelo médico)
+```
 
-Os dois precisam casar. Há um `TODO` explícito no topo de `background.js`.
+## Stack
 
----
+- React 18 + TypeScript + Vite (`base: './'` para paths relativos no bundle)
+- Tailwind CSS (utilitários apenas)
+- Google Fonts: Instrument Serif, DM Sans, DM Mono
+- Manifest V3, Side Panel API, service worker
 
 ## Regenerar ícones
 
-Os PNGs em `public/icons/` são gerados a partir do path SVG do `NesisMark`:
-
-```sh
+```bash
 npm run generate:icons
 ```
 
 Editar `scripts/generate-icons.mjs` se a marca mudar.
 
----
+## Persistência
 
-## Stack
-
-- React 18 + TypeScript + Vite (`base: './'` para paths relativos no bundle)
-- Tailwind CSS para utilitários (cores e tipografia via CSS vars em `src/index.css`)
-- Google Fonts: Instrument Serif, DM Sans, DM Mono
-- Manifest V3, Side Panel API, service worker
-
----
-
-## Não implementado nesta task
-
-- Content script para scraping do DOM do eSUS
-- Comunicação `chrome.runtime.sendMessage` entre content script e sidebar
-- Captura real de dados de prescrição (atualmente o payload é mockado em `src/mock.ts`)
+Histórico e configurações ficam em `localStorage` — não há backend para isso. O botão **Redefinir memória** (em SettingsView) limpa ambos.

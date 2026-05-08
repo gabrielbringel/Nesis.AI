@@ -3,37 +3,85 @@
 @tailwind utilities;
 
 :root {
-  --font-serif: 'Instrument Serif', Georgia, serif;
+  --font-serif: 'Roboto Serif', Georgia, serif;
   --font-sans: 'DM Sans', system-ui, sans-serif;
   --font-mono: 'DM Mono', 'Courier New', monospace;
+  --font-button: 'Google Sans', 'DM Sans', system-ui, sans-serif;
 
-  --color-surface: #ffffff;
-  --color-border: #ddd8d0;
-  --color-border-light: #ebe8e2;
-  --color-bg-muted: #faf9f7;
-  --color-bg-hover: #f0ede8;
+  /* ── Light theme ── */
+  --color-surface:          #fafaf8;
+  --color-bg-muted:         #f5f2ed;
+  --color-bg-hover:         #ebe8e2;
+  --color-border:           #ddd8d0;
+  --color-border-light:     #ece9e4;
 
-  --color-text-primary: #1a1a1a;
-  --color-text-secondary: #444;
-  --color-text-muted: #555;
-  --color-text-faint: #999;
-  --color-text-placeholder: #aaa;
+  --color-text-primary:     #1a1a1a;
+  --color-text-secondary:   #333333;
+  --color-text-muted:       #555555;
+  --color-text-faint:       #888888;
+  --color-text-placeholder: #aaaaaa;
 
-  /* Severidade */
-  --color-grave-border: #E24B4A;
-  --color-grave-bg: #fefafa;
-  --color-grave-badge-bg: #fcebeb;
-  --color-grave-badge-text: #A32D2D;
+  /* ── Severity — light ── */
+  --color-grave-border:      #E24B4A;
+  --color-grave-bg:          #fefafa;
+  --color-grave-badge-bg:    #fcebeb;
+  --color-grave-badge-text:  #A32D2D;
 
-  --color-moderado-border: #EF9F27;
-  --color-moderado-bg: #fefdf9;
-  --color-moderado-badge-bg: #faeeda;
-  --color-moderado-badge-text: #854F0B;
+  --color-moderado-border:      #EF9F27;
+  --color-moderado-bg:          #fefdf9;
+  --color-moderado-badge-bg:    #faeeda;
+  --color-moderado-badge-text:  #854F0B;
 
-  --color-leve-border: #639922;
-  --color-leve-bg: #fafdf6;
-  --color-leve-badge-bg: #eaf3de;
-  --color-leve-badge-text: #3B6D11;
+  --color-leve-border:      #639922;
+  --color-leve-bg:          #fafdf6;
+  --color-leve-badge-bg:    #eaf3de;
+  --color-leve-badge-text:  #3B6D11;
+}
+
+[data-theme="dark"] {
+  --color-surface:          #141414;
+  --color-bg-muted:         #1e1e1e;
+  --color-bg-hover:         #2a2a2a;
+  --color-border:           #2e2e2e;
+  --color-border-light:     #252525;
+
+  --color-text-primary:     #f0ede8;
+  --color-text-secondary:   #d4cfc8;
+  --color-text-muted:       #9a9590;
+  --color-text-faint:       #6a6560;
+  --color-text-placeholder: #4a4540;
+
+  /* ── Severity — dark ── */
+  --color-grave-bg:         #1f1010;
+  --color-grave-badge-bg:   #2a1212;
+  --color-grave-badge-text: #f4a0a0;
+
+  --color-moderado-bg:         #1f1a0a;
+  --color-moderado-badge-bg:   #2a1f0e;
+  --color-moderado-badge-text: #f4c07a;
+
+  --color-leve-bg:         #111a08;
+  --color-leve-badge-bg:   #182510;
+  --color-leve-badge-text: #9dcc5f;
+}
+
+/* ── Smooth theme transitions ── */
+*,
+*::before,
+*::after {
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    color 150ms ease,
+    fill 200ms ease;
+}
+
+/* Do NOT transition animation classes — would interfere with keyframe anims */
+.state-enter,
+.bullet-enter,
+.alert-enter,
+.icon-enter {
+  transition: none !important;
 }
 
 * {
@@ -42,23 +90,40 @@
   padding: 0;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
 }
 
 body {
   font-family: var(--font-sans);
   background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg-muted);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 2px;
 }
 
 /* Progress bar animation */
 @keyframes progress-sweep {
-  0%   { width: 15%; }
-  100% { width: 85%; }
+  0%   { width: 0%;   opacity: 1; }
+  75%  { width: 100%; opacity: 1; }
+  90%  { width: 100%; opacity: 0; }
+  100% { width: 0%;   opacity: 0; }
 }
 
 .progress-bar-animated {
-  animation: progress-sweep 2.5s ease-in-out alternate infinite;
+  animation: progress-sweep 2.8s ease-in-out infinite;
 }
 
 /* Dot blink animation */
@@ -97,6 +162,15 @@ body {
   opacity: 1;
 }
 
+.alert-details.patient-drawer.expanded {
+  max-height: 2000px;
+}
+
+.patient-drawer input:focus {
+  border-color: var(--color-text-primary) !important;
+  outline: none;
+}
+
 /* Chevron rotation */
 .chevron {
   transition: transform 0.2s ease;
@@ -105,4 +179,68 @@ body {
 
 .chevron.open {
   transform: rotate(180deg);
+}
+
+/* ─── State transition ─── */
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.state-enter {
+  animation: fadeSlideIn 880ms ease-out forwards;
+}
+
+/* ─── Bullet entrance ─── */
+@keyframes bulletIn {
+  from { opacity: 0; transform: translateX(6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.bullet-enter {
+  animation: bulletIn 880ms ease-out forwards;
+}
+
+/* ─── Alert card stagger entrance ─── */
+@keyframes alertIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.alert-enter {
+  opacity: 0;
+  animation: alertIn 880ms ease-out forwards;
+}
+
+/* ─── Ellipsis animation ─── */
+@keyframes ellipsis {
+  0%   { content: '.'; }
+  33%  { content: '..'; }
+  66%  { content: '...'; }
+  100% { content: '.'; }
+}
+
+.ellipsis-animate::after {
+  content: '.';
+  animation: ellipsis 1.2s steps(1) infinite;
+}
+
+/* ─── Nesis spin ─── */
+@keyframes nesisSpinPulse {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.nesis-spin {
+  animation: nesisSpinPulse 2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+/* ─── Icon pop entrance ─── */
+@keyframes iconPop {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.icon-enter {
+  animation: iconPop 260ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }

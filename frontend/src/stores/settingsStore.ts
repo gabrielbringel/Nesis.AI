@@ -74,3 +74,5 @@ export function toggleDarkMode() {
 export function getSettings(): Settings {
   return state
 }
+
+export const subscribeToSettings = subscribe
