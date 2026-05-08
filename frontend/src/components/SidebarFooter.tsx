@@ -1,10 +1,11 @@
 import type { SidebarState } from '../types'
+import { getHistory } from '../stores/historyStore'
 import { ActionButton } from './ActionButton'
-import { ReloadIcon } from './icons/ReloadIcon'
+import { PlusIcon } from './icons/PlusIcon'
 
 interface Props {
   state: SidebarState
-  onReanalyze: () => void
+  onGoToIdle: () => void
 }
 
 function formatDate(date: Date | null): string {
@@ -19,8 +20,8 @@ function formatDate(date: Date | null): string {
   return `hoje, ${h}h${m}`
 }
 
-export function SidebarFooter({ state, onReanalyze }: Props) {
-  const { view, counts, lastAnalyzedAt } = state
+export function SidebarFooter({ state, onGoToIdle }: Props) {
+  const { view, counts } = state
 
   return (
     <div
@@ -34,21 +35,41 @@ export function SidebarFooter({ state, onReanalyze }: Props) {
       }}
     >
       {/* IDLE */}
-      {view === 'idle' && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-          <div>
-            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--color-text-primary)' }}>
-              <strong>J. Vitor</strong>
-            </p>
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--color-text-placeholder)', marginTop: '2px' }}>
-              último analisado
+      {view === 'idle' && (() => {
+        const last = getHistory()[0] ?? null
+        if (!last) return (
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-placeholder)' }}>
+            nenhuma análise recente
+          </p>
+        )
+        const grave = last.alertas.filter((a) => a.severidade === 'GRAVE').length
+        const moderado = last.alertas.filter((a) => a.severidade === 'MODERADO').length
+        const leve = last.alertas.filter((a) => a.severidade === 'LEVE').length
+        return (
+          <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--color-text-primary)', fontWeight: 600 }}>
+                  {last.patient.displayLabel.split(',')[0]}
+                </p>
+                {last.alertas.length > 0 && (
+                  <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+                    {grave > 0 && <SeverityDot color="#E24B4A" count={grave} />}
+                    {moderado > 0 && <SeverityDot color="#EF9F27" count={moderado} />}
+                    {leve > 0 && <SeverityDot color="#639922" count={leve} />}
+                  </div>
+                )}
+              </div>
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--color-text-placeholder)', marginTop: '2px' }}>
+                último analisado
+              </p>
+            </div>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-faint)' }}>
+              {formatDate(new Date(last.timestamp))}
             </p>
           </div>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-faint)' }}>
-            {formatDate(lastAnalyzedAt)}
-          </p>
-        </div>
-      )}
+        )
+      })()}
 
       {/* READING */}
       {view === 'reading' && (
@@ -67,7 +88,7 @@ export function SidebarFooter({ state, onReanalyze }: Props) {
             style={{
               width: '100%',
               height: '3px',
-              background: '#f0ede8',
+              background: 'var(--color-bg-hover)',
               borderRadius: '99px',
               overflow: 'hidden',
             }}
@@ -84,9 +105,9 @@ export function SidebarFooter({ state, onReanalyze }: Props) {
         </div>
       )}
 
-      {/* ANALYZING */}
+      {/* ANALYZING — dots centered */}
       {view === 'analyzing' && (
-        <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '5px', alignItems: 'center', width: '100%', justifyContent: 'center' }}>
           {[0, 1, 2].map((i) => (
             <span
               key={i}
@@ -110,10 +131,10 @@ export function SidebarFooter({ state, onReanalyze }: Props) {
           <div>
             <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 700, color: 'var(--color-text-primary)' }}>
               {(() => {
-                const total = counts.grave + counts.moderado + counts.leve;
-                if (total === 0) return 'Nenhum alerta';
-                if (total === 1) return '1 alerta';
-                return `${total} alertas`;
+                const total = counts.grave + counts.moderado + counts.leve
+                if (total === 0) return 'Nenhum alerta'
+                if (total === 1) return '1 alerta'
+                return `${total} alertas`
               })()}
             </p>
             <div style={{ display: 'flex', gap: '8px', marginTop: '3px', alignItems: 'center' }}>
@@ -122,8 +143,17 @@ export function SidebarFooter({ state, onReanalyze }: Props) {
               <SeverityDot color="#639922" count={counts.leve} />
             </div>
           </div>
-          <ActionButton onClick={onReanalyze} icon={<ReloadIcon size={13} color="#555" />}>
-            Reanalisar
+          <ActionButton onClick={onGoToIdle} icon={<PlusIcon size={13} color="var(--color-text-muted)" />}>
+            Nova análise
+          </ActionButton>
+        </div>
+      )}
+
+      {/* NO-ALERTS */}
+      {view === 'no-alerts' && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', alignItems: 'center' }}>
+          <ActionButton onClick={onGoToIdle} icon={<PlusIcon size={13} color="var(--color-text-muted)" />}>
+            Nova análise
           </ActionButton>
         </div>
       )}
