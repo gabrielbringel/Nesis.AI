@@ -18,7 +18,7 @@ export function buildAttributeList(scraped: ScrapedResult): AttributeNode[] {
 
   // 1. Sexo
   const sexoNormalizado = normalizeSexo(p.sexo)
-  addNode(`Sexo: ${sexoNormalizado === 'M' ? 'Mulher' : sexoNormalizado === 'H' ? 'Homem' : 'Não informado'}`)
+  addNode(sexoNormalizado === 'M' ? 'Mulher' : sexoNormalizado === 'H' ? 'Homem' : 'Não informado')
 
   // 2. Peso e Altura
   const paParts: string[] = []

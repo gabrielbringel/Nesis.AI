@@ -3,38 +3,20 @@
 const PREPOSICOES = new Set(['de', 'da', 'do', 'das', 'dos', 'e'])
 
 /**
- * Abrevia o primeiro nome, mantendo o resto.
- *   "Antonio dos Santos Ramalho" → "A. dos Santos"
- *   "Maria Clara de Oliveira"    → "M. Clara de Oliveira"
- *
- * Regra: corta a última palavra (sobrenome de família) só se houver mais de
- * dois tokens não-preposicionais — assim "M. Costa" continua "M. Costa".
- * Preposições ficam lowercase.
+ * Abrevia para "Primeiro Sobrenome.":
+ *   "Gabriel Bringel"            → "Gabriel B."
+ *   "Antonio dos Santos Ramalho" → "Antonio R."
+ *   "Maria Clara de Oliveira"    → "Maria O."
  */
 export function abbreviateName(fullName: string | null | undefined): string {
   if (!fullName) return ''
   const tokens = fullName.trim().split(/\s+/).filter(Boolean)
   if (tokens.length === 0) return ''
-  if (tokens.length === 1) return tokens[0]
-
-  const first = tokens[0]
-  const rest = tokens.slice(1).map((t) => {
-    const lower = t.toLowerCase()
-    return PREPOSICOES.has(lower) ? lower : capitalize(t)
-  })
-
-  // Se houver pelo menos 2 palavras não-preposicionais no resto, derruba a última
-  // (geralmente o sobrenome final).
-  const nonPrepCount = rest.filter((t) => !PREPOSICOES.has(t)).length
-  const trimmed = nonPrepCount >= 2 ? rest.slice(0, -1) : rest
-
-  // Limpa preposições penduradas no final ("dos Santos de" → "dos Santos")
-  while (trimmed.length > 0 && PREPOSICOES.has(trimmed[trimmed.length - 1])) {
-    trimmed.pop()
-  }
-
-  const initial = first.charAt(0).toUpperCase()
-  return `${initial}. ${trimmed.join(' ')}`.trim()
+  const firstName = capitalize(tokens[0])
+  if (tokens.length === 1) return firstName
+  const lastToken = [...tokens].reverse().find((t) => !PREPOSICOES.has(t.toLowerCase()))
+  if (!lastToken || lastToken.toLowerCase() === tokens[0].toLowerCase()) return firstName
+  return `${firstName} ${lastToken.charAt(0).toUpperCase()}.`
 }
 
 function capitalize(word: string): string {
@@ -60,11 +42,10 @@ export function normalizeSexo(raw: string | null | undefined): string {
  */
 export function buildPatientLabel(
   nome: string | null | undefined,
-  sexoRaw: string | null | undefined,
+  _sexoRaw: string | null | undefined,
   idade: number | null | undefined,
 ): string {
   const nomeAbrev = abbreviateName(nome) || 'Paciente'
-  const sexo = normalizeSexo(sexoRaw)
   const idadeStr = typeof idade === 'number' && idade > 0 ? `${idade} anos` : '? anos'
-  return `${nomeAbrev} · ${sexo}, ${idadeStr}`
+  return `${nomeAbrev}, ${idadeStr}`
 }
