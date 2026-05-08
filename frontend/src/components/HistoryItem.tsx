@@ -1,20 +1,24 @@
 import { useState } from 'react'
-import type { HistoryEntry } from '../data/mockHistory'
-import { buildPatientLabel } from '../utils/format'
+import { deleteRecord } from '../stores/historyStore'
+import type { AnalysisRecord } from '../stores/historyStore'
+import type { Severity } from '../types'
 
 interface Props {
-  entry: HistoryEntry
+  record: AnalysisRecord
+  onClick: () => void
+  onDelete: () => void
   active?: boolean
-  onClick?: () => void
 }
 
-const SEVERITY_COLOR = {
-  grave: '#E24B4A',
-  moderado: '#EF9F27',
-  leve: '#639922',
-} as const
+const SEVERITY_COLOR: Record<Severity, string> = {
+  GRAVE: '#E24B4A',
+  MODERADO: '#EF9F27',
+  LEVE: '#639922',
+}
 
-function formatTime(date: Date, today: Date = new Date()): string {
+function formatTime(timestamp: number): string {
+  const date = new Date(timestamp)
+  const today = new Date()
   const sameDay =
     date.getDate() === today.getDate() &&
     date.getMonth() === today.getMonth() &&
@@ -28,27 +32,25 @@ function formatTime(date: Date, today: Date = new Date()): string {
   return `${h}h${m}`
 }
 
-function buildDots(counts: HistoryEntry['alertCounts']) {
-  const dots: Array<keyof typeof SEVERITY_COLOR> = []
-  for (let i = 0; i < counts.grave; i++) dots.push('grave')
-  for (let i = 0; i < counts.moderado; i++) dots.push('moderado')
-  for (let i = 0; i < counts.leve; i++) dots.push('leve')
-  return dots
-}
-
-export function HistoryItem({ entry, active = false, onClick }: Props) {
+export function HistoryItem({ record, onClick, onDelete, active = false }: Props) {
   const [hover, setHover] = useState(false)
-  const dots = buildDots(entry.alertCounts)
-  const time = formatTime(entry.date)
+  const [popoverOpen, setPopoverOpen] = useState(false)
 
-  const background = active ? '#ebe8e2' : hover ? '#f0ede8' : 'transparent'
+  const graveDots = record.alertas.filter((a) => a.severidade === 'GRAVE')
+  const moderadoDots = record.alertas.filter((a) => a.severidade === 'MODERADO')
+  const leveDots = record.alertas.filter((a) => a.severidade === 'LEVE')
+  const dots = [...graveDots, ...moderadoDots, ...leveDots]
+
+  const time = formatTime(record.timestamp)
+  const background = active ? 'var(--color-bg-muted)' : hover ? 'var(--color-bg-hover)' : 'transparent'
 
   return (
     <div
       onClick={onClick}
       onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
+      onMouseLeave={() => { setHover(false); setPopoverOpen(false) }}
       style={{
+        position: 'relative',
         padding: '6px 10px',
         margin: '0 2px',
         borderRadius: '8px',
@@ -64,9 +66,10 @@ export function HistoryItem({ entry, active = false, onClick }: Props) {
           fontWeight: 500,
           color: 'var(--color-text-primary)',
           lineHeight: 1.35,
+          paddingRight: '20px',
         }}
       >
-        {buildPatientLabel(entry.fullName, entry.sexo, entry.idade)}
+        {record.patient.displayLabel}
       </p>
       <div
         style={{
@@ -84,7 +87,7 @@ export function HistoryItem({ entry, active = false, onClick }: Props) {
           <>
             <span>·</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-              {dots.map((sev, i) => (
+              {dots.map((a, i) => (
                 <span
                   key={i}
                   style={{
@@ -92,7 +95,7 @@ export function HistoryItem({ entry, active = false, onClick }: Props) {
                     width: '4px',
                     height: '4px',
                     borderRadius: '50%',
-                    background: SEVERITY_COLOR[sev],
+                    background: SEVERITY_COLOR[a.severidade],
                   }}
                 />
               ))}
@@ -100,6 +103,83 @@ export function HistoryItem({ entry, active = false, onClick }: Props) {
           </>
         )}
       </div>
+
+      {/* "···" trigger */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation()
+          setPopoverOpen((o) => !o)
+        }}
+        style={{
+          position: 'absolute',
+          right: '8px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          opacity: hover ? 1 : 0,
+          transition: 'opacity 150ms',
+          fontFamily: 'var(--font-mono)',
+          fontSize: '13px',
+          color: 'var(--color-text-faint)',
+          background: 'transparent',
+          border: 'none',
+          cursor: 'pointer',
+          padding: '2px 4px',
+          lineHeight: 1,
+        }}
+      >
+        ···
+      </button>
+
+      {/* Delete popover */}
+      {popoverOpen && (
+        <>
+          <div
+            style={{ position: 'fixed', inset: 0, zIndex: 99 }}
+            onClick={(e) => { e.stopPropagation(); setPopoverOpen(false) }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              right: '6px',
+              top: '100%',
+              zIndex: 100,
+              background: 'var(--color-surface)',
+              border: '0.5px solid var(--color-border)',
+              borderRadius: '8px',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
+              overflow: 'hidden',
+              marginTop: '2px',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                deleteRecord(record.id)
+                onDelete()
+                setPopoverOpen(false)
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '8px 14px',
+                fontFamily: 'var(--font-sans)',
+                fontSize: '12px',
+                color: '#E24B4A',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                textAlign: 'left',
+                whiteSpace: 'nowrap',
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-grave-bg)' }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
+            >
+              Excluir registro
+            </button>
+          </div>
+        </>
+      )}
     </div>
   )
 }
