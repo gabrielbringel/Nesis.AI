@@ -3,14 +3,13 @@ interface Props {
   fill?: string
 }
 
-export function NesisWordmark({ height = 16, fill = '#1a1a1a' }: Props) {
+export function NesisWordmark({ height = 16, fill = 'var(--color-text-primary)' }: Props) {
   return (
     <svg
       viewBox="0 0 413.63 116.82"
       height={height}
-      fill={fill}
       xmlns="http://www.w3.org/2000/svg"
-      style={{ display: 'block' }}
+      style={{ display: 'block', fill }}
     >
       <rect x="307.18" y="102.19" width="14.63" height="14.63" />
       <path d="M82.57,64.64h45.95V29.21C128.52,13.08,115.44,0,99.32,0s-29.2,13.08-29.2,29.2v58.41c0,9.9,4.93,18.65,12.46,23.92,4.74,3.33,10.51,5.28,16.74,5.28s12-1.95,16.74-5.28c7.54-5.28,12.46-14.03,12.46-23.93v-10.51h-12.46v11.42c0,9.25-7.49,16.74-16.74,16.74s-16.74-7.49-16.74-16.74v-23.88h-.01ZM82.57,29.2c0-9.24,7.5-16.74,16.74-16.74s16.74,7.5,16.74,16.74v22.97h-33.48v-22.97h0Z" />
