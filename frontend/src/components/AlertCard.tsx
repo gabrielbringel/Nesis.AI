@@ -7,23 +7,23 @@ const SEVERITY_STYLES: Record<
 > = {
   GRAVE: {
     border: '#E24B4A',
-    bg: '#fefafa',
-    badgeBg: '#fcebeb',
-    badgeText: '#A32D2D',
+    bg: 'var(--color-grave-bg)',
+    badgeBg: 'var(--color-grave-badge-bg)',
+    badgeText: 'var(--color-grave-badge-text)',
     dot: '#E24B4A',
   },
   MODERADO: {
     border: '#EF9F27',
-    bg: '#fefdf9',
-    badgeBg: '#faeeda',
-    badgeText: '#854F0B',
+    bg: 'var(--color-moderado-bg)',
+    badgeBg: 'var(--color-moderado-badge-bg)',
+    badgeText: 'var(--color-moderado-badge-text)',
     dot: '#EF9F27',
   },
   LEVE: {
     border: '#639922',
-    bg: '#fafdf6',
-    badgeBg: '#eaf3de',
-    badgeText: '#3B6D11',
+    bg: 'var(--color-leve-bg)',
+    badgeBg: 'var(--color-leve-badge-bg)',
+    badgeText: 'var(--color-leve-badge-text)',
     dot: '#639922',
   },
 }
@@ -46,7 +46,7 @@ export function AlertCard({ alert }: Props) {
       onClick={() => setExpanded((v) => !v)}
       style={{
         borderRadius: '10px',
-        border: `0.5px solid #ebe8e2`,
+        border: `0.5px solid var(--color-border-light)`,
         borderLeft: `3px solid ${s.border}`,
         background: s.bg,
         padding: '12px 14px',
@@ -91,7 +91,7 @@ export function AlertCard({ alert }: Props) {
         {/* Chevron */}
         <span
           className={`chevron ${expanded ? 'open' : ''}`}
-          style={{ fontSize: '11px', color: '#bbb', flexShrink: 0 }}
+          style={{ fontSize: '11px', color: 'var(--color-text-placeholder)', flexShrink: 0 }}
         >
           ▾
         </span>

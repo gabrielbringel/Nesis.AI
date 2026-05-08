@@ -20,7 +20,7 @@ export function DrawerHeader({ onClose, searchQuery, onSearchChange }: Props) {
       }}
     >
       <IconButton onClick={onClose} ariaLabel="Fechar menu">
-        <SidebarOpenIcon size={18} color="#1a1a1a" />
+        <SidebarOpenIcon size={18} color="var(--color-text-primary)" />
       </IconButton>
 
       <div
@@ -29,8 +29,8 @@ export function DrawerHeader({ onClose, searchQuery, onSearchChange }: Props) {
           display: 'flex',
           alignItems: 'center',
           gap: '6px',
-          background: '#f0ede8',
-          border: '0.5px solid #ddd8d0',
+          background: 'var(--color-bg-muted)',
+          border: '0.5px solid var(--color-border)',
           borderRadius: '8px',
           padding: '5px 10px',
           height: '28px',
@@ -50,7 +50,7 @@ export function DrawerHeader({ onClose, searchQuery, onSearchChange }: Props) {
             outline: 'none',
             fontFamily: 'var(--font-sans)',
             fontSize: '11px',
-            color: '#888',
+            color: 'var(--color-text-faint)',
           }}
         />
       </div>
@@ -67,7 +67,7 @@ function SearchIcon() {
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
-      style={{ opacity: 0.5, color: '#888', flexShrink: 0 }}
+      style={{ opacity: 0.5, color: 'var(--color-text-faint)', flexShrink: 0 }}
     >
       <circle cx="7" cy="7" r="5" />
       <path d="M11 11l3.5 3.5" strokeLinecap="round" />
