@@ -2,9 +2,12 @@ declare var chrome: any
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { scrapeESUSData } from '../scraper/esus-scraper'
 import { getSettings } from '../stores/settingsStore'
+import { addRecord } from '../stores/historyStore'
+import type { AnalysisRecord } from '../stores/historyStore'
 import { buildPatientLabel, normalizeSexo } from '../utils/format'
 import { buildAttributeList } from '../utils/buildAttributeList'
-import type { Alert, AlertCounts, EditablePayload, SidebarState } from '../types'
+import type { ScrapedResult } from '../scraper/esus-scraper'
+import type { Alert, AlertCounts, EditablePayload, ErrorType, SidebarState } from '../types'
 
 const ESUS_URL_RE = /lista-atendimento\/atendimento/
 
@@ -17,7 +20,13 @@ const INITIAL_STATE: SidebarState = {
   counts: { grave: 0, moderado: 0, leve: 0 },
   lastAnalyzedAt: null,
   scrapedPayload: null,
+  errorType: null,
 }
+
+type ApiOutcome =
+  | { kind: 'results'; sorted: Alert[]; counts: AlertCounts }
+  | { kind: 'no-alerts' }
+  | { kind: 'error'; errorType: NonNullable<ErrorType>; errorStatus?: number }
 
 function countAlerts(alerts: Alert[]): AlertCounts {
   return {
@@ -36,25 +45,28 @@ function sortAlerts(alerts: Alert[]): Alert[] {
   )
 }
 
+function generateId(): string {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
+}
+
 function parsePosologia(posologia: string | null) {
   if (!posologia) return { dose: '', frequencia: '', via: '' }
-  
-  const parts = posologia.split('|').map(s => s.trim())
+
+  const parts = posologia.split('|').map((s) => s.trim())
   const doseFreq = parts[0] || ''
   const via = parts[1] || ''
-  
+
   let dose = ''
   let frequencia = ''
-  
+
   if (doseFreq.includes(',')) {
     const dfParts = doseFreq.split(',')
     dose = dfParts[0].trim()
     frequencia = dfParts.slice(1).join(',').trim()
   } else {
-    // Fallback if no comma is found
     dose = doseFreq
   }
-  
+
   return { dose, frequencia, via }
 }
 
@@ -72,6 +84,25 @@ function buildEditablePayload(scraped: ReturnType<typeof scrapeESUSData>): Edita
     avaliacao: p.avaliacao || '',
     problemasCondicoes: p.problemasCondicoes || [],
     medicacoes: scraped.medicacoes.map((m) => ({ nome: m.nome, posologia: m.posologia || '' })),
+  }
+}
+
+function editableToScraped(payload: EditablePayload): ScrapedResult {
+  return {
+    paciente: {
+      nome: payload.nome || null,
+      idade: parseInt(payload.idade) || null,
+      sexo: payload.sexo || null,
+      peso: payload.peso || null,
+      altura: payload.altura || null,
+      alergias: payload.alergias,
+      motivoConsulta: payload.motivoConsulta || null,
+      objetivo: payload.objetivo || null,
+      avaliacao: payload.avaliacao || null,
+      problemasCondicoes: payload.problemasCondicoes,
+      medEmUso: [],
+    },
+    medicacoes: payload.medicacoes.map((m) => ({ nome: m.nome, posologia: m.posologia })),
   }
 }
 
@@ -109,160 +140,241 @@ export function useSidebar() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const autoStartedRef = useRef(false)
 
-  // Refs para coordenação do paralelismo API + bullets
-  const apiResultRef = useRef<{ sorted: Alert[]; counts: AlertCounts } | null>(null)
+  // Coordination refs for API + bullets parallelism
+  const apiResultRef = useRef<ApiOutcome | null>(null)
   const bulletsFinishedRef = useRef(false)
+  // Alertas to save when bullets finish (set when API returns before bullets)
+  const pendingAlertasRef = useRef<Alert[] | null>(null)
 
-  const transitionToResults = useCallback((sorted: Alert[], counts: AlertCounts) => {
-    setState((prev) => ({
-      ...prev,
-      view: 'results',
-      alerts: sorted,
-      counts,
-      lastAnalyzedAt: new Date(),
-    }))
+  // Stores scraped data for the "analyze anyway" path from incomplete-data
+  const scrapedRef = useRef<ReturnType<typeof scrapeESUSData> | null>(null)
+
+  // When non-null, "Reanalisar" re-uses this payload instead of scraping
+  const reanalyzePayloadRef = useRef<EditablePayload | null>(null)
+
+  const applyOutcome = useCallback((outcome: ApiOutcome) => {
+    if (outcome.kind === 'results') {
+      setState((prev) => ({
+        ...prev,
+        view: 'results',
+        alerts: outcome.sorted,
+        counts: outcome.counts,
+        lastAnalyzedAt: new Date(),
+        errorType: null,
+      }))
+    } else if (outcome.kind === 'no-alerts') {
+      setState((prev) => ({
+        ...prev,
+        view: 'no-alerts',
+        alerts: [],
+        counts: { grave: 0, moderado: 0, leve: 0 },
+        lastAnalyzedAt: new Date(),
+        errorType: null,
+      }))
+    } else {
+      setState((prev) => ({
+        ...prev,
+        view: 'error',
+        errorType: outcome.errorType,
+        errorStatus: outcome.errorStatus,
+      }))
+    }
   }, [])
 
-  const startReading = useCallback(async () => {
-    // Reset refs
-    apiResultRef.current = null
-    bulletsFinishedRef.current = false
+  const runAnalysis = useCallback(
+    (scraped: ReturnType<typeof scrapeESUSData>, patient: { displayLabel: string }) => {
+      apiResultRef.current = null
+      bulletsFinishedRef.current = false
+      pendingAlertasRef.current = null
+      reanalyzePayloadRef.current = null
+      if (intervalRef.current) clearInterval(intervalRef.current)
 
-    setState((prev) => ({
-      ...prev,
-      view: 'reading',
-      loadedAttributes: [],
-    }))
+      const payload = buildPayload(scraped)
+      const editablePayload = buildEditablePayload(scraped)
+      const dynamicAttributes = buildAttributeList(scraped)
+
+      setState((prev) => ({
+        ...prev,
+        view: 'reading',
+        patient,
+        attributes: dynamicAttributes,
+        scrapedPayload: editablePayload,
+        loadedAttributes: [],
+        errorType: null,
+      }))
+
+      const saveRecord = (alertas: Alert[]) => {
+        addRecord({
+          id: generateId(),
+          timestamp: Date.now(),
+          patient: {
+            displayLabel: patient.displayLabel,
+            nome: scraped.paciente.nome ?? '',
+            idade: scraped.paciente.idade ?? 0,
+          },
+          alertas,
+          scrapedData: editablePayload,
+          payload,
+        } satisfies AnalysisRecord)
+      }
+
+      // ── API call (parallel with bullets) ──
+      fetch('http://localhost:8000/api/v1/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+        .then(async (res) => {
+          let outcome: ApiOutcome
+
+          if (!res.ok) {
+            outcome = { kind: 'error', errorType: 'api-error', errorStatus: res.status }
+          } else {
+            const data = await res.json()
+            if (!Array.isArray(data?.alertas)) {
+              outcome = { kind: 'error', errorType: 'invalid-response' }
+            } else if (data.alertas.length === 0) {
+              outcome = { kind: 'no-alerts' }
+            } else {
+              const sorted = sortAlerts(data.alertas)
+              outcome = { kind: 'results', sorted, counts: countAlerts(sorted) }
+            }
+          }
+
+          if (bulletsFinishedRef.current) {
+            if (outcome.kind !== 'error') {
+              saveRecord(outcome.kind === 'results' ? outcome.sorted : [])
+            }
+            applyOutcome(outcome)
+          } else if (outcome.kind === 'error') {
+            // Errors apply immediately — stop bullets
+            clearInterval(intervalRef.current!)
+            applyOutcome(outcome)
+          } else {
+            apiResultRef.current = outcome
+            pendingAlertasRef.current = outcome.kind === 'results' ? outcome.sorted : []
+          }
+        })
+        .catch(() => {
+          clearInterval(intervalRef.current!)
+          applyOutcome({ kind: 'error', errorType: 'api-unreachable' })
+        })
+
+      // ── Progressive bullet rendering ──
+      const attrCount = dynamicAttributes.length
+      const baseInterval = attrCount <= 8 ? 1000 : 650
+      const maxTotalMs = 10000
+      const intervalMs = Math.min(baseInterval, Math.floor(maxTotalMs / Math.max(attrCount, 1)))
+
+      let idx = 0
+      intervalRef.current = setInterval(() => {
+        idx++
+        setState((prev) => ({
+          ...prev,
+          loadedAttributes: dynamicAttributes.slice(0, idx),
+        }))
+
+        if (idx >= dynamicAttributes.length) {
+          clearInterval(intervalRef.current!)
+          bulletsFinishedRef.current = true
+
+          if (apiResultRef.current) {
+            if (pendingAlertasRef.current !== null) {
+              saveRecord(pendingAlertasRef.current)
+            }
+            applyOutcome(apiResultRef.current)
+          } else {
+            setState((prev) => ({ ...prev, view: 'analyzing' }))
+          }
+        }
+      }, intervalMs)
+    },
+    [applyOutcome],
+  )
+
+  const startReading = useCallback(async () => {
+    if (intervalRef.current) clearInterval(intervalRef.current)
+    reanalyzePayloadRef.current = null
+    setState((prev) => ({ ...prev, view: 'reading', loadedAttributes: [], errorType: null }))
 
     let scraped: ReturnType<typeof scrapeESUSData> | null = null
-    let realPatient = { displayLabel: 'Carregando...' }
 
     try {
-      if (typeof chrome !== 'undefined' && chrome.tabs && chrome.scripting) {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
-        if (tab?.id && tab?.url?.startsWith('http')) {
-          const injectionResults = await chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            func: scrapeESUSData,
-          })
-          scraped = injectionResults[0]?.result
-        }
+      if (typeof chrome === 'undefined' || !chrome.tabs || !chrome.scripting) {
+        setState((prev) => ({ ...prev, view: 'wrong-domain' }))
+        return
+      }
+
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+
+      if (!tab?.url || !ESUS_URL_RE.test(tab.url)) {
+        setState((prev) => ({ ...prev, view: 'wrong-domain' }))
+        return
+      }
+
+      if (tab.id && tab.url.startsWith('http')) {
+        const injectionResults = await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          func: scrapeESUSData,
+        })
+        scraped = injectionResults[0]?.result ?? null
       }
     } catch (err) {
       console.error('Erro ao ler dados do e-SUS:', err)
+      setState((prev) => ({ ...prev, view: 'error', errorType: 'scraping-failed' }))
+      return
     }
 
     if (!scraped) {
-      scraped = {
-        paciente: {
-          nome: 'Teste Local',
-          idade: 30,
-          sexo: 'M',
-          peso: '70 kg',
-          altura: '170 cm',
-          alergias: ['Amendoim'],
-          motivoConsulta: 'Avaliação de rotina',
-          objetivo: 'Check-up',
-          avaliacao: 'Paciente relata dor de cabeça',
-          problemasCondicoes: ['Hipertensão'],
-          medEmUso: ['Losartana 50mg'],
-        },
-        medicacoes: [
-          { nome: 'Dipirona 500mg', posologia: '1 comprimido a cada 6 horas' }
-        ],
-      }
+      setState((prev) => ({ ...prev, view: 'error', errorType: 'scraping-failed' }))
+      return
     }
 
-    if (scraped.paciente?.nome) {
-      realPatient = {
-        displayLabel: buildPatientLabel(
-          scraped.paciente.nome,
-          scraped.paciente.sexo,
-          scraped.paciente.idade,
-        ),
-      }
-    }
+    const missingFields: string[] = []
+    if (!scraped.paciente?.nome) missingFields.push('Nome do paciente ausente')
+    if (!scraped.medicacoes || scraped.medicacoes.length === 0) missingFields.push('Prescrição não detectada')
 
-    const payload = buildPayload(scraped)
-    const dynamicAttributes = buildAttributeList(scraped)
-
-    setState((prev) => ({
-      ...prev,
-      patient: realPatient,
-      attributes: dynamicAttributes,
-      scrapedPayload: buildEditablePayload(scraped),
-    }))
-
-    // ── Dispara a API IMEDIATAMENTE (em paralelo com os bullets) ──
-    fetch('http://localhost:8000/api/v1/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-      .then(async (res) => {
-        if (!res.ok) throw new Error(`HTTP Error: ${res.status}`)
-        const data = await res.json()
-        const sorted = sortAlerts(data?.alertas || [])
-        const counts = countAlerts(sorted)
-
-        if (bulletsFinishedRef.current) {
-          // Bullets já terminaram → transição direta para results
-          transitionToResults(sorted, counts)
-        } else {
-          // Bullets ainda carregando → guarda resultado e espera
-          apiResultRef.current = { sorted, counts }
-        }
-      })
-      .catch((error) => {
-        console.error('Erro de conexão com a API:', error)
-        const sorted: Alert[] = []
-        const counts = countAlerts(sorted)
-
-        if (bulletsFinishedRef.current) {
-          transitionToResults(sorted, counts)
-        } else {
-          apiResultRef.current = { sorted, counts }
-        }
-      })
-
-    // ── Renderização progressiva dos bullets ──
-    const attrCount = dynamicAttributes.length
-    const baseInterval = attrCount <= 8 ? 800 : 500
-    const maxTotalMs = 8000
-    const intervalMs = Math.min(baseInterval, Math.floor(maxTotalMs / Math.max(attrCount, 1)))
-
-    let idx = 0
-    intervalRef.current = setInterval(() => {
-      idx++
+    if (missingFields.length > 0) {
+      scrapedRef.current = scraped
       setState((prev) => ({
         ...prev,
-        loadedAttributes: dynamicAttributes.slice(0, idx),
+        view: 'incomplete-data',
+        scrapedPayload: buildEditablePayload(scraped!),
+        missingFields,
+        errorType: null,
       }))
+      return
+    }
 
-      if (idx >= dynamicAttributes.length) {
-        clearInterval(intervalRef.current!)
-        bulletsFinishedRef.current = true
+    const patient = {
+      displayLabel: buildPatientLabel(
+        scraped.paciente.nome,
+        scraped.paciente.sexo,
+        scraped.paciente.idade,
+      ),
+    }
 
-        if (apiResultRef.current) {
-          // API já respondeu → pula "analyzing", vai direto para results
-          transitionToResults(apiResultRef.current.sorted, apiResultRef.current.counts)
-        } else {
-          // API ainda pendente → mostra "analyzing" e aguarda
-          setState((prev) => ({ ...prev, view: 'analyzing' }))
-        }
-      }
-    }, intervalMs)
-  }, [transitionToResults])
-
-  const reanalyze = useCallback(() => {
-    if (intervalRef.current) clearInterval(intervalRef.current)
-    startReading()
-  }, [startReading])
+    runAnalysis(scraped, patient)
+  }, [runAnalysis])
 
   const reanalyzeWithData = useCallback(async (editedPayload: EditablePayload) => {
     if (intervalRef.current) clearInterval(intervalRef.current)
 
-    setState((prev) => ({ ...prev, view: 'analyzing' }))
+    const newLabel = buildPatientLabel(
+      editedPayload.nome,
+      editedPayload.sexo,
+      parseInt(editedPayload.idade) || 0,
+    )
+    const dynAttrs = buildAttributeList(editableToScraped(editedPayload))
+
+    setState((prev) => ({
+      ...prev,
+      view: 'analyzing',
+      errorType: null,
+      patient: { displayLabel: newLabel },
+      attributes: dynAttrs,
+      scrapedPayload: editedPayload,
+    }))
 
     const apiPayload = {
       paciente: {
@@ -292,54 +404,132 @@ export function useSidebar() {
         }),
     }
 
+    const saveRecord = (alertas: Alert[]) => {
+      addRecord({
+        id: generateId(),
+        timestamp: Date.now(),
+        patient: {
+          displayLabel: newLabel,
+          nome: editedPayload.nome,
+          idade: parseInt(editedPayload.idade) || 0,
+        },
+        alertas,
+        scrapedData: editedPayload,
+        payload: apiPayload,
+      })
+    }
+
     try {
       const res = await fetch('http://localhost:8000/api/v1/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(apiPayload),
       })
-      if (!res.ok) throw new Error(`HTTP Error: ${res.status}`)
+      if (!res.ok) {
+        setState((prev) => ({ ...prev, view: 'error', errorType: 'api-error', errorStatus: res.status }))
+        return
+      }
       const data = await res.json()
-      const sorted = sortAlerts(data?.alertas || [])
+      if (!Array.isArray(data?.alertas)) {
+        setState((prev) => ({ ...prev, view: 'error', errorType: 'invalid-response' }))
+        return
+      }
+      const sorted = sortAlerts(data.alertas)
       const counts = countAlerts(sorted)
-      const newLabel = buildPatientLabel(
-        editedPayload.nome,
-        editedPayload.sexo,
-        parseInt(editedPayload.idade) || 0,
-      )
-      setState((prev) => ({
-        ...prev,
-        view: 'results',
-        patient: { displayLabel: newLabel },
-        alerts: sorted,
-        counts,
-        lastAnalyzedAt: new Date(),
-        scrapedPayload: editedPayload,
-      }))
-    } catch (err) {
-      console.error('Erro ao reanalisar com dados editados:', err)
-      setState((prev) => ({
-        ...prev,
-        view: 'results',
-        alerts: [],
-        counts: { grave: 0, moderado: 0, leve: 0 },
-        lastAnalyzedAt: new Date(),
-      }))
+
+      if (sorted.length === 0) {
+        saveRecord([])
+        setState((prev) => ({
+          ...prev,
+          view: 'no-alerts',
+          patient: { displayLabel: newLabel },
+          alerts: [],
+          counts: { grave: 0, moderado: 0, leve: 0 },
+          lastAnalyzedAt: new Date(),
+          scrapedPayload: editedPayload,
+          errorType: null,
+        }))
+      } else {
+        saveRecord(sorted)
+        setState((prev) => ({
+          ...prev,
+          view: 'results',
+          patient: { displayLabel: newLabel },
+          alerts: sorted,
+          counts,
+          lastAnalyzedAt: new Date(),
+          scrapedPayload: editedPayload,
+          errorType: null,
+        }))
+      }
+    } catch {
+      setState((prev) => ({ ...prev, view: 'error', errorType: 'api-unreachable' }))
     }
+  }, [])
+
+  const reanalyze = useCallback(() => {
+    const histPayload = reanalyzePayloadRef.current
+    if (histPayload) {
+      reanalyzeWithData(histPayload)
+    } else {
+      startReading()
+    }
+  }, [startReading, reanalyzeWithData])
+
+  const analyzeAnyway = useCallback(() => {
+    const scraped = scrapedRef.current
+    if (!scraped) return
+    const patient = scraped.paciente?.nome
+      ? {
+          displayLabel: buildPatientLabel(
+            scraped.paciente.nome,
+            scraped.paciente.sexo,
+            scraped.paciente.idade,
+          ),
+        }
+      : { displayLabel: 'Paciente' }
+    runAnalysis(scraped, patient)
+  }, [runAnalysis])
+
+  const fillManually = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      view: 'results',
+      alerts: [],
+      counts: { grave: 0, moderado: 0, leve: 0 },
+      lastAnalyzedAt: null,
+      errorType: null,
+    }))
+  }, [])
+
+  const loadRecord = useCallback((record: AnalysisRecord) => {
+    if (intervalRef.current) clearInterval(intervalRef.current)
+    reanalyzePayloadRef.current = record.scrapedData
+    setState((prev) => ({
+      ...prev,
+      view: 'results',
+      patient: { displayLabel: record.patient.displayLabel },
+      alerts: sortAlerts(record.alertas),
+      counts: countAlerts(record.alertas),
+      lastAnalyzedAt: new Date(record.timestamp),
+      scrapedPayload: record.scrapedData,
+      errorType: null,
+    }))
+  }, [])
+
+  const goToIdle = useCallback(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current)
+    setState((prev) => ({ ...prev, view: 'idle', errorType: null }))
   }, [])
 
   useEffect(() => {
     if (autoStartedRef.current) return
     autoStartedRef.current = true
-
     if (!getSettings().autoRead) return
 
     const tryAutoStart = async () => {
       try {
-        if (typeof chrome === 'undefined' || !chrome.tabs) {
-          startReading()
-          return
-        }
+        if (typeof chrome === 'undefined' || !chrome.tabs) return
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
         if (tab?.url && ESUS_URL_RE.test(tab.url)) {
           startReading()
@@ -351,5 +541,5 @@ export function useSidebar() {
     tryAutoStart()
   }, [startReading])
 
-  return { state, startReading, reanalyze, reanalyzeWithData }
+  return { state, startReading, reanalyze, reanalyzeWithData, analyzeAnyway, fillManually, goToIdle, loadRecord }
 }
