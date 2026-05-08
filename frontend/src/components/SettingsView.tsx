@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { toggleAutoRead, toggleDarkMode, useSettings } from '../stores/settingsStore'
+import { toggleDarkMode, useSettings } from '../stores/settingsStore'
 import { resetMemory } from '../stores/historyStore'
 import { ToggleSwitch } from './ToggleSwitch'
 
@@ -10,17 +10,11 @@ export function SettingsView() {
     <div style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <Section title="Geral">
         <SettingRow
-          label="Leitura automática"
-          description="Analisa o prontuário sem precisar clicar em 'Ler prontuário'."
-          checked={settings.autoRead}
-          onChange={toggleAutoRead}
-          first
-        />
-        <SettingRow
           label="Modo escuro"
           description="Tema com fundo escuro para reduzir cansaço visual."
           checked={settings.darkMode}
           onChange={toggleDarkMode}
+          first
         />
       </Section>
 
