@@ -1,4 +1,4 @@
-# NesisAI
+# Nesis.AI
 
 Copiloto clínico que utiliza IA para detectar erros de prescrição e interações medicamentosas em tempo real, integrado ao prontuário do eSUS APS através de uma extensão Chrome.
 
