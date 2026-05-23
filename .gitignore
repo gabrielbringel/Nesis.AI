@@ -107,6 +107,3 @@ backend/temp_pip/
 create_db.py
 init_db.py
 temp_*.py
-
-# ── Imagens ────────────────────────────────────────────────────────────────
-pitch/
