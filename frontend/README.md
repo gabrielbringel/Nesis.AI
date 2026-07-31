@@ -1,86 +1,139 @@
 # NesisAI — Frontend (Chrome Extension)
 
-Sidebar React do NesisAI, empacotada como extensão Chrome (Manifest V3 + Side Panel API). A mesma SPA roda como site standalone via Vite para iteração rápida de UI.
+NesisAI's React interface is packaged as a Chrome Manifest V3 extension using the Side Panel API. It is designed to read a patient encounter page in Brazil's e-SUS APS primary-care record system.
 
-## Desenvolvimento (SPA standalone)
+For Brazilian health care terminology, see the [Brazilian Health Care Context](../README.md#brazilian-health-care-context) section in the main README.
+
+## Prerequisites
+
+- Node.js `^20.19.0` or `>=22.12.0`, as required by the installed Vite 8 release
+- npm
+- Google Chrome with Side Panel API support
+- The NesisAI backend at `http://localhost:8000` for live analysis
+
+## Browser UI Development
 
 ```bash
+cd frontend
 npm install
 npm run dev
 ```
 
-Abre em `http://localhost:5173`. Nesse modo a SPA preenche o viewport inteiro (esperado — sem o Chrome controlando o panel). Chamadas para `POST /api/v1/analyze` esperam o backend em `http://localhost:8000`.
+Vite serves the interface at `http://localhost:5173`. This mode is useful for layout work, but e-SUS scraping requires Chrome extension APIs and therefore only works when the built extension is loaded in Chrome.
 
-## Build e instalação como extensão
+## Build and Install the Extension
 
 ```bash
 npm run build:extension
 ```
 
-Gera `frontend/dist/`. Para instalar:
+This creates `frontend/dist/`.
 
-1. Abrir `chrome://extensions`
-2. Ativar **Modo do desenvolvedor**
-3. Clicar **Carregar sem compactação**
-4. Selecionar a pasta `frontend/dist/`
+1. Open `chrome://extensions`.
+2. Enable **Developer mode**.
+3. Select **Load unpacked**.
+4. Choose the `frontend/dist/` directory.
+5. Open an eligible e-SUS APS encounter page.
+6. Select the NesisAI extension icon to open its side panel.
 
-## Ativação automática
+Chrome's extension icon opens the panel because `background.js` calls `setPanelBehavior({ openPanelOnActionClick: true })`. The current service worker does not automatically open the panel when the user navigates to a matching URL.
 
-Navegar para qualquer URL que case com `host_permissions` no `manifest.json` abre o side panel automaticamente:
+## URL Access and Scraping
 
-- `https://*.esusaps.gov.br/*`
-- `https://*.saude.gov.br/*`
-- `http://*/lista-atendimento/atendimento*`
-- `http://localhost/*` (desenvolvimento)
+The manifest grants access to these development and candidate deployment patterns:
 
-Clicar no ícone da extensão na barra também abre o side panel em qualquer aba.
-
-## Estrutura
-
+```text
+https://*.esusaps.gov.br/*
+https://*.saude.gov.br/*
+http://*/lista-atendimento/atendimento*
+http://localhost/*
+http://localhost:8080/*
+http://127.0.0.1/*
 ```
+
+These host permissions are broader than the scraper's runtime eligibility check. The current UI only starts scraping when the active tab URL contains:
+
+```text
+lista-atendimento/atendimento
+```
+
+The URL patterns in `background.js` are placeholders and are not currently used to open or enable the panel. Confirm the production e-SUS deployment URLs before relying on these patterns outside a demo.
+
+If **Automatic reading** is enabled in settings, the extension starts reading when the side-panel UI loads on an eligible encounter page. The setting does not open the panel itself.
+
+## Project Structure
+
+```text
 frontend/
 ├── src/
-│   ├── components/             # UI da sidebar (AlertCard, Drawer, states/…)
-│   ├── hooks/                  # useSidebar (fluxo principal), useDrawer
+│   ├── components/             # Side-panel UI, drawer, and view states
+│   ├── hooks/
+│   │   ├── useSidebar.ts       # Scraping, API call, and main state flow
+│   │   └── useDrawer.ts
 │   ├── scraper/
-│   │   └── esus-scraper.ts     # XPaths e fallback heurístico do DOM eSUS
+│   │   └── esus-scraper.ts     # Mapped XPaths and heuristic DOM fallback
 │   ├── stores/
-│   │   ├── settingsStore.ts    # autoRead, darkMode (localStorage)
-│   │   └── historyStore.ts     # histórico de análises (localStorage)
-│   ├── utils/                  # Formatação, agregação, normalização
-│   └── data/seedHistory.ts     # 10 registros seed para demonstração
+│   │   ├── settingsStore.ts    # autoRead and darkMode in localStorage
+│   │   └── historyStore.ts     # Local analysis history
+│   ├── utils/
+│   └── data/seedHistory.ts     # Demo history records
 ├── public/
-│   ├── manifest.json           # Manifest V3 (sidePanel + host_permissions)
-│   ├── background.js           # Service worker
-│   └── icons/                  # PNGs gerados a partir do NesisMark
+│   ├── manifest.json           # Manifest V3 permissions and side panel
+│   ├── background.js           # Extension service worker
+│   └── icons/
 └── scripts/
-    └── generate-icons.mjs      # npm run generate:icons
+    └── generate-icons.mjs
 ```
 
-## Fluxo de estados da sidebar
+## Main UI Flow
 
+```text
+idle
+  |
+  v
+reading ---> incomplete data
+  |
+  v
+analyzing
+  |
+  +----> results
+  +----> no alerts
+  +----> error
+
+wrong domain and manual data entry are additional branches.
 ```
-idle → lendo → analisando → resultado
-                                ↑
-                                └── reanalisar (sem novo scraping,
-                                    com dados editados pelo médico)
+
+Reanalysis uses the physician-edited payload and does not scrape the page again.
+
+## API Integration
+
+The extension sends requests directly to:
+
+```text
+POST http://localhost:8000/api/v1/analyze
 ```
 
-## Stack
+The endpoint URL is currently hard-coded in `src/hooks/useSidebar.ts`. The Vite development proxy for `/api` does not affect this request.
 
-- React 18 + TypeScript + Vite (`base: './'` para paths relativos no bundle)
-- Tailwind CSS (utilitários apenas)
-- Google Fonts: Instrument Serif, DM Sans, DM Mono
-- Manifest V3, Side Panel API, service worker
+## Technology Stack
 
-## Regenerar ícones
+- React 18
+- TypeScript
+- Vite 8 with `base: './'` for extension-relative asset paths
+- Tailwind CSS
+- Instrument Serif, DM Sans, and DM Mono
+- Chrome Manifest V3, Side Panel API, service worker, tabs, and scripting APIs
+
+## Generate Icons
 
 ```bash
 npm run generate:icons
 ```
 
-Editar `scripts/generate-icons.mjs` se a marca mudar.
+The script writes the extension PNG assets under `public/icons/`.
 
-## Persistência
+## Local Persistence
 
-Histórico e configurações ficam em `localStorage` — não há backend para isso. O botão **Redefinir memória** (em SettingsView) limpa ambos.
+Analysis history and settings are stored in the extension's `localStorage`; there is no backend synchronization. **Reset memory** clears both stores.
+
+The settings store includes `darkMode`, but the project's current design remains light-only.

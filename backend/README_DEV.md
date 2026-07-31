@@ -1,132 +1,144 @@
-# NesisAI — Backend Dev Guide
+# NesisAI — Backend Development Guide
 
-Guia de desenvolvimento do backend sem Docker (venv local). Para o fluxo padrão com Docker, ver [`README_DOCKER.md`](./README_DOCKER.md).
+This guide covers running the backend directly on the host. The recommended demo workflow uses Docker; see [`README_DOCKER.md`](README_DOCKER.md).
 
-## Pré-requisitos
+## Prerequisites
 
 - Python 3.11+
-- PostgreSQL 16 com extensão `pgvector` (se quiser RAG localmente — ou usar o Postgres do Docker)
-- API key do Google Gemini
+- PostgreSQL 16 with pgvector if you want local RAG retrieval, or the PostgreSQL service from `docker-compose.yml`
+- A Google AI Studio API key
 
-## Setup do ambiente
+## Environment Setup
 
-### macOS / Linux
+### macOS and Linux
 
 ```bash
 cd backend
-
 python -m venv .venv
 source .venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 
 cp .env.example .env
-# Editar .env: GEMINI_API_KEY e PGVECTOR_URL
+# Set GEMINI_API_KEY, DATABASE_URL, and PGVECTOR_URL in .env
 ```
 
-### Windows (PowerShell)
+### Windows PowerShell
 
 ```powershell
 cd backend
-.\scripts\start.ps1
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+Copy-Item .env.example .env
 ```
 
-O script `start.ps1` cuida de venv, dependências, migrações e startup do servidor.
+The legacy scripts under `backend/scripts/` still contain assumptions from the earlier SQLite-based implementation. Use the explicit commands in this guide for the current PostgreSQL + pgvector stack.
 
-## Variáveis de ambiente
+## Environment Variables
 
-`PGVECTOR_URL` precisa apontar para o host certo:
+For a backend process running on the host:
 
-- Postgres rodando localmente: `postgresql+psycopg://nesis:nesis@localhost:5432/nesis`
-- Postgres do `docker-compose` (acessado a partir do host): `postgresql+psycopg://nesis:nesis@localhost:5432/nesis`
-- Backend rodando dentro do Docker (chamando o serviço `postgres`): `postgresql+psycopg://nesis:nesis@postgres:5432/nesis`
+```env
+DATABASE_URL=postgresql+asyncpg://nesis:nesis@localhost:5432/nesis
+PGVECTOR_URL=postgresql+psycopg://nesis:nesis@localhost:5432/nesis
+GEMINI_API_KEY=your_api_key
+GEMINI_MODEL=gemini-2.5-flash
+APP_ENV=development
+```
 
-Demais variáveis estão em [`.env.example`](./.env.example).
+The two database URLs use different drivers:
 
-## Migrações
+- `DATABASE_URL` uses `asyncpg` for the application database and Alembic.
+- `PGVECTOR_URL` uses synchronous `psycopg`; vector searches are moved to a worker thread so they do not block FastAPI's event loop.
 
-Migrações Alembic ficam em `alembic/versions/`. Rodar manualmente:
+When code runs inside Docker, replace the database host `localhost` with the Compose service name `postgres`.
+
+The embedding implementation currently uses the fixed model `models/gemini-embedding-001`. Although `.env.example` contains `GEMINI_EMBEDDING_MODEL`, the current Python configuration does not read that variable.
+
+## Database Migrations
+
+Migration files live in `alembic/versions/`.
 
 ```bash
-alembic upgrade head        # aplica todas
-alembic revision -m "msg"   # cria nova revisão
-alembic downgrade -1        # reverte uma
-alembic current             # mostra revisão atual
+alembic upgrade head
+alembic current
+alembic revision -m "describe the change"
+alembic downgrade -1
 ```
 
-No fluxo Docker, `alembic upgrade head` roda automaticamente no `CMD` do `Dockerfile`.
+The Docker image runs `alembic upgrade head` automatically at startup.
 
-## Iniciar o servidor
+## Start the API
 
 ```bash
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 - API: `http://localhost:8000`
-- Swagger: `http://localhost:8000/docs`
-- Health: `http://localhost:8000/health`
+- OpenAPI UI: `http://localhost:8000/docs`
+- Health check: `http://localhost:8000/health`
 
-## Popular a base de conhecimento (RAG)
+## Populate the Knowledge Base
 
-Com o pgvector acessível via `PGVECTOR_URL`:
+With pgvector reachable through `PGVECTOR_URL`:
 
 ```bash
 python scripts/ingest_knowledge.py
 ```
 
-O script faz upsert pelo `id` da entrada — re-rodar atualiza embeddings sem duplicar.
+The script embeds 41 entries in small batches and stores them in the `nesis_knowledge_base` collection.
 
-## Verificar ambiente
-
-```bash
-python scripts/check_env.py
-```
-
-Valida dependências, banco e variáveis críticas.
-
-## Testes
+## Tests
 
 ```bash
-pytest                      # roda todos
+pytest
 pytest tests/test_prescriptions.py -v
-pytest -k "nome_do_teste"
+pytest -k "test_name"
 ```
 
-Configuração em `tests/conftest.py`. Suíte usa `pytest-asyncio` + `httpx`.
+Tests use pytest-asyncio, HTTPX, and a temporary SQLite database configured in [`tests/conftest.py`](tests/conftest.py). They do not require the development PostgreSQL database.
 
-## Estrutura do app
+## Application Structure
 
-```
+```text
 app/
-├── main.py                # FastAPI entrypoint, CORS, error handlers
-├── config.py              # Settings (pydantic-settings)
-├── database.py            # SQLAlchemy async setup
-├── common.py              # Utilitários compartilhados
+├── main.py                # FastAPI application, CORS, and error handlers
+├── config.py              # pydantic-settings configuration
+├── database.py            # Async SQLAlchemy engine and sessions
+├── common.py              # Shared utilities
 ├── models.py              # ORM models
-├── motor/                 # Pipeline de IA (ver app/motor/README.md)
-└── prescriptions/         # Domínio prescrições
+├── motor/                 # Gemini + RAG pipeline
+└── prescriptions/
     ├── router.py          # POST /api/v1/analyze
-    ├── service.py         # Lógica de negócio
-    ├── schemas.py         # Pydantic v2
+    ├── service.py         # Pipeline invocation and severity totals
+    ├── schemas.py         # Pydantic v2 request/response models
     └── models.py
 ```
 
 ## Logs
 
-`app/main.py` configura `logging.basicConfig(level=INFO)` antes de qualquer logger ser instanciado, para que os `logger.info()` do motor apareçam.
+`app/main.py` configures the root log level as `INFO`. To confirm a successful RAG lookup, look for:
 
-Para confirmar que o RAG está consultando o pgvector, procurar nos logs:
-
-```
-RAG recuperou N documentos para a query: ...
+```text
+RAG recuperou N documentos para: ...
 ```
 
 ## Troubleshooting
 
-**`google.generativeai` aparece em algum import** — usar somente `google-genai`. A biblioteca antiga é deprecated e está banida no projeto.
+**`GEMINI_API_KEY não configurada`**
 
-**`PGVECTOR_URL` falhando com host `postgres`** — você está rodando fora do Docker. Trocar para `localhost`.
+Set `GEMINI_API_KEY` in `backend/.env` before starting the process.
 
-**Migração aplica mas tabela `langchain_pg_embedding` não existe** — ela é criada pelo `langchain-postgres` na primeira ingestão; rodar `python scripts/ingest_knowledge.py`.
+**`PGVECTOR_URL` fails with host `postgres`**
 
-**Bind mount falhando no macOS com "Operation not permitted"** — o `docker-compose.yml` usa named volume (`pgdata`) justamente para evitar isso. Não trocar por bind mount.
+The backend is running outside Docker. Use `localhost` as the hostname.
+
+**`langchain_pg_embedding` does not exist after migrations**
+
+The table is created by langchain-postgres during vector-store initialization. Run `python scripts/ingest_knowledge.py`.
+
+**An import references `google.generativeai`**
+
+The project uses the newer `google-genai` package for embeddings. Do not introduce the deprecated SDK.

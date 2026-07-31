@@ -1,60 +1,96 @@
-# Motor de IA
+# AI Engine
 
-Pipeline de análise clínica do NesisAI. Recebe `{ paciente, medicacoes }` e retorna lista de alertas classificados por severidade.
+NesisAI's clinical analysis pipeline accepts the Portuguese-keyed `{ paciente, medicacoes }` payload and returns clinical alerts classified by severity.
 
-## Fluxo
+`DCB` refers to *Denominações Comuns Brasileiras* (Brazilian Common Denominations), Brazil's official standard for pharmaceutical substance names.
 
+## Pipeline
+
+```text
+patient + medications
+          |
+          v
+normalize()       Gemini maps brand names to DCB substance names
+          |
+          v
+search_context()  pgvector retrieves the four most similar entries
+          |
+          v
+verify()          Gemini analyzes the prescription with the retrieved context
+          |
+          v
+alerts            severity, description, recommendation, source, and drugs involved
 ```
-payload (paciente + medicacoes)
-        │
-        ▼
-normalize()    ─┐  Gemini padroniza nomes comerciais → DCB
-                │
-                ▼
-verify()       ─┐  Busca k=4 docs no pgvector via RAG
-                │  Gemini analisa prescrição com contexto injetado
-                ▼
-[alertas]         severidade + mecanismo + recomendação + fonte
-```
 
-Em caso de falha do LLM, o pipeline degrada graciosamente devolvendo lista vazia em vez de quebrar a UI (ver `pipeline.py`).
+Failure behavior is intentionally defensive:
 
-## Arquivos
+- If normalization fails or Gemini returns invalid normalization JSON, the original medication list continues to verification.
+- If vector retrieval is unavailable, verification continues without retrieved documents and asks the model to use its clinical knowledge.
+- If verification raises an exception, the top-level pipeline logs the error and returns an empty alert list.
+- If verification returns invalid JSON, it returns an empty alert list.
 
-| Arquivo | Responsabilidade |
+An empty list therefore means either “no alerts” or “analysis failed.” The current API contract does not distinguish those outcomes.
+
+## Files
+
+| File | Responsibility |
 |---|---|
-| `pipeline.py` | Orquestrador `analyze()` — chama normalize → verify |
-| `normalizer.py` | LLM normaliza texto livre da prescrição para DCB |
-| `verifier.py` | Recupera contexto do pgvector e gera alertas via LLM |
-| `vectorstore.py` | Cliente pgvector via `langchain-postgres` |
-| `embeddings.py` | `GeminiEmbeddings` — wrapper sobre `google-genai` |
-| `prompts.py` | System prompts de normalização e verificação |
+| `pipeline.py` | Orchestrates `normalize()` followed by `verify()` |
+| `normalizer.py` | Normalizes free-text medication data to DCB names |
+| `verifier.py` | Retrieves context and generates alerts |
+| `vectorstore.py` | Configures langchain-postgres and runs similarity search |
+| `embeddings.py` | Implements LangChain's embedding interface with `google-genai` |
+| `prompts.py` | Portuguese normalization and verification prompts |
 
-## Modelos
+## Models and SDKs
 
-- **LLM**: `gemini-2.5-flash` (configurável via `GEMINI_MODEL`)
-- **Embeddings**: `models/gemini-embedding-001` (configurável via `GEMINI_EMBEDDING_MODEL`)
-- **SDK**: `google-genai` (a `google.generativeai` deprecated **não** é usada)
+- **LLM**: configured by `GEMINI_MODEL`; `.env.example` selects `gemini-2.5-flash`
+- **Embeddings**: fixed in code as `models/gemini-embedding-001`
+- **Chat integration**: `langchain-google-genai`
+- **Embedding SDK**: `google-genai`
 
-## Vector store
+The current code does not read `GEMINI_EMBEDDING_MODEL`, even though that variable appears in `.env.example`.
 
-- Coleção: `nesis_knowledge_base`
-- Backend: pgvector via `langchain-postgres`
-- Conexão: `PGVECTOR_URL` (host `postgres` no Docker, `localhost` fora)
-- População: `backend/scripts/ingest_knowledge.py` faz upsert pelo `id` da entrada
+## Vector Store
 
-## Contrato
+- Collection: `nesis_knowledge_base`
+- Storage: PostgreSQL + pgvector through `langchain-postgres`
+- Connection: `PGVECTOR_URL`
+- Retrieval depth: four documents per analysis
+- Ingestion: `backend/scripts/ingest_knowledge.py`
+
+The vector store uses synchronous psycopg calls. Similarity searches run through `asyncio.to_thread()` to avoid blocking FastAPI's event loop.
+
+Use the Compose hostname `postgres` from inside Docker and `localhost` from a host process.
+
+## Contract
 
 ```python
-async def analyze(payload: dict) -> list[dict]:
-    """payload = { 'paciente': {...}, 'medicacoes': [...] }
-       retorno  = [ { severidade, mecanismo, recomendacao, fonte, ... } ]
-    """
+async def analyze(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    ...
 ```
 
-Mantido estável para preservar contrato com `app.prescriptions.service`.
+Each valid alert must use one of the Portuguese severity values `GRAVE`, `MODERADO`, or `LEVE`. The service layer then validates each item against `app.prescriptions.schemas.Alerta`.
 
-## Não usar
+Expected alert fields:
 
-- `google.generativeai` (biblioteca deprecated)
-- BioBERTpt, ChemicalX/RDKit, Neo4j, Celery/Redis, MLflow — todos descartados na v2
+```text
+severidade
+titulo
+descricao
+fonte
+medicamentos_envolvidos
+recomendacao
+```
+
+## Out-of-Scope Legacy Components
+
+Do not reintroduce components removed from v1:
+
+- BioBERTpt
+- ChemicalX or RDKit
+- Neo4j
+- Celery or Redis
+- MLflow
+
+Do not import the deprecated `google.generativeai` SDK for embeddings.

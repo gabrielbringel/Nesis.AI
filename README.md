@@ -1,69 +1,82 @@
 # NesisAI
 
-Copiloto clínico que utiliza IA para detectar erros de prescrição e interações medicamentosas em tempo real, integrado ao prontuário do eSUS APS através de uma extensão Chrome.
+NesisAI is an AI-powered clinical copilot that detects prescription errors and drug interactions in real time. It integrates with Brazil's e-SUS APS electronic health record workflow through a Chrome extension.
 
-## Sobre o Projeto
+## Project Overview
 
-NesisAI é um sistema de apoio à decisão clínica (CDSS) para médicos da Atenção Primária à Saúde (APS) do SUS. Atua como sidebar ao lado do prontuário do eSUS APS e oferece:
+NesisAI is a clinical decision support system (CDSS) designed for physicians working in primary health care within Brazil's Unified Health System. It appears as a side panel alongside the e-SUS APS patient record and provides:
 
-1. **Detecção Automática de Prontuários**: extensão Chrome reconhece a página do eSUS APS e extrai dados clínicos do paciente e da prescrição em tempo real.
-2. **Análise Híbrida LLM + RAG**: motor de IA que combina Google Gemini com base de conhecimento cardiovascular indexada em pgvector.
-3. **Alertas Classificados por Severidade**: feedback exibido como GRAVE, MODERADO ou LEVE, com recomendação clínica e citação explícita da fonte.
-4. **Revisão Humana**: gaveta lateral editável que permite ao médico corrigir os dados scrapeados e reanalisar.
+1. **Automatic Patient Record Detection**: the Chrome extension recognizes an e-SUS APS page and extracts patient and prescription data in real time.
+2. **Hybrid LLM + RAG Analysis**: the AI engine combines Google Gemini with a cardiovascular knowledge base indexed in pgvector.
+3. **Severity-Based Alerts**: findings are displayed using the Portuguese labels `GRAVE` (severe), `MODERADO` (moderate), or `LEVE` (mild), together with a clinical recommendation and an explicit source citation.
+4. **Human Review**: an editable drawer allows the physician to correct the extracted data and run the analysis again.
 
-> **Sobre o eSUS APS**: o eSUS APS é o sistema de prontuário eletrônico oficial do Ministério da Saúde do Brasil, utilizado pela APS em milhares de Unidades Básicas. A extensão NesisAI foi projetada para integrar-se nativamente ao fluxo de trabalho médico, sem substituí-lo.
+### Brazilian Health Care Context
 
-## Funcionalidades Principais
+- **SUS (Sistema Único de Saúde, or Unified Health System)** is Brazil's publicly funded, universal health care system. It provides care free at the point of service across the country.
+- **APS (Atenção Primária à Saúde, or Primary Health Care)** is the first level of care within SUS. It covers services such as prevention, routine appointments, chronic disease management, and referrals to specialized care.
+- **e-SUS APS** is a digital health strategy and software ecosystem maintained by Brazil's Ministry of Health for recording and managing primary care information. Its electronic patient record is used by public primary care teams throughout Brazil, including those working in local community clinics known as *Unidades Básicas de Saúde* (UBS).
+- **DCB (Denominações Comuns Brasileiras, or Brazilian Common Denominations)** is Brazil's official naming standard for pharmaceutical substances. NesisAI maps brand names to these standardized nonproprietary names before performing its analysis.
 
-- Detecção automática do prontuário do eSUS APS via `host_permissions` (Manifest V3)
-- Scraping estruturado do DOM com XPaths mapeados e fallback heurístico
-- Normalização de nomes comerciais → DCB via LLM
-- Verificação clínica com Gemini 2.5 Flash + RAG sobre base cardiovascular (41 entradas)
-- Classificação automática por severidade (GRAVE / MODERADO / LEVE) com fonte citada
-- Gaveta lateral editável para correção de dados e reanálise sem novo scraping
-- Histórico de análises e configurações persistidos localmente (`localStorage`)
+NesisAI is designed to fit into this existing clinical workflow and support—not replace—a health professional's judgment.
 
-## Tecnologias Utilizadas
+> [!IMPORTANT]
+> NesisAI is a hackathon prototype. It has not been clinically validated or approved as a medical device and must not be used as the sole basis for patient-care decisions.
+
+## Key Features
+
+- Automatic detection of e-SUS APS patient records through Chrome Manifest V3 `host_permissions`
+- Structured DOM scraping using mapped XPaths with a heuristic fallback
+- LLM-based normalization of brand names to DCB-standard substance names
+- Clinical verification using Gemini 2.5 Flash and RAG over a cardiovascular knowledge base containing 41 entries
+- Automatic severity classification using the Portuguese UI labels `GRAVE` / `MODERADO` / `LEVE`, with source citations
+- Editable side drawer for correcting extracted data and rerunning the analysis without scraping the page again
+- Analysis history and settings stored locally in the browser using `localStorage`
+
+## Technology Stack
 
 ### Backend
+
 - **Framework**: FastAPI (Python 3.11+)
-- **Banco de Dados**: PostgreSQL 16 + pgvector
-- **ORM**: SQLAlchemy 2 (async) + Alembic
-- **IA**: Google Gemini 2.5 Flash + `models/gemini-embedding-001`
+- **Database**: PostgreSQL 16 + pgvector
+- **ORM and migrations**: SQLAlchemy 2 (async) + Alembic
+- **AI**: Google Gemini 2.5 Flash + `models/gemini-embedding-001`
 - **RAG**: LangChain + langchain-postgres
 
 ### Frontend
+
 - **Framework**: React 18 + TypeScript + Vite
-- **Estilização**: Tailwind CSS
-- **Plataforma**: Chrome Extension Manifest V3 + Side Panel API
+- **Styling**: Tailwind CSS
+- **Platform**: Chrome Extension Manifest V3 + Side Panel API
 
-### Infraestrutura
-- Docker + Docker Compose com named volumes (`pgvector/pgvector:pg16`)
+### Infrastructure
 
-## Como Rodar
+- Docker + Docker Compose using named volumes (`pgvector/pgvector:pg16`)
 
-### Pré-requisitos
+## Getting Started
 
-- Docker e Docker Compose
-- Node.js 18+
+### Prerequisites
+
+- Docker and Docker Compose
+- Node.js `^20.19.0` or `>=22.12.0` (required by Vite 8)
 - Google Chrome
-- API Key do Google AI Studio
+- A Google AI Studio API key
 
 ### Backend
 
 ```bash
 cd backend
-cp .env.example .env   # adicionar GEMINI_API_KEY
+cp .env.example .env   # Add your GEMINI_API_KEY
 docker compose up --build
 ```
 
-Após subir, popular a base de conhecimento:
+Once the services are running, populate the knowledge base:
 
 ```bash
 docker exec -it backend-backend-1 python scripts/ingest_knowledge.py
 ```
 
-Para detalhes de configuração, variáveis de ambiente e troubleshooting, ver [`backend/README_DOCKER.md`](backend/README_DOCKER.md).
+For configuration details, environment variables, and troubleshooting, see [`backend/README_DOCKER.md`](backend/README_DOCKER.md).
 
 ### Frontend
 
@@ -73,33 +86,33 @@ npm install
 npm run build:extension
 ```
 
-Em `chrome://extensions` → Modo do desenvolvedor → Carregar sem compactação → selecionar `frontend/dist/`.
+Open `chrome://extensions`, enable **Developer mode**, select **Load unpacked**, and choose the `frontend/dist/` directory.
 
-Para detalhes de desenvolvimento e build, ver [`frontend/README.md`](frontend/README.md).
+For development and build details, see [`frontend/README.md`](frontend/README.md).
 
-## Base de Conhecimento (Banco vetorial)
+## Knowledge Base (Vector Database)
 
-41 entradas curadas no domínio cardiovascular brasileiro, com enfoque maior em interações medicamentosas entre antiarritímicos e anti-hipertensivos (`backend/data/cardio_knowledge.json`):
+The project includes 41 curated entries focused on the Brazilian cardiovascular care context, with particular emphasis on interactions involving antiarrhythmic and antihypertensive drugs. The source data is stored in [`backend/data/cardio_knowledge.json`](backend/data/cardio_knowledge.json).
 
-| Prefixo | Categoria | Quantidade |
-|---|---|---|
-| `INT` | Interações medicamentosas | 16 |
-| `CON` | Contraindicações | 8 |
-| `IDO` | Considerações geriátricas | 8 |
-| `REN` | Ajustes por função renal | 5 |
-| `SUP` | Alertas de suplementação | 4 |
+| Prefix | Category | Entries |
+|---|---|---:|
+| `INT` | Drug interactions | 16 |
+| `CON` | Contraindications | 8 |
+| `IDO` | Geriatric considerations | 8 |
+| `REN` | Renal function dose adjustments | 5 |
+| `SUP` | Supplement-related alerts | 4 |
 
-## Documentação
+## Documentation
 
-| Documento | Conteúdo |
+| Document | Contents |
 |---|---|
-| [`backend/README.md`](backend/README.md) | Setup, endpoint principal, validação rápida |
-| [`backend/README_DOCKER.md`](backend/README_DOCKER.md) | Docker Compose, volumes, troubleshooting |
-| [`backend/README_DEV.md`](backend/README_DEV.md) | Desenvolvimento local, Alembic, testes |
-| [`backend/app/motor/README.md`](backend/app/motor/README.md) | Pipeline de IA, modelos, contrato |
-| [`frontend/README.md`](frontend/README.md) | Build da extensão, fluxo de estados, estrutura |
-| [`CLAUDE.md`](CLAUDE.md) | Contexto técnico, stack v2, regras do projeto |
+| [`backend/README.md`](backend/README.md) | Setup, main endpoint, and quick validation |
+| [`backend/README_DOCKER.md`](backend/README_DOCKER.md) | Docker Compose, volumes, and troubleshooting |
+| [`backend/README_DEV.md`](backend/README_DEV.md) | Local development, Alembic, and tests |
+| [`backend/app/motor/README.md`](backend/app/motor/README.md) | AI pipeline, models, and data contract |
+| [`frontend/README.md`](frontend/README.md) | Extension build, state flow, and project structure |
+| [`CLAUDE.md`](CLAUDE.md) | Technical context, v2 stack, and project rules |
 
-## Licença
+## License
 
-Este projeto foi desenvolvido como projeto de hackathon.
+This project was developed as a hackathon prototype. No license has been specified yet.

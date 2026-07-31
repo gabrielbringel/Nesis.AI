@@ -1,135 +1,154 @@
-# NesisAI — Docker
+# NesisAI — Docker Guide
 
-Guia para subir o backend e o banco via Docker Compose. É o fluxo recomendado para desenvolvimento e demos.
+This is the recommended workflow for running the backend and its databases during development and demos.
 
-## Pré-requisitos
+## Prerequisites
 
-- Docker e Docker Compose instalados
-- Arquivo `backend/.env` configurado (a partir de `.env.example`) com `GEMINI_API_KEY`
+- Docker with Docker Compose
+- `backend/.env`, copied from `.env.example`, with a valid `GEMINI_API_KEY`
 
-## Serviços
+## Services
 
-`docker-compose.yml` define dois serviços:
+`docker-compose.yml` defines two services:
 
-| Serviço | Imagem | Porta | Descrição |
-|---|---|---|---|
-| `postgres` | `pgvector/pgvector:pg16` | `5432` | PostgreSQL 16 com extensão pgvector já instalada |
-| `backend` | build local (`Dockerfile`) | `8000` | API FastAPI com Uvicorn em modo `--reload` |
+| Service | Image | Host port | Purpose |
+|---|---|---:|---|
+| `postgres` | `pgvector/pgvector:pg16` | `5432` | PostgreSQL 16 with the pgvector extension |
+| `backend` | Local `Dockerfile` build | `8000` | FastAPI served by Uvicorn |
 
-> **Importante**: a imagem do Postgres é `pgvector/pgvector:pg16`, **não** `postgres:16`. A oficial não traz a extensão.
+The pgvector image is required because the standard `postgres:16` image does not include the vector extension.
 
-## Volumes
+## Persistent Data
+
+PostgreSQL data is stored in the Docker-managed named volume `pgdata`:
 
 ```yaml
 volumes:
-  pgdata:    # named volume gerenciado pelo Docker
+  pgdata:
 ```
 
-Sempre **named volumes**, nunca bind mounts. Bind mounts (`./postgres-data:/var/lib/postgresql/data`) quebram com `Operation not permitted` em alguns setups de macOS.
+The project intentionally avoids host bind mounts. As a consequence, source changes require rebuilding the backend image.
 
-## Comandos
+## Commands
+
+Run these commands from `backend/`:
 
 ```bash
-cd backend
-
-# Subir tudo (build + start em foreground)
+# Build and start in the foreground
 docker compose up --build
 
-# Em background
+# Start existing images in the background
 docker compose up -d
 
-# Acompanhar logs
+# Follow logs
 docker compose logs -f backend
 docker compose logs -f postgres
 
-# Parar (mantém volumes)
+# Stop services but retain database data
 docker compose down
 
-# Parar e apagar dados do banco
-docker compose down -v
-
-# Rebuild só do backend
+# Rebuild the backend after source or dependency changes
 docker compose build backend
+docker compose up -d backend
 
-# Reiniciar um serviço
+# Restart a service without rebuilding it
 docker compose restart backend
 ```
 
-## Startup do backend
+The following command deletes the Compose-managed database volume and all of its data:
 
-O `CMD` do `Dockerfile` executa, em ordem:
+```bash
+docker compose down -v
+```
 
-1. `alembic upgrade head` — aplica migrações
+## Backend Startup
+
+The backend container performs these operations in order:
+
+1. `alembic upgrade head`
 2. `uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload`
 
-O `depends_on` com `condition: service_healthy` garante que o backend só sobe depois do `pg_isready` do Postgres responder OK.
+The `depends_on` health condition waits for PostgreSQL's `pg_isready` check before starting the backend.
 
-## Acessar os serviços
+Because application source is copied into the image and is not bind-mounted, Uvicorn's `--reload` option only observes files already inside the container. Rebuild the image to apply host-side edits.
+
+## Service Access
 
 - API: `http://localhost:8000`
-- Swagger: `http://localhost:8000/docs`
-- Health: `http://localhost:8000/health`
-- Postgres (do host): `localhost:5432` (user `nesis`, senha `nesis`, db `nesis`)
+- OpenAPI UI: `http://localhost:8000/docs`
+- Health check: `http://localhost:8000/health`
+- PostgreSQL from the host: `localhost:5432`
 
-## Variáveis de ambiente
+The default database name, user, and password are all `nesis`. Override them in `.env` when needed.
 
-O `docker-compose.yml` injeta:
+Inside the Compose network, both connection URLs use `postgres` as the hostname:
 
 ```env
 DATABASE_URL=postgresql+asyncpg://nesis:nesis@postgres:5432/nesis
 PGVECTOR_URL=postgresql+psycopg://nesis:nesis@postgres:5432/nesis
-APP_ENV=development
 ```
 
-Note que dentro dos containers o host do Postgres é `postgres` (nome do serviço), não `localhost`.
+## Populate the Knowledge Base
 
-`GEMINI_API_KEY`, `GEMINI_MODEL` e `GEMINI_EMBEDDING_MODEL` vêm do `.env` carregado automaticamente pelo Compose.
-
-## Popular a base de conhecimento
-
-Com os containers em execução, o nome do container do backend costuma ser `backend-backend-1` (verificar com `docker ps`):
+With both services running:
 
 ```bash
-docker exec -it backend-backend-1 python scripts/ingest_knowledge.py
-
-# Validar
-docker exec -it backend-postgres-1 psql -U nesis -d nesis -c \
-  "SELECT COUNT(*) FROM langchain_pg_embedding;"
+docker compose exec backend python scripts/ingest_knowledge.py
 ```
 
-Resultado esperado: `41`.
-
-## Acessar o psql
+Validate the stored embeddings:
 
 ```bash
-docker exec -it backend-postgres-1 psql -U nesis -d nesis
+docker compose exec postgres \
+  psql -U nesis -d nesis \
+  -c "SELECT COUNT(*) FROM langchain_pg_embedding;"
 ```
 
-Comandos úteis:
+The expected count is 41 after the first complete ingestion.
+
+## Open a PostgreSQL Shell
+
+```bash
+docker compose exec postgres psql -U nesis -d nesis
+```
+
+Useful queries:
 
 ```sql
-\dt                                          -- listar tabelas
-SELECT COUNT(*) FROM langchain_pg_embedding; -- ver embeddings ingeridos
-SELECT version();                            -- versão do Postgres
-SELECT * FROM pg_extension WHERE extname = 'vector';  -- confirmar pgvector
+\dt
+SELECT COUNT(*) FROM langchain_pg_embedding;
+SELECT version();
+SELECT * FROM pg_extension WHERE extname = 'vector';
 ```
 
-## Limpar e recomeçar
+## Reset the Local Database
+
+This permanently removes the local Compose database and then recreates it:
 
 ```bash
-docker compose down -v        # apaga o volume pgdata
-docker compose up --build     # rebuild + start
-# Re-ingerir a base de conhecimento depois
+docker compose down -v
+docker compose up --build
+docker compose exec backend python scripts/ingest_knowledge.py
 ```
 
 ## Troubleshooting
 
-**`pgvector extension does not exist`** — você está usando a imagem `postgres:16` em vez de `pgvector/pgvector:pg16`. Conferir o `docker-compose.yml`.
+**`extension "vector" is not available`**
 
-**Backend não conecta no Postgres** — o `depends_on.condition: service_healthy` deveria evitar isso. Se acontecer, conferir os logs do `postgres` e o `healthcheck`.
+Confirm that `docker-compose.yml` uses `pgvector/pgvector:pg16`.
 
-**Mudança no `requirements.txt` não tem efeito** — `docker compose build backend` (ou `--build` no `up`) para refazer a imagem.
+**The backend cannot connect to PostgreSQL**
 
-**Hot reload não pega mudanças do código** — o `Dockerfile` faz `COPY . .` e o volume bind do código está comentado no `docker-compose.yml`. Para iterar com reload real, descomentar a linha `volumes: - ./:/app` no serviço `backend`.
+Inspect `docker compose logs postgres`, confirm the health check passes, and verify that container-side URLs use the hostname `postgres`.
 
-**Permissão negada no volume `pgdata`** — não trocar por bind mount. Named volume é a escolha correta.
+**A dependency change has no effect**
+
+Run `docker compose build backend`, then recreate the backend service.
+
+**A source change has no effect**
+
+Rebuild the backend image. The current Compose configuration does not mount host source into the container.
+
+**The embedding table is missing**
+
+Run the ingestion command. langchain-postgres creates its internal tables when the vector store initializes.
