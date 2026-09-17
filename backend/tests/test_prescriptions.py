@@ -1,4 +1,4 @@
-"""Testes do endpoint POST /api/v1/analyze."""
+"""Tests for the POST /api/v1/analyze endpoint."""
 
 from __future__ import annotations
 

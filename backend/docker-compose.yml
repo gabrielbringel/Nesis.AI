@@ -1,6 +1,6 @@
 services:
   postgres:
-    # IMPORTANTE: usar pgvector/pgvector — postgres oficial não traz a extensão.
+    # IMPORTANT: use pgvector/pgvector; the official postgres image lacks the extension.
     image: pgvector/pgvector:pg16
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-nesis}
@@ -9,9 +9,9 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      # Named volume gerenciado pelo Docker — sobrevive a `docker compose down`
-      # e não tem problema de permissão no Mac (bind mounts ./postgres-data:/...
-      # quebram com "Operation not permitted" em alguns setups).
+      # Docker-managed named volume: survives `docker compose down` and avoids
+      # permission issues on macOS (bind mounts like ./postgres-data:/... fail
+      # with "Operation not permitted" on some setups).
       - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nesis} -d ${POSTGRES_DB:-nesis}" ]

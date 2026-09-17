@@ -1,8 +1,8 @@
-// Store global de configurações persistidas em localStorage.
+// Global settings store persisted in localStorage.
 //
-// Usa useSyncExternalStore para compartilhar estado entre componentes sem
-// precisar de Context — qualquer componente que chamar useSettings() recebe
-// o snapshot atual e re-renderiza quando os valores mudam.
+// Uses useSyncExternalStore to share state across components without
+// Context: any component that calls useSettings() receives the current
+// snapshot and re-renders when values change.
 
 import { useSyncExternalStore } from 'react'
 
@@ -35,7 +35,7 @@ function persist(value: Settings) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(value))
   } catch {
-    // localStorage cheio ou indisponível — sem fallback necessário.
+    // localStorage is full or unavailable; no fallback needed.
   }
 }
 
@@ -65,8 +65,8 @@ export function toggleDarkMode() {
   setState({ ...state, darkMode: !state.darkMode })
 }
 
-// Acesso direto ao snapshot atual (útil em código não-React, ex: leitura
-// inicial em useSidebar antes do primeiro render).
+// Direct access to the current snapshot (useful outside React, e.g. the
+// initial read in useSidebar before the first render).
 export function getSettings(): Settings {
   return state
 }

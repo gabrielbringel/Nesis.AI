@@ -1,4 +1,4 @@
-"""Helpers compartilhados entre os módulos do backend."""
+"""Helpers shared across backend modules."""
 
 from __future__ import annotations
 

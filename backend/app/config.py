@@ -1,4 +1,4 @@
-"""Configurações da aplicação, carregadas via pydantic-settings."""
+"""Application settings, loaded with pydantic-settings."""
 
 from __future__ import annotations
 

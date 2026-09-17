@@ -1,4 +1,4 @@
-"""Configuração Alembic para migrações assíncronas."""
+"""Alembic configuration for async migrations."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.config import get_settings
 from app.database import Base
-from app import models  # noqa: F401 — registra metadata
+from app import models  # noqa: F401 — registers metadata
 
 config = context.config
 if config.config_file_name is not None:

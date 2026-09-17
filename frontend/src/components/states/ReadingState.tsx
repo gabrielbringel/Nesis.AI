@@ -20,7 +20,7 @@ export function ReadingState({ patient, attributes, loadedAttributes }: Props) {
     if (dash > 0) return next.text.slice(0, dash)
     return next.text.slice(0, 28)
   })()
-  // enterClass só é aplicada uma vez (na montagem). Refs não causam re-render.
+  // enterClass is applied only once (on mount). Refs do not trigger re-renders.
   const enterClassRef = useRef('state-enter')
 
   return (
@@ -29,7 +29,7 @@ export function ReadingState({ patient, attributes, loadedAttributes }: Props) {
 
       <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '7px' }}>
         {loadedAttributes.map((attr, i) => {
-          // Aplica bullet-enter apenas no último item carregado (o que acabou de surgir)
+          // Apply bullet-enter only to the most recently loaded item
           const isNew = i === loadedAttributes.length - 1
           return <AttributeRow key={attr.id} node={attr} loaded isNew={isNew} />
         })}

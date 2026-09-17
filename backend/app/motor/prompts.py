@@ -1,7 +1,9 @@
-"""Prompts em português brasileiro para o motor de IA.
+"""Brazilian Portuguese prompts for the AI engine.
 
-Centralizar aqui facilita auditoria clínica e ajustes de tom sem mexer
-na lógica do pipeline.
+The prompts stay in Portuguese because the clinical data, the DCB
+nomenclature, and the generated alerts are all in Portuguese. Keeping them
+in one place makes clinical review and tone adjustments possible without
+touching the pipeline logic.
 """
 
 from __future__ import annotations

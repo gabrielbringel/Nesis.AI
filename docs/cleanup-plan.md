@@ -28,7 +28,7 @@ Scope: finish the hackathon repository cleanup, preserve existing behavior, and 
 
 ## Boundaries
 
-Retain the active cardiovascular knowledge base, database migration history, and original hackathon pitch. Do not edit the user's existing `levantamento-arquitetura-nesis.md`. Do not call a live model or use real patient data for validation. No deployment or publication is part of this cleanup.
+Retain the active cardiovascular knowledge base, database migration history, and original hackathon pitch. Do not edit the user's existing architecture survey (then `levantamento-arquitetura-nesis.md`, now `architecture-survey.md`). Do not call a live model or use real patient data for validation. No deployment or publication is part of this cleanup.
 
 ## Review outcome
 

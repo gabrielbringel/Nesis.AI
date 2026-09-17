@@ -18,7 +18,7 @@ const SEEDS: SeedInput[] = [
         severidade: 'GRAVE',
         titulo: 'Aumento dos níveis de Digoxina',
         descricao:
-          'A amiodarona inibe a glicoproteína-P, reduzindo a eliminação da digoxina, com risco de intoxicação digitálica, arritmias, náuseas e distúrbios visuais. Fonte: Base cardiovascular NesisAI (INT-003).',
+          'A amiodarona inibe a glicoproteína-P, reduzindo a eliminação da digoxina, com risco de intoxicação digitálica, arritmias, náuseas e distúrbios visuais. Fonte: Base cardiovascular Nesis (INT-003).',
         medicamentos_envolvidos: ['Digoxina', 'Amiodarona'],
         recomendacao: 'Reduzir a dose de digoxina em 30-50% e monitorar níveis plasmáticos.',
       },
@@ -66,7 +66,7 @@ const SEEDS: SeedInput[] = [
         severidade: 'GRAVE',
         titulo: 'Risco hemorrágico aditivo',
         descricao:
-          'A antiagregação plaquetária do AAS somada à inibição dos fatores de coagulação pela warfarina aumenta o risco de sangramentos gastrointestinais e intracranianos. Fonte: Base cardiovascular NesisAI (INT-007).',
+          'A antiagregação plaquetária do AAS somada à inibição dos fatores de coagulação pela warfarina aumenta o risco de sangramentos gastrointestinais e intracranianos. Fonte: Base cardiovascular Nesis (INT-007).',
         medicamentos_envolvidos: ['Varfarina', 'AAS'],
         recomendacao: 'Evitar combinação a menos que o benefício (ex: prótese valvar) supere o risco.',
       },
@@ -114,7 +114,7 @@ const SEEDS: SeedInput[] = [
         severidade: 'MODERADO',
         titulo: 'Risco de Hipercalemia',
         descricao:
-          'IECA e antagonista de aldosterona reduzem a excreção renal de potássio, podendo elevar os níveis séricos e causar arritmias. Fonte: Base cardiovascular NesisAI (INT-002).',
+          'IECA e antagonista de aldosterona reduzem a excreção renal de potássio, podendo elevar os níveis séricos e causar arritmias. Fonte: Base cardiovascular Nesis (INT-002).',
         medicamentos_envolvidos: ['Enalapril', 'Espironolactona'],
         recomendacao: 'Monitorar potássio sérico e creatinina em 1 e 4 semanas após início ou ajuste.',
       },
@@ -162,7 +162,7 @@ const SEEDS: SeedInput[] = [
         severidade: 'MODERADO',
         titulo: 'Risco de Miopatia/Rabdomiólise',
         descricao:
-          'A amiodarona inibe o metabolismo da sinvastatina via CYP3A4, aumentando a concentração plasmática da estatina e gerando dor muscular. Fonte: Base cardiovascular NesisAI (INT-005).',
+          'A amiodarona inibe o metabolismo da sinvastatina via CYP3A4, aumentando a concentração plasmática da estatina e gerando dor muscular. Fonte: Base cardiovascular Nesis (INT-005).',
         medicamentos_envolvidos: ['Sinvastatina', 'Amiodarona'],
         recomendacao: 'Não exceder a dose de 20mg de sinvastatina ao dia se em uso de amiodarona.',
       },
@@ -201,7 +201,7 @@ const SEEDS: SeedInput[] = [
     },
   },
 
-  // 5 — CON-001 — GRAVE — Propranolol em asma
+  // 5 — CON-001 — GRAVE — Propranolol with asthma
   {
     timestamp: NOW() - 1000 * 60 * 60 * 24,
     patient: { displayLabel: 'Carlos M., 43 anos', nome: 'Carlos Mendes', idade: 43 },
@@ -210,7 +210,7 @@ const SEEDS: SeedInput[] = [
         severidade: 'GRAVE',
         titulo: 'Uso em pacientes asmáticos',
         descricao:
-          'Bloqueio de receptores Beta-2 nos brônquios pode precipitar broncoespasmo grave e insuficiência respiratória. Fonte: Base cardiovascular NesisAI (CON-001).',
+          'Bloqueio de receptores Beta-2 nos brônquios pode precipitar broncoespasmo grave e insuficiência respiratória. Fonte: Base cardiovascular Nesis (CON-001).',
         medicamentos_envolvidos: ['Propranolol'],
         recomendacao: 'Contraindicado em asma e DPOC grave. Preferir betabloqueadores cardiosseletivos.',
       },
@@ -243,7 +243,7 @@ const SEEDS: SeedInput[] = [
     },
   },
 
-  // 6 — CON-004 — GRAVE — Espironolactona em hipercalemia
+  // 6 — CON-004 — GRAVE — Spironolactone with hyperkalemia
   {
     timestamp: NOW() - 1000 * 60 * 60 * 27,
     patient: { displayLabel: 'João S., 67 anos', nome: 'João Souza', idade: 67 },
@@ -252,7 +252,7 @@ const SEEDS: SeedInput[] = [
         severidade: 'GRAVE',
         titulo: 'Hipercalemia pré-existente',
         descricao:
-          'A inibição da excreção de potássio pela espironolactona agrava o quadro de hipercalemia, com risco de arritmias fatais e parada cardíaca. Fonte: Base cardiovascular NesisAI (CON-004).',
+          'A inibição da excreção de potássio pela espironolactona agrava o quadro de hipercalemia, com risco de arritmias fatais e parada cardíaca. Fonte: Base cardiovascular Nesis (CON-004).',
         medicamentos_envolvidos: ['Espironolactona'],
         recomendacao: 'Não iniciar se K sérico > 5.0 mEq/L ou Creatinina > 2.5 mg/dL.',
       },
@@ -291,7 +291,7 @@ const SEEDS: SeedInput[] = [
     },
   },
 
-  // 7 — CON-003 — GRAVE — Metformina em IR grave
+  // 7 — CON-003 — GRAVE — Metformin with severe renal failure
   {
     timestamp: NOW() - 1000 * 60 * 60 * 24 * 2,
     patient: { displayLabel: 'Lúcia S., 70 anos', nome: 'Lúcia Santos', idade: 70 },
@@ -300,7 +300,7 @@ const SEEDS: SeedInput[] = [
         severidade: 'GRAVE',
         titulo: 'Insuficiência Renal Grave',
         descricao:
-          'O acúmulo da metformina por falta de excreção renal gera alto risco de acidose láctica fatal. Fonte: Base cardiovascular NesisAI (CON-003).',
+          'O acúmulo da metformina por falta de excreção renal gera alto risco de acidose láctica fatal. Fonte: Base cardiovascular Nesis (CON-003).',
         medicamentos_envolvidos: ['Metformina'],
         recomendacao: 'Contraindicado se Ritmo de Filtração Glomerular < 30 mL/min/1.73m².',
       },
@@ -333,7 +333,7 @@ const SEEDS: SeedInput[] = [
     },
   },
 
-  // 8 — REN-004 — GRAVE — Digoxina em IR
+  // 8 — REN-004 — GRAVE — Digoxin with renal failure
   {
     timestamp: NOW() - 1000 * 60 * 60 * 24 * 3,
     patient: { displayLabel: 'Pedro A., 75 anos', nome: 'Pedro Alves', idade: 75 },
@@ -342,7 +342,7 @@ const SEEDS: SeedInput[] = [
         severidade: 'GRAVE',
         titulo: 'Ajuste rigoroso na disfunção renal',
         descricao:
-          'O clearance renal da digoxina é proporcional ao ClCr, com risco de intoxicação digitálica rápida na disfunção renal. Fonte: Base cardiovascular NesisAI (REN-004).',
+          'O clearance renal da digoxina é proporcional ao ClCr, com risco de intoxicação digitálica rápida na disfunção renal. Fonte: Base cardiovascular Nesis (REN-004).',
         medicamentos_envolvidos: ['Digoxina'],
         recomendacao: 'Reduzir dose para 0,125mg em dias alternados ou doses menores se ClCr < 30.',
       },
@@ -375,7 +375,7 @@ const SEEDS: SeedInput[] = [
     },
   },
 
-  // 9 — IDO-002 — MODERADO — Hidroclorotiazida em idosa
+  // 9 — IDO-002 — MODERADO — Hydrochlorothiazide in an older woman
   {
     timestamp: NOW() - 1000 * 60 * 60 * 24 * 4,
     patient: { displayLabel: 'Teresa R., 81 anos', nome: 'Teresa Rocha', idade: 81 },
@@ -384,7 +384,7 @@ const SEEDS: SeedInput[] = [
         severidade: 'MODERADO',
         titulo: 'Risco de Hiponatremia',
         descricao:
-          'A alteração na diluição urinária acentuada pela idade pode causar confusão mental, quedas e hiponatremia grave em idosos sob tiazídicos. Fonte: Base cardiovascular NesisAI (IDO-002).',
+          'A alteração na diluição urinária acentuada pela idade pode causar confusão mental, quedas e hiponatremia grave em idosos sob tiazídicos. Fonte: Base cardiovascular Nesis (IDO-002).',
         medicamentos_envolvidos: ['Hidroclorotiazida'],
         recomendacao: 'Evitar doses > 25mg; monitorar eletrólitos após 2 semanas.',
       },
@@ -423,7 +423,7 @@ const SEEDS: SeedInput[] = [
     },
   },
 
-  // 10 — Sem alertas
+  // 10 — No alerts
   {
     timestamp: NOW() - 1000 * 60 * 60 * 24 * 5,
     patient: { displayLabel: 'João M., 35 anos', nome: 'João Martins', idade: 35 },

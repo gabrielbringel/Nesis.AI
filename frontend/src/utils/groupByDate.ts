@@ -1,4 +1,4 @@
-// Agrupa entries do histórico por dia ("hoje", "ontem", "23 abr").
+// Group history entries by day ("hoje" = today, "ontem" = yesterday, "23 abr").
 
 const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
 

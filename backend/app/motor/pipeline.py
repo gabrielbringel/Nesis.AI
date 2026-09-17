@@ -1,12 +1,12 @@
-"""Orquestrador do motor de IA: normalização → verificação RAG (PGVector + LLM).
+"""AI engine orchestrator: normalization → RAG verification (PGVector + LLM).
 
-Fluxo:
-  1. normalize() — Gemini padroniza os nomes dos medicamentos para DCB
-  2. verify()    — Recupera contexto via PGVector e o Gemini analisa a prescrição
-                   com o conhecimento clínico injetado no prompt
+Flow:
+  1. normalize() — Gemini standardizes medication names to DCB
+  2. verify()    — Retrieves context from PGVector; Gemini reviews the
+                   prescription with that clinical knowledge in the prompt
 
-Mantém a assinatura `async def analyze(payload: dict) -> list[dict]`
-para preservar contrato com `app.prescriptions.service`.
+Keeps the `async def analyze(payload: dict) -> list[dict]` signature to
+preserve the contract with `app.prescriptions.service`.
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 async def analyze(payload: dict[str, Any]) -> list[dict[str, Any]]:
-    """Analisa uma prescrição e retorna lista de alertas clínicos."""
+    """Analyze a prescription and return a list of clinical alerts."""
     paciente = payload.get("paciente") or {}
     medicacoes_raw = payload.get("medicacoes") or []
 
@@ -31,5 +31,5 @@ async def analyze(payload: dict[str, Any]) -> list[dict[str, Any]]:
         return alertas
 
     except Exception as exc:
-        logger.error("LLM falhou (%s). Retornando lista vazia de alertas.", exc)
+        logger.error("LLM failed (%s). Returning an empty alert list.", exc)
         return []

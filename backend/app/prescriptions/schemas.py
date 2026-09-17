@@ -1,7 +1,8 @@
-"""Schemas Pydantic v2 para o endpoint /api/v1/analyze.
+"""Pydantic v2 schemas for the /api/v1/analyze endpoint.
 
-Espelham o payload enviado pela extensão Chrome (dados scrapeados do prontuário)
-e a resposta agregada do motor de IA com os alertas classificados por severidade.
+They mirror the payload sent by the Chrome extension (data scraped from the
+patient record) and the AI engine's aggregated response, with alerts
+classified by severity. Field names stay in Portuguese to match the frontend.
 """
 
 from __future__ import annotations

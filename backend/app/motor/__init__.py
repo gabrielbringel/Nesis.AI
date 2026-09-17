@@ -1,4 +1,4 @@
-"""Motor de IA: normalização (Gemini) → verificação RAG (PGVector + Gemini)."""
+"""AI engine: normalization (Gemini) → RAG verification (PGVector + Gemini)."""
 
 from app.motor.pipeline import analyze
 

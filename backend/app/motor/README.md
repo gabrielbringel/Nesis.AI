@@ -1,6 +1,6 @@
 # AI Engine
 
-NesisAI's clinical analysis pipeline accepts the Portuguese-keyed `{ paciente, medicacoes }` payload and returns clinical alerts classified by severity.
+Nesis's clinical analysis pipeline accepts the Portuguese-keyed `{ paciente, medicacoes }` payload and returns clinical alerts classified by severity.
 
 `DCB` refers to *Denominações Comuns Brasileiras* (Brazilian Common Denominations), Brazil's official standard for pharmaceutical substance names.
 

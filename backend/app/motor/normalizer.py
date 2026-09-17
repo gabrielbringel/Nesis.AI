@@ -1,4 +1,4 @@
-"""Etapa 1 do pipeline: normalização de medicamentos para DCB via Gemini."""
+"""Pipeline step 1: normalize medication names to DCB with Gemini."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ def _llm() -> ChatGoogleGenerativeAI:
     settings = get_settings()
     if not settings.gemini_api_key:
         raise RuntimeError(
-            "GEMINI_API_KEY não configurada — defina no .env antes de subir o motor."
+            "GEMINI_API_KEY is not set. Define it in .env before starting the engine."
         )
     return ChatGoogleGenerativeAI(
         model=settings.gemini_model,
@@ -44,10 +44,10 @@ def _strip_code_fence(text: str) -> str:
 
 
 async def normalize(medicacoes: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Normaliza a lista de medicações para nomenclatura DCB.
+    """Normalize the medication list to DCB nomenclature.
 
-    Em caso de JSON inválido devolvido pelo LLM, devolve a lista original
-    inalterada — assim o pipeline continua para a etapa de verificação.
+    If the LLM returns invalid JSON, the original list is returned unchanged
+    so the pipeline can still proceed to verification.
     """
     if not medicacoes:
         return []
@@ -62,19 +62,19 @@ async def normalize(medicacoes: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
     try:
         response = await _llm().ainvoke(messages)
-    except Exception:  # noqa: BLE001 — falha na chamada → devolve original
-        logger.exception("Chamada ao Gemini (normalização) falhou.")
+    except Exception:  # noqa: BLE001 — call failed → return the original list
+        logger.exception("Gemini call (normalization) failed.")
         return medicacoes
 
     raw = _strip_code_fence(str(response.content))
     try:
         parsed = json.loads(raw)
     except json.JSONDecodeError:
-        logger.error("JSON inválido na normalização: %s", raw)
+        logger.error("Invalid JSON in normalization: %s", raw)
         return medicacoes
 
     normalizadas = parsed.get("medicacoes")
     if not isinstance(normalizadas, list):
-        logger.error("Resposta de normalização sem chave 'medicacoes': %s", raw)
+        logger.error("Normalization response has no 'medicacoes' key: %s", raw)
         return medicacoes
     return normalizadas

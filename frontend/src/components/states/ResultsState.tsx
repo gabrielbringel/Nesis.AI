@@ -78,7 +78,7 @@ export function ResultsState({ patient, alerts, scrapedPayload, onReanalyzeWithD
     onReanalyzeWithData(editedData)
   }
 
-  // Alergias
+  // Allergies
   function updateAlergia(i: number, v: string) {
     setEditedData((prev) => {
       const next = [...prev.alergias]; next[i] = v; return { ...prev, alergias: next }
@@ -91,7 +91,7 @@ export function ResultsState({ patient, alerts, scrapedPayload, onReanalyzeWithD
     setEditedData((prev) => ({ ...prev, alergias: [...prev.alergias, ''] }))
   }
 
-  // Medicações
+  // Medications
   function updateMed(i: number, field: 'nome' | 'posologia', v: string) {
     setEditedData((prev) => {
       const next = [...prev.medicacoes]; next[i] = { ...next[i], [field]: v }; return { ...prev, medicacoes: next }
@@ -104,7 +104,7 @@ export function ResultsState({ patient, alerts, scrapedPayload, onReanalyzeWithD
     setEditedData((prev) => ({ ...prev, medicacoes: [...prev.medicacoes, { nome: '', posologia: '' }] }))
   }
 
-  // Problemas
+  // Problems
   function updateProblema(i: number, v: string) {
     setEditedData((prev) => {
       const next = [...prev.problemasCondicoes]; next[i] = v; return { ...prev, problemasCondicoes: next }
@@ -142,12 +142,12 @@ export function ResultsState({ patient, alerts, scrapedPayload, onReanalyzeWithD
 
         {/* Editable drawer */}
         <div className={`alert-details patient-drawer ${drawerOpen ? 'expanded' : 'collapsed'}`}>
-          {/* Form sections — sem limite vertical, rola junto com a página */}
+          {/* Form sections — no height limit, scrolls with the page */}
           <div
             style={{ paddingTop: '10px' }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Identificação */}
+            {/* Identification */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <span style={LABEL}>Identificação</span>
               <input
@@ -175,7 +175,7 @@ export function ResultsState({ patient, alerts, scrapedPayload, onReanalyzeWithD
               </div>
             </div>
 
-            {/* Alergias */}
+            {/* Allergies */}
             <div style={SECTION_TOP}>
               <span style={LABEL}>Alergias</span>
               {editedData.alergias.map((a, i) => (
@@ -190,7 +190,7 @@ export function ResultsState({ patient, alerts, scrapedPayload, onReanalyzeWithD
               <button style={{ ...BTN_SMALL, textAlign: 'left' }} onClick={addAlergia}>+ adicionar alergia</button>
             </div>
 
-            {/* Medicações */}
+            {/* Medications */}
             <div style={SECTION_TOP}>
               <span style={LABEL}>Medicações</span>
               {editedData.medicacoes.map((m, i) => (
@@ -209,7 +209,7 @@ export function ResultsState({ patient, alerts, scrapedPayload, onReanalyzeWithD
               <button style={{ ...BTN_SMALL, textAlign: 'left' }} onClick={addMed}>+ adicionar medicação</button>
             </div>
 
-            {/* Contexto clínico */}
+            {/* Clinical context */}
             <div style={SECTION_TOP}>
               <span style={LABEL}>Contexto Clínico</span>
               {([
@@ -227,7 +227,7 @@ export function ResultsState({ patient, alerts, scrapedPayload, onReanalyzeWithD
               ))}
             </div>
 
-            {/* Problemas / Condições */}
+            {/* Problems / conditions */}
             <div style={{ ...SECTION_TOP, paddingBottom: '6px' }}>
               <span style={LABEL}>Problemas / Condições</span>
               {editedData.problemasCondicoes.map((p, i) => (
@@ -243,7 +243,7 @@ export function ResultsState({ patient, alerts, scrapedPayload, onReanalyzeWithD
             </div>
           </div>
 
-          {/* Botão reanalisar — fora do scroll, sempre visível */}
+          {/* Reanalyze button — outside the scroll area, always visible */}
           <div
             style={{ borderTop: '0.5px solid var(--color-border-light)', paddingTop: '10px', paddingBottom: '4px' }}
             onClick={(e) => e.stopPropagation()}
