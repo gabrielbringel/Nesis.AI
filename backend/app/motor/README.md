@@ -22,7 +22,7 @@ verify()          Gemini analyzes the prescription with the retrieved context
 alerts            severity, description, recommendation, source, and drugs involved
 ```
 
-Failure behavior is intentionally defensive:
+Current failure behavior (a known prototype limitation):
 
 - If normalization fails or Gemini returns invalid normalization JSON, the original medication list continues to verification.
 - If vector retrieval is unavailable, verification continues without retrieved documents and asks the model to use its clinical knowledge.
@@ -49,7 +49,6 @@ An empty list therefore means either “no alerts” or “analysis failed.” T
 - **Chat integration**: `langchain-google-genai`
 - **Embedding SDK**: `google-genai`
 
-The current code does not read `GEMINI_EMBEDDING_MODEL`, even though that variable appears in `.env.example`.
 
 ## Vector Store
 

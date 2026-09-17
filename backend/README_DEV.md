@@ -34,7 +34,7 @@ python -m pip install -r requirements.txt
 Copy-Item .env.example .env
 ```
 
-The legacy scripts under `backend/scripts/` still contain assumptions from the earlier SQLite-based implementation. Use the explicit commands in this guide for the current PostgreSQL + pgvector stack.
+Use the commands above on Windows; obsolete SQLite setup scripts have been removed.
 
 ## Environment Variables
 
@@ -55,7 +55,6 @@ The two database URLs use different drivers:
 
 When code runs inside Docker, replace the database host `localhost` with the Compose service name `postgres`.
 
-The embedding implementation currently uses the fixed model `models/gemini-embedding-001`. Although `.env.example` contains `GEMINI_EMBEDDING_MODEL`, the current Python configuration does not read that variable.
 
 ## Database Migrations
 
@@ -98,7 +97,7 @@ pytest tests/test_prescriptions.py -v
 pytest -k "test_name"
 ```
 
-Tests use pytest-asyncio, HTTPX, and a temporary SQLite database configured in [`tests/conftest.py`](tests/conftest.py). They do not require the development PostgreSQL database.
+Tests use pytest-asyncio and HTTPX with a simulated AI engine configured in [`tests/conftest.py`](tests/conftest.py). They verify the API contract without PostgreSQL, Gemini credentials, or external requests. They do not evaluate clinical accuracy.
 
 ## Application Structure
 
@@ -106,7 +105,7 @@ Tests use pytest-asyncio, HTTPX, and a temporary SQLite database configured in [
 app/
 ├── main.py                # FastAPI application, CORS, and error handlers
 ├── config.py              # pydantic-settings configuration
-├── database.py            # Async SQLAlchemy engine and sessions
+├── database.py            # Shared SQLAlchemy declarative base
 ├── common.py              # Shared utilities
 ├── models.py              # ORM models
 ├── motor/                 # Gemini + RAG pipeline

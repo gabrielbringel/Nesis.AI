@@ -120,7 +120,7 @@ backend/
 ├── app/
 │   ├── main.py            # FastAPI application, middleware, and error handlers
 │   ├── config.py          # pydantic-settings configuration
-│   ├── database.py        # Async SQLAlchemy setup
+│   ├── database.py        # Shared SQLAlchemy declarative base
 │   ├── motor/             # AI pipeline; see app/motor/README.md
 │   └── prescriptions/     # Request schemas, service, and /api/v1/analyze route
 ├── data/

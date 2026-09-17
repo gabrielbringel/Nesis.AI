@@ -1,4 +1,5 @@
 import type { Alert, EditablePayload } from '../types'
+import { createSeedRecords } from '../data/seedHistory'
 
 export interface AnalysisRecord {
   id: string
@@ -34,12 +35,15 @@ export function deleteRecord(id: string): void {
   localStorage.setItem(KEY, JSON.stringify(history))
 }
 
-export function getRecord(id: string): AnalysisRecord | null {
-  return getHistory().find((r) => r.id === id) ?? null
-}
-
 export async function resetMemory(): Promise<void> {
   localStorage.removeItem(KEY)
-  const { seedHistory } = await import('../data/seedHistory')
   seedHistory()
+}
+
+export function seedHistory(): void {
+  if (getHistory().length > 0) return
+  const records = createSeedRecords()
+  for (let i = records.length - 1; i >= 0; i--) {
+    addRecord(records[i])
+  }
 }

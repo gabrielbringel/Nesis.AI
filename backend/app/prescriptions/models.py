@@ -10,7 +10,7 @@ from app.common import TimestampMixin, UUIDMixin
 from app.database import Base
 
 
-# Em PostgreSQL usamos JSONB; em SQLite (testes) o tipo cai para JSON.
+# PostgreSQL usa JSONB; a variante JSON mantém a compatibilidade com SQLite.
 _JSONType = JSONB().with_variant(JSON(), "sqlite")
 
 

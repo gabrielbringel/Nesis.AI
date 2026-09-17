@@ -166,7 +166,8 @@ cd frontend && npm run build:extension
 
 | Elemento | Fonte |
 |---|---|
-| Headings, botões | Instrument Serif |
+| Headings | Roboto Serif |
+| Botões | Google Sans (fallback: DM Sans) |
 | UI geral | DM Sans |
 | Dados clínicos, mono | DM Mono |
 
@@ -175,7 +176,7 @@ cd frontend && npm run build:extension
 - 🟡 MODERADO: `#EF9F27`
 - 🟢 LEVE: `#639922`
 
-**Modo:** Light mode apenas (dark mode é flag implementado, sem aplicação visual ainda)
+**Modo:** Light e dark mode implementados em `frontend/src/index.css`, selecionáveis nas configurações.
 
 ---
 

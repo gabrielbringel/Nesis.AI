@@ -149,9 +149,6 @@ export function useSidebar() {
   // Stores scraped data for the "analyze anyway" path from incomplete-data
   const scrapedRef = useRef<ReturnType<typeof scrapeESUSData> | null>(null)
 
-  // When non-null, "Reanalisar" re-uses this payload instead of scraping
-  const reanalyzePayloadRef = useRef<EditablePayload | null>(null)
-
   const applyOutcome = useCallback((outcome: ApiOutcome) => {
     if (outcome.kind === 'results') {
       setState((prev) => ({
@@ -186,7 +183,6 @@ export function useSidebar() {
       apiResultRef.current = null
       bulletsFinishedRef.current = false
       pendingAlertasRef.current = null
-      reanalyzePayloadRef.current = null
       if (intervalRef.current) clearInterval(intervalRef.current)
 
       const payload = buildPayload(scraped)
@@ -294,7 +290,6 @@ export function useSidebar() {
 
   const startReading = useCallback(async () => {
     if (intervalRef.current) clearInterval(intervalRef.current)
-    reanalyzePayloadRef.current = null
     setState((prev) => ({ ...prev, view: 'reading', loadedAttributes: [], errorType: null }))
 
     let scraped: ReturnType<typeof scrapeESUSData> | null = null
@@ -467,15 +462,6 @@ export function useSidebar() {
     }
   }, [])
 
-  const reanalyze = useCallback(() => {
-    const histPayload = reanalyzePayloadRef.current
-    if (histPayload) {
-      reanalyzeWithData(histPayload)
-    } else {
-      startReading()
-    }
-  }, [startReading, reanalyzeWithData])
-
   const analyzeAnyway = useCallback(() => {
     const scraped = scrapedRef.current
     if (!scraped) return
@@ -504,7 +490,6 @@ export function useSidebar() {
 
   const loadRecord = useCallback((record: AnalysisRecord) => {
     if (intervalRef.current) clearInterval(intervalRef.current)
-    reanalyzePayloadRef.current = record.scrapedData
     setState((prev) => ({
       ...prev,
       view: 'results',
@@ -541,5 +526,5 @@ export function useSidebar() {
     tryAutoStart()
   }, [startReading])
 
-  return { state, startReading, reanalyze, reanalyzeWithData, analyzeAnyway, fillManually, goToIdle, loadRecord }
+  return { state, startReading, reanalyzeWithData, analyzeAnyway, fillManually, goToIdle, loadRecord }
 }

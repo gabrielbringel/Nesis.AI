@@ -15,7 +15,7 @@ For Brazilian health care terminology, see the [Brazilian Health Care Context](.
 
 ```bash
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
 
@@ -57,9 +57,9 @@ These host permissions are broader than the scraper's runtime eligibility check.
 lista-atendimento/atendimento
 ```
 
-The URL patterns in `background.js` are placeholders and are not currently used to open or enable the panel. Confirm the production e-SUS deployment URLs before relying on these patterns outside a demo.
+The service worker only handles opening the panel. URL eligibility is checked in `useSidebar.ts`; extraction is implemented in `esus-scraper.ts`.
 
-If **Automatic reading** is enabled in settings, the extension starts reading when the side-panel UI loads on an eligible encounter page. The setting does not open the panel itself.
+If `autoRead` is enabled in the stored settings (there is currently no UI toggle), the extension starts reading when the side-panel UI loads on an eligible encounter page. The setting does not open the panel itself.
 
 ## Project Structure
 
@@ -113,7 +113,7 @@ The extension sends requests directly to:
 POST http://localhost:8000/api/v1/analyze
 ```
 
-The endpoint URL is currently hard-coded in `src/hooks/useSidebar.ts`. The Vite development proxy for `/api` does not affect this request.
+The endpoint URL is currently hard-coded in `src/hooks/useSidebar.ts`. Changing the deployment address currently requires updating those calls and the extension host permissions.
 
 ## Technology Stack
 
@@ -121,7 +121,7 @@ The endpoint URL is currently hard-coded in `src/hooks/useSidebar.ts`. The Vite 
 - TypeScript
 - Vite 8 with `base: './'` for extension-relative asset paths
 - Tailwind CSS
-- Instrument Serif, DM Sans, and DM Mono
+- Roboto Serif, DM Sans, DM Mono, and Google Sans
 - Chrome Manifest V3, Side Panel API, service worker, tabs, and scripting APIs
 
 ## Generate Icons
@@ -134,6 +134,6 @@ The script writes the extension PNG assets under `public/icons/`.
 
 ## Local Persistence
 
-Analysis history and settings are stored in the extension's `localStorage`; there is no backend synchronization. **Reset memory** clears both stores.
+Analysis history and settings are stored in the extension's `localStorage`; there is no backend synchronization. **Reset memory** clears the history and restores the bundled fictional examples; settings are preserved. Example history is also populated on startup when the history is empty.
 
-The settings store includes `darkMode`, but the project's current design remains light-only.
+Light and dark themes are implemented in `src/index.css` and can be selected in settings.

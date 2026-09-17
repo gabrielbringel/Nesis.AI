@@ -61,6 +61,8 @@ The following command deletes the Compose-managed database volume and all of its
 docker compose down -v
 ```
 
+The backend loads `.env` at runtime through Compose `env_file`; `.dockerignore` excludes local credentials and caches from the image. Compose overrides the database URLs to use its internal `postgres` hostname.
+
 ## Backend Startup
 
 The backend container performs these operations in order:

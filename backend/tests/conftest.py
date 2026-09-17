@@ -1,68 +1,43 @@
-"""Fixtures compartilhadas dos testes.
-
-Os testes usam SQLite em memória via aiosqlite — em produção o banco é
-PostgreSQL+asyncpg. O modelo `Analise` usa JSON com variant para SQLite
-permitindo que os mesmos schemas rodem nos dois.
-"""
+"""Testes de contrato da API com motor simulado, sem banco nem chamadas externas."""
 
 from __future__ import annotations
 
 import os
 import sys
 from pathlib import Path
-from typing import AsyncGenerator
+from unittest.mock import AsyncMock
 
+import pytest
 import pytest_asyncio
+from httpx import ASGITransport, AsyncClient
 
-_BACKEND_ROOT = Path(__file__).resolve().parents[1]
-if str(_BACKEND_ROOT) not in sys.path:
-    sys.path.insert(0, str(_BACKEND_ROOT))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+os.environ["APP_ENV"] = "test"
+os.environ["GEMINI_API_KEY"] = ""
 
-os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
-os.environ.setdefault("APP_ENV", "test")
-
-from httpx import ASGITransport, AsyncClient  # noqa: E402
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine  # noqa: E402
-from sqlalchemy.pool import StaticPool  # noqa: E402
-
-from app.database import Base, get_db  # noqa: E402
 from app.main import create_app  # noqa: E402
-from app import models  # noqa: F401, E402 — registra metadata
+from app.prescriptions import service  # noqa: E402
+
+
+@pytest.fixture
+def motor(monkeypatch):
+    mock = AsyncMock(return_value=[
+        {
+            "severidade": severity,
+            "titulo": "Alerta de teste",
+            "descricao": "Resultado simulado para verificar o contrato da API.",
+            "fonte": "Fixture de teste",
+            "medicamentos_envolvidos": ["Medicamento de teste"],
+            "recomendacao": "Exemplo fictício, sem orientação clínica.",
+        }
+        for severity in ("GRAVE", "MODERADO", "LEVE")
+    ])
+    monkeypatch.setattr(service, "motor_analyze", mock)
+    return mock
 
 
 @pytest_asyncio.fixture
-async def engine():
-    engine = create_async_engine(
-        "sqlite+aiosqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-        future=True,
-    )
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    yield engine
-    await engine.dispose()
-
-
-@pytest_asyncio.fixture
-async def session_factory(engine):
-    return async_sessionmaker(bind=engine, expire_on_commit=False, class_=AsyncSession)
-
-
-@pytest_asyncio.fixture
-async def app(session_factory):
-    application = create_app()
-
-    async def _override_get_db() -> AsyncGenerator[AsyncSession, None]:
-        async with session_factory() as session:
-            yield session
-
-    application.dependency_overrides[get_db] = _override_get_db
-    return application
-
-
-@pytest_asyncio.fixture
-async def client(app) -> AsyncGenerator[AsyncClient, None]:
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        yield ac
+async def client(motor):
+    transport = ASGITransport(app=create_app())
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        yield client
