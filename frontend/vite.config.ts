@@ -1,10 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// base: './' é obrigatório para a extensão Chrome — assets carregam via paths
-// relativos ao manifest, sem servidor por trás. public/ é copiado in-place para
-// dist/ pelo Vite, então manifest.json, background.js e icons/ aparecem na raiz
-// do build automaticamente.
+// base: './' is required for the Chrome extension: assets load through paths
+// relative to the manifest, with no server behind them. Vite copies public/
+// into dist/ as-is, so manifest.json, background.js, and icons/ land at the
+// build root automatically.
 export default defineConfig({
   plugins: [react()],
   base: './',

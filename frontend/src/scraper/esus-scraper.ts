@@ -1,9 +1,9 @@
-// Scraping do prontuário do eSUS APS via XPaths confirmados.
+// Scrapes the e-SUS APS patient record using verified XPaths.
 //
-// IMPORTANTE: scrapeESUSData é injetada via chrome.scripting.executeScript no
-// contexto da aba do navegador, então o corpo da função precisa ser
-// 100% self-contained — sem imports, sem closures sobre módulos. Helpers
-// auxiliares também ficam dentro da função.
+// IMPORTANT: scrapeESUSData is injected into the browser tab through
+// chrome.scripting.executeScript, so the function body must be fully
+// self-contained: no imports and no closures over module scope. Helper
+// functions also live inside it.
 
 export interface ScrapedPaciente {
   nome: string | null
@@ -30,7 +30,7 @@ export interface ScrapedResult {
 }
 
 export function scrapeESUSData(): ScrapedResult {
-  // ─── Helpers (inline porque a função é serializada e injetada) ───
+  // ─── Helpers (inline because the function is serialized and injected) ───
   function getByXPath(xpath: string): string | null {
     const result = document.evaluate(
       xpath,
@@ -62,7 +62,7 @@ export function scrapeESUSData(): ScrapedResult {
     return out
   }
 
-  // ─── Paciente ───
+  // ─── Patient ───
   const NOME_XPATH =
     '//*[@id="root"]/div/div[3]/main/header/div/div/div[1]/div/div/div[1]/div/div[1]/h2'
   const IDADE_XPATH =
@@ -84,7 +84,7 @@ export function scrapeESUSData(): ScrapedResult {
   const peso = getByXPath(PESO_XPATH)
   const altura = getByXPath(ALTURA_XPATH)
 
-  // Alergias: null = container não encontrado; [] = encontrado mas vazio.
+  // Allergies: null = container not found; [] = found but empty.
   let alergias: string[] | null = null
   const alergiaContainerResult = document.evaluate(
     ALERGIAS_CONTAINER_XPATH,
@@ -113,7 +113,7 @@ export function scrapeESUSData(): ScrapedResult {
     '//*[@id="accordion__panel-A"]/div/div/div[2]/div/div/div/div/div[1]/div/div[2]/div/div/div/div/div/div/span/span',
   )
 
-  // Problemas/condições: null = seção não encontrada; [] = encontrada mas vazia.
+  // Problems/conditions: null = section not found; [] = found but empty.
   let problemasCondicoes: string[] | null = null
   const firstProblem = getByXPath(`//*[@id="accordion__panel-A"]/div/div/div[3]/div/div/div/div/div[1]/div/div[2]/div/div[3]`)
   if (firstProblem !== null) {
@@ -125,13 +125,13 @@ export function scrapeESUSData(): ScrapedResult {
       problemasCondicoes.push(text)
     }
   } else {
-    // Tenta encontrar o container raiz para distinguir null de []
+    // Look for the root container to tell null apart from []
     const containerCheck = getByXPath(`//*[@id="accordion__panel-A"]/div/div/div[3]`)
     if (containerCheck !== null) problemasCondicoes = []
   }
 
-  // ─── Medicamentos em uso ───
-  // null = container não encontrado; [] = encontrado mas vazio.
+  // ─── Current medications ───
+  // null = container not found; [] = found but empty.
   let medEmUso: string[] | null = null
   try {
     const boxXPath = '/html/body/div[1]/div/div[3]/main/div[1]/form/div[1]/div/div/div[1]/div/aside/div/div/div/div/div/div[5]'
@@ -149,24 +149,24 @@ export function scrapeESUSData(): ScrapedResult {
       })
     }
   } catch (err) {
-    // Falha silenciosa se der erro no XPath
+    // Fail silently if the XPath errors
   }
 
-  // ─── Medicações ───
+  // ─── Prescribed medications ───
   const medicacoes: ScrapedMedicacao[] = []
   
-  // O XPath base fornecido para o container de medicações (onde os div[i] estão)
+  // Base XPath for the medication container (where the div[i] items live)
   const basePathAbsolute = '/html/body/div[1]/div/div[3]/main/div[1]/form/div[1]/div/div/div[2]/div/div/div[5]/div[2]/div/div/div[4]/div/div[2]/div[3]/div/div/div[2]'
   
   for (let i = 1; i < 50; i++) {
-    // 1. Tenta o XPath novo e mais robusto (baseado no DOM atual)
+    // 1. Try the newer, more robust XPath (based on the current DOM)
     let nomeXPath = `${basePathAbsolute}/div[${i}]/div/div[1]/div/h5`
     let posologiaXPath = `${basePathAbsolute}/div[${i}]/div/div[1]/span`
     
     let nomeMed = getByXPath(nomeXPath)
     let posologia = getByXPath(posologiaXPath) || ''
 
-    // 2. Se falhar, tenta o XPath antigo baseado no ID que costumava existir
+    // 2. If that fails, try the legacy XPath based on an ID that used to exist
     if (!nomeMed) {
       const oldNomeXPath = `//*[@id="accordion__panel-raa-801"]/div[${i}]/div/div[1]/div/h5`
       const oldPosXPath = `//*[@id="accordion__panel-raa-801"]/div[${i}]/div/div[1]/span`
@@ -180,7 +180,7 @@ export function scrapeESUSData(): ScrapedResult {
     medicacoes.push({ nome: nomeMed, posologia })
   }
 
-  // ─── Fallback heurístico (se nenhum XPath de medicação retornou) ───
+  // ─── Heuristic fallback (when no medication XPath matched) ───
   if (medicacoes.length === 0) {
     const found = new Set<string>()
     document.querySelectorAll('div, p, span, h4, h5, li').forEach((el) => {
@@ -203,8 +203,8 @@ export function scrapeESUSData(): ScrapedResult {
     })
   }
 
-  // Suprime warning de unused (mantemos getAllByXPath caso seja útil em
-  // futuras seções iterativas e para deixar a função self-contained completa)
+  // Silence the unused warning (getAllByXPath is kept for future iterable
+  // sections and to keep the self-contained helper set complete)
   void getAllByXPath
 
   return {

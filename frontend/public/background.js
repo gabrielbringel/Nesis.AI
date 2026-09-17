@@ -1,4 +1,4 @@
-// Abre o painel lateral ao clicar no ícone da extensão.
+// Open the side panel when the extension icon is clicked.
 chrome.sidePanel
   .setPanelBehavior({ openPanelOnActionClick: true })
-  .catch((err) => console.error('[Nesis] setPanelBehavior falhou:', err))
+  .catch((err) => console.error('[Nesis] setPanelBehavior failed:', err))

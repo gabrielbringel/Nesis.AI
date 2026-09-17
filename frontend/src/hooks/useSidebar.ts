@@ -315,7 +315,7 @@ export function useSidebar() {
         scraped = injectionResults[0]?.result ?? null
       }
     } catch (err) {
-      console.error('Erro ao ler dados do e-SUS:', err)
+      console.error('Failed to read e-SUS data:', err)
       setState((prev) => ({ ...prev, view: 'error', errorType: 'scraping-failed' }))
       return
     }
@@ -520,7 +520,7 @@ export function useSidebar() {
           startReading()
         }
       } catch (err) {
-        console.error('[Nesis] auto-start falhou:', err)
+        console.error('[Nesis] auto-start failed:', err)
       }
     }
     tryAutoStart()

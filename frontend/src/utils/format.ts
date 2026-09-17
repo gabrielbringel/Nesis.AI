@@ -1,9 +1,9 @@
-// Formatadores de exibição do paciente.
+// Display formatters for patient data.
 
 const PREPOSICOES = new Set(['de', 'da', 'do', 'das', 'dos', 'e'])
 
 /**
- * Abrevia para "Primeiro Sobrenome.":
+ * Abbreviate to "FirstName LastInitial.":
  *   "Gabriel Bringel"            → "Gabriel B."
  *   "Antonio dos Santos Ramalho" → "Antonio R."
  *   "Maria Clara de Oliveira"    → "Maria O."
@@ -25,7 +25,7 @@ function capitalize(word: string): string {
 }
 
 /**
- * Normaliza texto bruto de sexo do DOM para "H" / "M" / "?".
+ * Normalize raw sex text from the DOM to "H" (male) / "M" (female) / "?".
  */
 export function normalizeSexo(raw: string | null | undefined): string {
   if (!raw) return '?'
@@ -37,8 +37,8 @@ export function normalizeSexo(raw: string | null | undefined): string {
 }
 
 /**
- * Monta o displayLabel padrão: "A. dos Santos · H, 45 anos"
- * Os campos faltantes degradam graciosamente.
+ * Build the default displayLabel: "A. dos Santos · H, 45 anos"
+ * Missing fields degrade gracefully.
  */
 export function buildPatientLabel(
   nome: string | null | undefined,
