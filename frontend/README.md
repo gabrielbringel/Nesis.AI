@@ -1,6 +1,6 @@
-# NesisAI — Frontend (Chrome Extension)
+# Nesis — Frontend (Chrome Extension)
 
-NesisAI's React interface is packaged as a Chrome Manifest V3 extension using the Side Panel API. It is designed to read a patient encounter page in Brazil's e-SUS APS primary-care record system.
+Nesis's React interface is packaged as a Chrome Manifest V3 extension using the Side Panel API. It is designed to read a patient encounter page in Brazil's e-SUS APS primary-care record system.
 
 For Brazilian health care terminology, see the [Brazilian Health Care Context](../README.md#brazilian-health-care-context) section in the main README.
 
@@ -9,7 +9,7 @@ For Brazilian health care terminology, see the [Brazilian Health Care Context](.
 - Node.js `^20.19.0` or `>=22.12.0`, as required by the installed Vite 8 release
 - npm
 - Google Chrome with Side Panel API support
-- The NesisAI backend at `http://localhost:8000` for live analysis
+- The Nesis backend at `http://localhost:8000` for live analysis
 
 ## Browser UI Development
 
@@ -34,7 +34,7 @@ This creates `frontend/dist/`.
 3. Select **Load unpacked**.
 4. Choose the `frontend/dist/` directory.
 5. Open an eligible e-SUS APS encounter page.
-6. Select the NesisAI extension icon to open its side panel.
+6. Select the Nesis extension icon to open its side panel.
 
 Chrome's extension icon opens the panel because `background.js` calls `setPanelBehavior({ openPanelOnActionClick: true })`. The current service worker does not automatically open the panel when the user navigates to a matching URL.
 

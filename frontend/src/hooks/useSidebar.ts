@@ -520,7 +520,7 @@ export function useSidebar() {
           startReading()
         }
       } catch (err) {
-        console.error('[NesisAI] auto-start falhou:', err)
+        console.error('[Nesis] auto-start falhou:', err)
       }
     }
     tryAutoStart()

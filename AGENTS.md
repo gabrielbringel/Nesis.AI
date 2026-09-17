@@ -1,10 +1,10 @@
-# AGENTS.md — NesisAI
+# AGENTS.md — Nesis
 
-Guia de contexto para o Codex trabalhar no projeto NesisAI.
+Guia de contexto para o Codex trabalhar no projeto Nesis.
 
 ---
 
-## O que é o NesisAI
+## O que é o Nesis
 
 Copiloto clínico para médicos da Atenção Primária à Saúde (APS) do SUS. Detecta erros de prescrição e interações medicamentosas em tempo real, operando como uma **extensão Chrome** que aparece como sidebar ao lado do prontuário do eSUS.
 
@@ -73,7 +73,7 @@ alertas classificados aparecem na sidebar:
 ## Estrutura do repositório
 
 ```
-Nesis.AI/
+Nesis/
 ├── backend/
 │   ├── app/
 │   │   ├── main.py

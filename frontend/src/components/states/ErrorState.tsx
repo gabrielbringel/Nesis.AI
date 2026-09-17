@@ -11,7 +11,7 @@ type LegendFn = (status?: number) => string[]
 
 const LEGENDS: Record<NonNullable<ErrorType>, LegendFn> = {
   'api-unreachable': () => [
-    'Não foi possível conectar ao servidor NesisAI.',
+    'Não foi possível conectar ao servidor Nesis.',
     'Verifique se o backend está rodando na porta 8000.',
   ],
   'api-error': (status) => [

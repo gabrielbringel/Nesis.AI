@@ -30,7 +30,7 @@ export function IdleState({ onStart }: Props) {
           gap: '2px',
         }}
       >
-        <span style={{ fontWeight: 500, fontStyle: 'italic', color: 'var(--color-text-placeholder)' }}>Nesis.AI</span>
+        <span style={{ fontWeight: 500, fontStyle: 'italic', color: 'var(--color-text-placeholder)' }}>Nesis</span>
         <span style={{ fontWeight: 400, color: 'var(--color-text-secondary)' }}>Nenhuma decisão sem revisão</span>
       </div>
       <ActionButton onClick={onStart} icon={<NesisMark size={13} color="#555" />}>

@@ -1,4 +1,4 @@
-# NesisAI — Docker Guide
+# Nesis — Docker Guide
 
 This is the recommended workflow for running the backend and its databases during development and demos.
 

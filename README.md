@@ -1,16 +1,22 @@
 <div align="center">
-  <img src="frontend/public/icons/icon.svg" alt="NesisAI" width="72" />
-  <h1>NesisAI</h1>
-  <p><strong>A clinical copilot alongside the patient record.</strong></p>
-  <p>Chrome extension · React + TypeScript · FastAPI · Gemini + pgvector</p>
+  <img src="docs/readme-hero.svg" alt="Nesis — copiloto clínico para revisão de prescrições" width="100%" />
+  <br /><br />
+  <p>
+    <code>CHROME EXTENSION</code>&nbsp;&nbsp;·&nbsp;&nbsp;
+    <code>FASTAPI</code>&nbsp;&nbsp;·&nbsp;&nbsp;
+    <code>RAG + PGVECTOR</code>&nbsp;&nbsp;·&nbsp;&nbsp;
+    <code>GEMINI</code>
+  </p>
   <p><a href="#interface">Interface</a> · <a href="#quick-start">Quick start</a> · <a href="#architecture">Architecture</a> · <a href="#project-status">Project status</a></p>
 </div>
 
-Built during a hackathon, NesisAI explores how prescription review can fit into a physician's existing workflow. A Chrome side panel reads an e-SUS APS encounter, sends structured clinical data to an AI pipeline, and presents alerts with severity, explanations, recommendations, and source labels. Physicians can review the extracted data, edit it, and request another analysis.
+Built during a hackathon, Nesis explores how prescription review can fit into a physician's existing workflow. A Chrome side panel reads an e-SUS APS encounter, sends structured clinical data to an AI pipeline, and presents alerts with severity, explanations, recommendations, and source labels. Physicians can review the extracted data, edit it, and request another analysis.
 
 > **Hackathon prototype.** This project has not been clinically validated. Use fictional data for development and demonstrations; it is not ready for patient-care decisions.
 
-## Interface
+<a id="interface"></a>
+
+## 01 · Interface
 
 Actual frontend captures using the fictional examples bundled with the project. The results shown are saved demo records, not a live model evaluation.
 
@@ -21,7 +27,7 @@ Actual frontend captures using the fictional examples bundled with the project. 
     <th>Browse local history</th>
   </tr>
   <tr>
-    <td><img src="docs/images/sidebar-idle.png" alt="NesisAI side panel in its initial state" width="280" /></td>
+    <td><img src="docs/images/sidebar-idle.png" alt="Nesis side panel in its initial state" width="280" /></td>
     <td><img src="docs/images/sidebar-results.png" alt="Saved fictional analysis with an expanded alert" width="280" /></td>
     <td><img src="docs/images/sidebar-history.png" alt="Local history drawer with fictional cases" width="280" /></td>
   </tr>
@@ -29,7 +35,7 @@ Actual frontend captures using the fictional examples bundled with the project. 
 
 The UI includes light and dark themes, editable patient and prescription details, and dedicated states for missing data, unavailable services, unsupported pages, and empty results. Typography combines Roboto Serif, DM Sans, DM Mono, and Google Sans.
 
-## What it does
+## 02 · What it does
 
 - Extracts encounter data from supported e-SUS pages using mapped XPaths and heuristic fallbacks.
 - Normalizes medication names to Brazilian Common Denominations (DCB).
@@ -38,13 +44,15 @@ The UI includes light and dark themes, editable patient and prescription details
 - Lets the user correct extracted data and reanalyze without scraping again.
 - Keeps analysis history and settings in browser `localStorage`.
 
-## Brazilian Health Care Context
+## 03 · Brazilian Health Care Context
 
-**SUS** is Brazil's public health system. **APS** refers to primary health care, and **e-SUS APS** is the Ministry of Health's digital health ecosystem for that setting. NesisAI targets the encounter workflow in its electronic patient record. **DCB** is Brazil's standardized nomenclature for pharmaceutical substances.
+**SUS** is Brazil's public health system. **APS** refers to primary health care, and **e-SUS APS** is the Ministry of Health's digital health ecosystem for that setting. Nesis targets the encounter workflow in its electronic patient record. **DCB** is Brazil's standardized nomenclature for pharmaceutical substances.
 
 The interface and API field names are in Brazilian Portuguese.
 
-## Architecture
+<a id="architecture"></a>
+
+## 04 · Architecture
 
 ```mermaid
 flowchart LR
@@ -68,7 +76,9 @@ flowchart LR
 
 The implemented engine still uses Gemini. Self-hosted models, AWS deployment, and additional record-system adapters are potential next steps, not shipped features.
 
-## Quick start
+<a id="quick-start"></a>
+
+## 05 · Quick start
 
 ### Explore the frontend without a backend
 
@@ -113,12 +123,12 @@ npm run build:extension
 
 1. Open `chrome://extensions` in Chrome and enable **Developer mode**.
 2. Choose **Load unpacked** and select `frontend/dist/`.
-3. Open a supported e-SUS encounter and click the NesisAI icon.
+3. Open a supported e-SUS encounter and click the Nesis icon.
 4. Start the analysis from the side panel.
 
 The current scraper checks for `lista-atendimento/atendimento` in the active URL. Access also depends on the manifest's host permissions. The API address is currently fixed to `http://localhost:8000`.
 
-## Development checks
+## 06 · Development checks
 
 Frontend type checking and extension build:
 
@@ -136,7 +146,7 @@ python -m pytest
 
 The API tests replace the AI engine with deterministic responses. They require no database or model credentials and do not measure clinical accuracy.
 
-## Repository map
+## 07 · Repository map
 
 ```text
 backend/
@@ -155,7 +165,9 @@ docs/images/           Frontend screenshots for this README
 pitch/                 Original hackathon presentation
 ```
 
-## Project status
+<a id="project-status"></a>
+
+## 08 · Project status
 
 This repository preserves the working hackathon scope. Important limitations:
 
@@ -166,7 +178,7 @@ This repository preserves the working hackathon scope. Important limitations:
 - Patient data is not anonymized. Excluding the name from the verification prompt does not sanitize free-text fields or the API payload.
 - The `analises` database schema exists, but analysis persistence is disabled; the active history is in the browser.
 
-## Further reading
+## 09 · Further reading
 
 - [Backend and API contract](backend/README.md)
 - [Docker workflow](backend/README_DOCKER.md)

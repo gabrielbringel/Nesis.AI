@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "NesisAI",
+  "name": "Nesis",
   "version": "0.3.0",
   "description": "Copiloto clínico para detecção de erros de prescrição no eSUS",
   "permissions": ["sidePanel", "tabs", "scripting", "storage"],
@@ -13,7 +13,7 @@
     "http://127.0.0.1/*"
   ],
   "action": {
-    "default_title": "NesisAI"
+    "default_title": "Nesis"
   },
   "side_panel": {
     "default_path": "index.html"

@@ -1,6 +1,6 @@
-# Levantamento factual — Nesis.AI
+# Levantamento factual — Nesis
 
-Repo em `/Users/bringel/Documents/Coding/Nesis.AI`, branch `bringel` (HEAD), último commit `39a7162` de 2026-07-31.
+Repo em `/Users/bringel/Documents/Coding/Nesis`, branch `bringel` (HEAD), último commit `39a7162` de 2026-07-31.
 
 Cada afirmação abaixo cita arquivo e linha. Onde não há evidência no código, está escrito explicitamente **não encontrado**.
 

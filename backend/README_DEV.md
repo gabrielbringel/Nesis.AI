@@ -1,4 +1,4 @@
-# NesisAI — Backend Development Guide
+# Nesis — Backend Development Guide
 
 This guide covers running the backend directly on the host. The recommended demo workflow uses Docker; see [`README_DOCKER.md`](README_DOCKER.md).
 

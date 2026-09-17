@@ -26,7 +26,7 @@ settings = get_settings()
 
 def create_app() -> FastAPI:
     app = FastAPI(
-        title="Nesis.AI — API",
+        title="Nesis — API",
         version=settings.app_version,
         description=(
             "Backend do sistema de verificação de interações medicamentosas. "
@@ -51,7 +51,7 @@ def create_app() -> FastAPI:
     @app.get("/", tags=["root"])
     async def root() -> dict[str, str]:
         return {
-            "name": "Nesis.AI API",
+            "name": "Nesis API",
             "version": settings.app_version,
             "docs": "/docs",
             "health": "/health",
