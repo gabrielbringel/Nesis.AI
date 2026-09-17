@@ -1,105 +1,181 @@
-# Nesis
+<div align="center">
+  <img src="frontend/public/icons/icon.svg" alt="NesisAI" width="72" />
+  <h1>NesisAI</h1>
+  <p><strong>A clinical copilot alongside the patient record.</strong></p>
+  <p>Chrome extension · React + TypeScript · FastAPI · Gemini + pgvector</p>
+  <p><a href="#interface">Interface</a> · <a href="#quick-start">Quick start</a> · <a href="#architecture">Architecture</a> · <a href="#project-status">Project status</a></p>
+</div>
 
-Copiloto clínico que utiliza IA para detectar erros de prescrição e interações medicamentosas em tempo real, integrado ao prontuário do eSUS APS através de uma extensão Chrome.
+Built during a hackathon, NesisAI explores how prescription review can fit into a physician's existing workflow. A Chrome side panel reads an e-SUS APS encounter, sends structured clinical data to an AI pipeline, and presents alerts with severity, explanations, recommendations, and source labels. Physicians can review the extracted data, edit it, and request another analysis.
 
-## Sobre o Projeto
+> **Hackathon prototype.** This project has not been clinically validated. Use fictional data for development and demonstrations; it is not ready for patient-care decisions.
 
-Nesis é um sistema de apoio à decisão clínica (CDSS) para médicos da Atenção Primária à Saúde (APS) do SUS. Atua como sidebar ao lado do prontuário do eSUS APS e oferece:
+## Interface
 
-1. **Detecção Automática de Prontuários**: extensão Chrome reconhece a página do eSUS APS e extrai dados clínicos do paciente e da prescrição em tempo real.
-2. **Análise Híbrida LLM + RAG**: motor de IA que combina Google Gemini com base de conhecimento cardiovascular indexada em pgvector.
-3. **Alertas Classificados por Severidade**: feedback exibido como GRAVE, MODERADO ou LEVE, com recomendação clínica e citação explícita da fonte.
-4. **Revisão Humana**: gaveta lateral editável que permite ao médico corrigir os dados scrapeados e reanalisar.
+Actual frontend captures using the fictional examples bundled with the project. The results shown are saved demo records, not a live model evaluation.
 
-> **Sobre o eSUS APS**: o eSUS APS é o sistema de prontuário eletrônico oficial do Ministério da Saúde do Brasil, utilizado pela APS em milhares de Unidades Básicas. A extensão NesisAI foi projetada para integrar-se nativamente ao fluxo de trabalho médico, sem substituí-lo.
+<table>
+  <tr>
+    <th>Start an analysis</th>
+    <th>Review a result</th>
+    <th>Browse local history</th>
+  </tr>
+  <tr>
+    <td><img src="docs/images/sidebar-idle.png" alt="NesisAI side panel in its initial state" width="280" /></td>
+    <td><img src="docs/images/sidebar-results.png" alt="Saved fictional analysis with an expanded alert" width="280" /></td>
+    <td><img src="docs/images/sidebar-history.png" alt="Local history drawer with fictional cases" width="280" /></td>
+  </tr>
+</table>
 
-## Funcionalidades Principais
+The UI includes light and dark themes, editable patient and prescription details, and dedicated states for missing data, unavailable services, unsupported pages, and empty results. Typography combines Roboto Serif, DM Sans, DM Mono, and Google Sans.
 
-- Detecção automática do prontuário do eSUS APS via `host_permissions` (Manifest V3)
-- Scraping estruturado do DOM com XPaths mapeados e fallback heurístico
-- Normalização de nomes comerciais → DCB via LLM
-- Verificação clínica com Gemini 2.5 Flash + RAG sobre base cardiovascular (41 entradas)
-- Classificação automática por severidade (GRAVE / MODERADO / LEVE) com fonte citada
-- Gaveta lateral editável para correção de dados e reanálise sem novo scraping
-- Histórico de análises e configurações persistidos localmente (`localStorage`)
+## What it does
 
-## Tecnologias Utilizadas
+- Extracts encounter data from supported e-SUS pages using mapped XPaths and heuristic fallbacks.
+- Normalizes medication names to Brazilian Common Denominations (DCB).
+- Retrieves context from 41 cardiovascular knowledge entries stored in PostgreSQL with pgvector.
+- Generates alerts labeled **GRAVE**, **MODERADO**, or **LEVE**.
+- Lets the user correct extracted data and reanalyze without scraping again.
+- Keeps analysis history and settings in browser `localStorage`.
 
-### Backend
-- **Framework**: FastAPI (Python 3.11+)
-- **Banco de Dados**: PostgreSQL 16 + pgvector
-- **ORM**: SQLAlchemy 2 (async) + Alembic
-- **IA**: Google Gemini 2.5 Flash + `models/gemini-embedding-001`
-- **RAG**: LangChain + langchain-postgres
+## Brazilian Health Care Context
 
-### Frontend
-- **Framework**: React 18 + TypeScript + Vite
-- **Estilização**: Tailwind CSS
-- **Plataforma**: Chrome Extension Manifest V3 + Side Panel API
+**SUS** is Brazil's public health system. **APS** refers to primary health care, and **e-SUS APS** is the Ministry of Health's digital health ecosystem for that setting. NesisAI targets the encounter workflow in its electronic patient record. **DCB** is Brazil's standardized nomenclature for pharmaceutical substances.
 
-### Infraestrutura
-- Docker + Docker Compose com named volumes (`pgvector/pgvector:pg16`)
+The interface and API field names are in Brazilian Portuguese.
 
-## Como Rodar
+## Architecture
 
-### Pré-requisitos
-
-- Docker e Docker Compose
-- Node.js 18+
-- Google Chrome
-- API Key do Google AI Studio
-
-### Backend
-
-```bash
-cd backend
-cp .env.example .env   # adicionar GEMINI_API_KEY
-docker compose up --build
+```mermaid
+flowchart LR
+    A[e-SUS encounter] -->|DOM extraction| B[Chrome side panel]
+    B -->|POST /api/v1/analyze| C[FastAPI]
+    C --> D[Medication normalization]
+    D --> E[Context retrieval]
+    F[(PostgreSQL + pgvector)] --> E
+    E --> G[Clinical verification]
+    G -->|Alerts by severity| B
+    B --> H[Local history]
 ```
 
-Após subir, popular a base de conhecimento:
+| Layer | Implementation |
+|---|---|
+| Extension | React 18, TypeScript, Vite 8, Manifest V3, Side Panel API |
+| API | FastAPI, Pydantic, SQLAlchemy, Alembic |
+| AI | Gemini chat through LangChain; embeddings through `google-genai` |
+| Retrieval | `langchain-postgres`, PostgreSQL 16, pgvector |
+| Local infrastructure | Docker Compose with a named database volume |
 
-```bash
-docker exec -it backend-backend-1 python scripts/ingest_knowledge.py
-```
+The implemented engine still uses Gemini. Self-hosted models, AWS deployment, and additional record-system adapters are potential next steps, not shipped features.
 
-Para detalhes de configuração, variáveis de ambiente e troubleshooting, ver [`backend/README_DOCKER.md`](backend/README_DOCKER.md).
+## Quick start
 
-### Frontend
+### Explore the frontend without a backend
+
+Requires Node.js `^20.19.0` or `>=22.12.0` and npm.
 
 ```bash
 cd frontend
-npm install
+npm ci
+npm run dev
+```
+
+Open the local URL printed by Vite. Use the top-left menu to open the fictional history and select a saved result. You can inspect the UI without an API key. Running a new analysis requires the backend; extracting a record requires the installed Chrome extension.
+
+### Run the backend
+
+Requires Docker Compose and a Gemini API key for model calls and knowledge ingestion.
+
+```bash
+cd backend
+cp .env.example .env
+# Set GEMINI_API_KEY in .env.
+docker compose up --build
+```
+
+In another terminal, populate the knowledge base:
+
+```bash
+cd backend
+docker compose exec backend python scripts/ingest_knowledge.py
+```
+
+API documentation: [localhost:8000/docs](http://localhost:8000/docs). Health endpoint: [localhost:8000/health](http://localhost:8000/health).
+
+The `.env` file is supplied at runtime and excluded from the Docker image. Database data persists in a named volume. Rebuild the image after backend source changes.
+
+### Install the extension
+
+```bash
+cd frontend
 npm run build:extension
 ```
 
-Em `chrome://extensions` → Modo do desenvolvedor → Carregar sem compactação → selecionar `frontend/dist/`.
+1. Open `chrome://extensions` in Chrome and enable **Developer mode**.
+2. Choose **Load unpacked** and select `frontend/dist/`.
+3. Open a supported e-SUS encounter and click the NesisAI icon.
+4. Start the analysis from the side panel.
 
-Para detalhes de desenvolvimento e build, ver [`frontend/README.md`](frontend/README.md).
+The current scraper checks for `lista-atendimento/atendimento` in the active URL. Access also depends on the manifest's host permissions. The API address is currently fixed to `http://localhost:8000`.
 
-## Base de Conhecimento (Banco vetorial)
+## Development checks
 
-41 entradas curadas no domínio cardiovascular brasileiro, com enfoque maior em interações medicamentosas entre antiarritímicos e anti-hipertensivos (`backend/data/cardio_knowledge.json`):
+Frontend type checking and extension build:
 
-| Prefixo | Categoria | Quantidade |
-|---|---|---|
-| `INT` | Interações medicamentosas | 16 |
-| `CON` | Contraindicações | 8 |
-| `IDO` | Considerações geriátricas | 8 |
-| `REN` | Ajustes por função renal | 5 |
-| `SUP` | Alertas de suplementação | 4 |
+```bash
+cd frontend
+npm run build:extension
+```
 
-## Documentação
+Backend API tests, after installing `backend/requirements.txt` in a virtual environment:
 
-| Documento | Conteúdo |
-|---|---|
-| [`backend/README.md`](backend/README.md) | Setup, endpoint principal, validação rápida |
-| [`backend/README_DOCKER.md`](backend/README_DOCKER.md) | Docker Compose, volumes, troubleshooting |
-| [`backend/README_DEV.md`](backend/README_DEV.md) | Desenvolvimento local, Alembic, testes |
-| [`backend/app/motor/README.md`](backend/app/motor/README.md) | Pipeline de IA, modelos, contrato |
-| [`frontend/README.md`](frontend/README.md) | Build da extensão, fluxo de estados, estrutura |
-| [`CLAUDE.md`](CLAUDE.md) | Contexto técnico, stack v2, regras do projeto |
+```bash
+cd backend
+python -m pytest
+```
 
-## Licença
+The API tests replace the AI engine with deterministic responses. They require no database or model credentials and do not measure clinical accuracy.
 
-Este projeto foi desenvolvido como projeto de hackathon.
+## Repository map
+
+```text
+backend/
+  app/motor/           Normalization, prompts, retrieval, verification
+  app/prescriptions/   API schemas, route, and response aggregation
+  data/                Cardiovascular knowledge base
+  scripts/             Knowledge ingestion
+  tests/               API contract tests
+  alembic/             Database migrations
+frontend/
+  src/components/      Sidebar, drawer, alerts, and UI states
+  src/scraper/         e-SUS DOM extraction
+  src/stores/          Local history and settings
+  public/              Extension manifest, service worker, and icons
+docs/images/           Frontend screenshots for this README
+pitch/                 Original hackathon presentation
+```
+
+## Project status
+
+This repository preserves the working hackathon scope. Important limitations:
+
+- Some engine failures currently produce an empty alert list, indistinguishable from a completed analysis with no alerts.
+- Retrieval falls back to model knowledge when the vector store is unavailable; source labels are not independently verified citations.
+- Scraping depends on the e-SUS page structure and has not been generalized to other record systems.
+- History contains bundled fictional examples and is stored locally. Resetting memory restores those examples while keeping settings.
+- Patient data is not anonymized. Excluding the name from the verification prompt does not sanitize free-text fields or the API payload.
+- The `analises` database schema exists, but analysis persistence is disabled; the active history is in the browser.
+
+## Further reading
+
+- [Backend and API contract](backend/README.md)
+- [Docker workflow](backend/README_DOCKER.md)
+- [Backend development](backend/README_DEV.md)
+- [AI pipeline and failure behavior](backend/app/motor/README.md)
+- [Extension development](frontend/README.md)
+- [Original hackathon pitch](pitch/nesis_pitch.html)
+- [Repository context](AGENTS.md)
+
+## License
+
+No license has been selected yet. Public availability of the repository does not grant an open-source license.

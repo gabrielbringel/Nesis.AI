@@ -1,4 +1,3 @@
-import { addRecord, getHistory } from '../stores/historyStore'
 import type { AnalysisRecord } from '../stores/historyStore'
 
 function makeId(i: number): string {
@@ -458,9 +457,6 @@ const SEEDS: SeedInput[] = [
   },
 ]
 
-export function seedHistory(): void {
-  if (getHistory().length > 0) return
-  for (let i = SEEDS.length - 1; i >= 0; i--) {
-    addRecord({ ...SEEDS[i], id: makeId(i) })
-  }
+export function createSeedRecords(): AnalysisRecord[] {
+  return SEEDS.map((record, i) => ({ ...record, id: makeId(i) }))
 }

@@ -8,9 +8,8 @@ export function useDrawer() {
 
   const open = useCallback(() => setIsOpen(true), [])
   const close = useCallback(() => setIsOpen(false), [])
-  const toggle = useCallback(() => setIsOpen((v) => !v), [])
 
-  return { isOpen, view, open, close, toggle, setView }
+  return { isOpen, view, open, close, setView }
 }
 
 export type UseDrawerReturn = ReturnType<typeof useDrawer>

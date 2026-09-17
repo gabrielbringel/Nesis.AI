@@ -1,11 +1,6 @@
-"""Regras de negócio da análise de prescrições.
+"""Invoca o motor de IA e agrega os alertas por severidade.
 
-Recebe o payload da extensão, dispara o motor de IA (stub por enquanto)
-e devolve a resposta agregada por severidade.
-
-A persistência em `analises` está intencionalmente desligada — a tabela
-e a migração existem, mas nada é gravado ainda. Habilitar quando o motor
-real (LLM + RAG) estiver pronto.
+A persistência em `analises` está desligada; o histórico fica no navegador.
 """
 
 from __future__ import annotations

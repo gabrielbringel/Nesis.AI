@@ -61,10 +61,6 @@ export function useSettings(): Settings {
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 }
 
-export function toggleAutoRead() {
-  setState({ ...state, autoRead: !state.autoRead })
-}
-
 export function toggleDarkMode() {
   setState({ ...state, darkMode: !state.darkMode })
 }
@@ -74,5 +70,3 @@ export function toggleDarkMode() {
 export function getSettings(): Settings {
   return state
 }
-
-export const subscribeToSettings = subscribe
