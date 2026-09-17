@@ -1,41 +1,41 @@
 # AGENTS.md — Nesis
 
-Guia de contexto para o Codex trabalhar no projeto Nesis.
+Context guide for Codex when working on the Nesis project.
 
 ---
 
-## O que é o Nesis
+## What Nesis is
 
-Copiloto clínico para médicos da Atenção Primária à Saúde (APS) do SUS. Detecta erros de prescrição e interações medicamentosas em tempo real, operando como uma **extensão Chrome** que aparece como sidebar ao lado do prontuário do eSUS.
+A clinical copilot for physicians in primary care (APS, *Atenção Primária à Saúde*) within SUS, Brazil's public health system. It detects prescribing errors and drug interactions in real time, running as a **Chrome extension** that opens as a side panel next to the e-SUS APS patient record.
 
 ---
 
-## Stack v2 (atual)
+## Stack v2 (current)
 
 ### Backend
-- **FastAPI** — API REST assíncrona
-- **PostgreSQL + pgvector** — banco principal + vector store para RAG
-- **Alembic** — migrações
-- **Docker** — containerização (usar named volumes, NÃO bind mounts)
-- Endpoint principal: `POST /api/v1/analyze`
+- **FastAPI** — async REST API
+- **PostgreSQL + pgvector** — main database + vector store for RAG
+- **Alembic** — migrations
+- **Docker** — containerization (use named volumes, NOT bind mounts)
+- Main endpoint: `POST /api/v1/analyze`
 
-### Motor de IA
-- **Gemini 2.5 Flash** (`gemini-2.5-flash`) — normalização de texto clínico + verificação
-- **RAG com pgvector** — base de conhecimento cardiovascular (41 entradas)
-- **LangChain + langchain-postgres** — integração vectorstore
-- **GeminiEmbeddings** (classe customizada em `backend/app/motor/embeddings.py`) usando `models/gemini-embedding-001`
-- Embeddings: biblioteca `google-genai` (nova) — **NUNCA usar `google.generativeai` (deprecated)**
+### AI engine
+- **Gemini 2.5 Flash** (`gemini-2.5-flash`) — clinical text normalization + verification
+- **RAG with pgvector** — cardiovascular knowledge base (41 entries)
+- **LangChain + langchain-postgres** — vector store integration
+- **GeminiEmbeddings** (custom class in `backend/app/motor/embeddings.py`) using `models/gemini-embedding-001`
+- Embeddings: the new `google-genai` library — **NEVER use `google.generativeai` (deprecated)**
 
 ### Frontend
 - **React 18 + TypeScript + Vite**
-- **Tailwind CSS** (utilitários apenas)
-- **Extensão Chrome Manifest V3 + Side Panel API**
-- Sidebar com 4 estados: idle → lendo → analisando → resultado
-- Drawer lateral com histórico e configurações
+- **Tailwind CSS** (utilities only)
+- **Chrome extension, Manifest V3 + Side Panel API**
+- Sidebar with 4 states: idle → reading → analyzing → results
+- Side drawer with history and settings
 
 ---
 
-## O que foi REMOVIDO da v1 (não reintroduzir)
+## Removed in v1 (do not reintroduce)
 
 - BioBERTpt
 - ChemicalX / RDKit
@@ -45,32 +45,39 @@ Copiloto clínico para médicos da Atenção Primária à Saúde (APS) do SUS. D
 
 ---
 
-## Fluxo completo
+## End-to-end flow
 
 ```
-médico abre prontuário no eSUS
+physician opens a patient record in e-SUS APS
         ↓
-extensão detecta a página (content script)
+extension detects the page
         ↓
-scraping do DOM (medicações, alergias, dados do paciente)
+DOM scraping (medications, allergies, patient data)
         ↓
-envia para POST /api/v1/analyze
+sends to POST /api/v1/analyze
         ↓
-LLM normaliza os dados (Gemini)
+LLM normalizes the data (Gemini)
         ↓
-RAG busca na base cardiovascular (pgvector)
+RAG searches the cardiovascular base (pgvector)
         ↓
-LLM verifica e gera alertas com fonte citada
+LLM verifies and generates alerts with a cited source
         ↓
-alertas classificados aparecem na sidebar:
-  🔴 GRAVE — alergia, superdosagem, contraindicação absoluta
-  🟡 MODERADO — interação significativa, dose limítrofe
-  🟢 LEVE — informativo, duplicidade menor
+classified alerts appear in the sidebar:
+  🔴 GRAVE (severe) — allergy, overdose, absolute contraindication
+  🟡 MODERADO (moderate) — significant interaction, borderline dose
+  🟢 LEVE (mild) — informational, minor duplication
 ```
 
 ---
 
-## Estrutura do repositório
+## Language
+
+- Documentation, code comments, docstrings, and log messages are in English.
+- The UI, Gemini prompts, API field names, severity values, knowledge base, and demo data stay in Brazilian Portuguese, the language of the users and the source records.
+
+---
+
+## Repository structure
 
 ```
 Nesis/
@@ -79,7 +86,7 @@ Nesis/
 │   │   ├── main.py
 │   │   ├── config.py
 │   │   ├── database.py
-│   │   ├── motor/
+│   │   ├── motor/                 ← AI engine
 │   │   │   ├── __init__.py
 │   │   │   ├── pipeline.py
 │   │   │   ├── normalizer.py
@@ -92,11 +99,11 @@ Nesis/
 │   │       ├── service.py
 │   │       └── router.py
 │   ├── data/
-│   │   └── cardio_knowledge.json  ← base RAG (41 entradas cardiovasculares)
+│   │   └── cardio_knowledge.json  ← RAG base (41 cardiovascular entries)
 │   ├── scripts/
-│   │   └── ingest_knowledge.py    ← popula pgvector
+│   │   └── ingest_knowledge.py    ← populates pgvector
 │   ├── docker-compose.yml
-│   └── .env                       ← NÃO commitar
+│   └── .env                       ← DO NOT commit
 └── frontend/
     ├── src/
     │   ├── components/
@@ -115,19 +122,21 @@ Nesis/
     │   ├── hooks/
     │   │   ├── useSidebar.ts
     │   │   └── useDrawer.ts
+    │   ├── scraper/
+    │   │   └── esus-scraper.ts    ← e-SUS APS DOM extraction
     │   └── stores/
-    │       └── settingsStore.ts    ← autoRead, darkMode (localStorage)
+    │       └── settingsStore.ts   ← autoRead, darkMode (localStorage)
     └── public/
-        ├── manifest.json           ← Manifest V3
-        └── background.js           ← service worker
+        ├── manifest.json          ← Manifest V3
+        └── background.js          ← service worker
 ```
 
 ---
 
-## Variáveis de ambiente (backend/.env)
+## Environment variables (backend/.env)
 
 ```env
-# Banco
+# Database
 DATABASE_URL=postgresql+asyncpg://nesis:nesis@postgres:5432/nesis
 PGVECTOR_URL=postgresql+psycopg://nesis:nesis@postgres:5432/nesis
 
@@ -141,50 +150,50 @@ APP_ENV=development
 
 ---
 
-## Comandos úteis
+## Useful commands
 
 ```bash
-# Subir backend
+# Start the backend
 cd backend && docker compose up
 
-# Popular base de conhecimento (após subir o Docker)
+# Populate the knowledge base (after Docker is up)
 docker exec -it backend-backend-1 python scripts/ingest_knowledge.py
 
-# Verificar embeddings no banco
+# Check embeddings in the database
 docker exec -it backend-postgres-1 psql -U nesis -d nesis -c "SELECT COUNT(*) FROM langchain_pg_embedding;"
 
-# Buildar extensão Chrome
+# Build the Chrome extension
 cd frontend && npm run build:extension
 
-# Instalar extensão
-# chrome://extensions → Modo do desenvolvedor → Carregar sem compactação → frontend/dist/
+# Install the extension
+# chrome://extensions → Developer mode → Load unpacked → frontend/dist/
 ```
 
 ---
 
 ## Design system
 
-| Elemento | Fonte |
+| Element | Font |
 |---|---|
 | Headings | Roboto Serif |
-| Botões | Google Sans (fallback: DM Sans) |
-| UI geral | DM Sans |
-| Dados clínicos, mono | DM Mono |
+| Buttons | Google Sans (fallback: DM Sans) |
+| General UI | DM Sans |
+| Clinical data, mono | DM Mono |
 
-**Cores de alerta:**
+**Alert colors:**
 - 🔴 GRAVE: `#E24B4A`
 - 🟡 MODERADO: `#EF9F27`
 - 🟢 LEVE: `#639922`
 
-**Modo:** Light e dark mode implementados em `frontend/src/index.css`, selecionáveis nas configurações.
+**Themes:** light and dark modes are implemented in `frontend/src/index.css` and selectable in settings.
 
 ---
 
-## Regras importantes
+## Important rules
 
-- **Hackathon** — não sugerir autenticação real, protocolos avançados, ou features de produção
-- **Nunca usar `google.generativeai`** — usar `google.genai` (nova biblioteca)
-- **Nunca usar bind mounts no Docker** — usar named volumes
-- **CORS está liberado** com `allow_origins=["*"]` — não alterar
-- O histórico e configurações usam `localStorage` — sem backend para isso ainda
-- O mock de login ainda não foi implementado — há um placeholder no rodapé do drawer
+- **Hackathon** — do not suggest real authentication, advanced protocols, or production features
+- **Never use `google.generativeai`** — use `google.genai` (the new library)
+- **Never use bind mounts in Docker** — use named volumes
+- **CORS is open** with `allow_origins=["*"]` — do not change it
+- History and settings use `localStorage` — no backend for them yet
+- The login mock is not implemented yet — there is a placeholder in the drawer footer
