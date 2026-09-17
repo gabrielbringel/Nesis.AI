@@ -37,7 +37,7 @@ Actual frontend captures using the fictional examples bundled with the project. 
   </tr>
 </table>
 
-The interface is in Brazilian Portuguese, the language of its users. It includes light and dark themes, editable patient and prescription details, and dedicated states for missing data, unavailable services, unsupported pages, and empty results. Typography combines Roboto Serif, DM Sans, DM Mono, and Google Sans.
+The interface is in Brazilian Portuguese, the language of its users. It includes light and dark themes, editable patient and prescription details, and dedicated states for missing data, unavailable services, unsupported pages, and empty results.
 
 ## 02 · What it does
 
