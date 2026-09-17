@@ -1,4 +1,4 @@
-"""Etapa 2 do pipeline: verificação clínica via RAG (PGVector) + Gemini."""
+"""Pipeline step 2: clinical verification with RAG (PGVector) + Gemini."""
 
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ def _llm() -> ChatGoogleGenerativeAI:
     settings = get_settings()
     if not settings.gemini_api_key:
         raise RuntimeError(
-            "GEMINI_API_KEY não configurada — defina no .env antes de subir o motor."
+            "GEMINI_API_KEY is not set. Define it in .env before starting the engine."
         )
     return ChatGoogleGenerativeAI(
         model=settings.gemini_model,
@@ -63,10 +63,11 @@ def _build_query(
 
 
 def _serializar_paciente(paciente: dict[str, Any]) -> str:
-    """Bloco textual com dados clínicos do paciente — sem incluir o nome.
+    """Build the patient's clinical data block for the prompt, without the name.
 
-    O nome trafega no payload (uso local apenas para exibição na sidebar) mas
-    é redundante no prompt do LLM e poderia enviesar a resposta.
+    The name travels in the payload (used locally only for display in the
+    sidebar), but it is redundant in the LLM prompt and could bias the answer.
+    The block itself stays in Portuguese to match the prompt.
     """
     alergias = paciente.get("alergias") or []
     problemas = paciente.get("problemas_condicoes") or []
@@ -83,7 +84,7 @@ def _serializar_paciente(paciente: dict[str, Any]) -> str:
 
 
 def _formatar_contexto(docs: list[Document]) -> str:
-    """Concatena page_content + metadata num bloco legível para o prompt."""
+    """Join page_content and metadata into a readable block for the prompt."""
     if not docs:
         return "(base de conhecimento vazia — usar conhecimento clínico do modelo)"
 
@@ -105,17 +106,17 @@ async def verify(
     paciente: dict[str, Any],
     medicacoes: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    """Gera alertas clínicos a partir do paciente e medicações normalizadas.
+    """Generate clinical alerts from the patient and normalized medications.
 
-    Recupera contexto da base vetorial (PGVector) com os k documentos mais
-    similares à consulta e injeta no prompt do Gemini. Quando a base está
-    vazia ou indisponível, o LLM cai no próprio conhecimento clínico.
+    Retrieves the k documents most similar to the query from the vector store
+    (PGVector) and injects them into the Gemini prompt. When the store is empty
+    or unavailable, the LLM falls back to its own clinical knowledge.
     """
     query = _build_query(paciente, medicacoes)
     docs = await search_context(query, k=_RAG_K)
     contexto_rag = _formatar_contexto(docs)
 
-    # Se não vier contexto, usa mensagem padrão para o LLM não ficar sem informação
+    # Without context, send a default note so the LLM knows retrieval returned nothing
     contexto_final = contexto_rag if contexto_rag.strip() else (
         "(base de conhecimento SUS indisponível — usar conhecimento clínico do modelo)"
     )
@@ -133,27 +134,27 @@ async def verify(
     try:
         response = await _llm().ainvoke(messages)
     except Exception:
-        logger.exception("Chamada ao Gemini (verificação) falhou.")
+        logger.exception("Gemini call (verification) failed.")
         raise
 
     raw = _strip_code_fence(str(response.content))
     try:
         parsed = json.loads(raw)
     except json.JSONDecodeError:
-        logger.error("JSON inválido na verificação: %s", raw)
+        logger.error("Invalid JSON in verification: %s", raw)
         return []
 
-    # Gemini às vezes devolve lista direta [...], outras vezes {"alertas": [...]}.
+    # Gemini sometimes returns a bare list [...] and sometimes {"alertas": [...]}.
     if isinstance(parsed, list):
         alertas = parsed
     elif isinstance(parsed, dict):
         alertas = parsed.get("alertas", [])
     else:
-        logger.error("Resposta de verificação em formato inesperado: %s", raw)
+        logger.error("Unexpected verification response format: %s", raw)
         return []
 
     if not isinstance(alertas, list):
-        logger.error("Campo 'alertas' não é lista: %s", raw)
+        logger.error("'alertas' field is not a list: %s", raw)
         return []
 
     return [a for a in alertas if _is_valid_alerta(a)]

@@ -1,4 +1,7 @@
-"""Testes de contrato da API com motor simulado, sem banco nem chamadas externas."""
+"""API contract test fixtures with a mocked engine, no database, and no external calls.
+
+Alert values stay in Portuguese to match the API contract.
+"""
 
 from __future__ import annotations
 

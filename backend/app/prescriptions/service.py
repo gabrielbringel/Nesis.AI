@@ -1,6 +1,6 @@
-"""Invoca o motor de IA e agrega os alertas por severidade.
+"""Call the AI engine and aggregate alerts by severity.
 
-A persistência em `analises` está desligada; o histórico fica no navegador.
+Persistence to `analises` is disabled; history lives in the browser.
 """
 
 from __future__ import annotations

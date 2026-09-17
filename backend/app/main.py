@@ -1,4 +1,4 @@
-"""Entrypoint FastAPI."""
+"""FastAPI entry point."""
 
 from __future__ import annotations
 
@@ -13,8 +13,8 @@ from fastapi.responses import JSONResponse
 from app.config import get_settings
 from app.prescriptions.router import router as prescriptions_router
 
-# Sem basicConfig, o nível default é WARNING e os logger.info() do motor
-# ficam suprimidos. Configurar antes de qualquer logger ser instanciado.
+# Without basicConfig the default level is WARNING, which hides the engine's
+# logger.info() calls. Configure this before any logger is created.
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -29,15 +29,15 @@ def create_app() -> FastAPI:
         title="Nesis — API",
         version=settings.app_version,
         description=(
-            "Backend do sistema de verificação de interações medicamentosas. "
-            "Recebe dados scrapeados pela extensão Chrome e devolve alertas "
-            "classificados por severidade. Documentação em /docs."
+            "Backend for the Nesis prescription-review system. "
+            "Receives data scraped by the Chrome extension and returns alerts "
+            "classified by severity. Documentation at /docs."
         ),
     )
 
-    # Em desenvolvimento aceitamos qualquer origem porque o ID da extensão
-    # Chrome é gerado dinamicamente e ainda não pode ser fixado.
-    # PRODUÇÃO: restringir para o ID definitivo da extensão (chrome-extension://<id>).
+    # Development accepts any origin because the Chrome extension ID is
+    # generated dynamically and cannot be pinned yet.
+    # PRODUCTION: restrict to the final extension ID (chrome-extension://<id>).
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -87,7 +87,7 @@ def _register_error_handlers(app: FastAPI) -> None:
     async def unhandled_exception_handler(
         request: Request, exc: Exception
     ) -> JSONResponse:
-        logger.exception("Erro não tratado: %s", exc)
+        logger.exception("Unhandled error: %s", exc)
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Erro interno. Tente novamente."},

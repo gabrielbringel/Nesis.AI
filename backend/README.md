@@ -165,6 +165,6 @@ curl -X POST http://localhost:8000/api/v1/analyze \
   }'
 ```
 
-Look for `RAG recuperou N documentos para: ...` in the backend logs to confirm that vector retrieval ran.
+Look for `RAG retrieved N documents for: ...` in the backend logs to confirm that vector retrieval ran.
 
 For host-based development, see [`README_DEV.md`](README_DEV.md). For Docker details, see [`README_DOCKER.md`](README_DOCKER.md).

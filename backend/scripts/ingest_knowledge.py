@@ -1,18 +1,19 @@
-"""Ingestão da base de conhecimento cardiovascular no PGVector.
+"""Ingest the cardiovascular knowledge base into PGVector.
 
-Lê backend/data/cardio_knowledge.json, converte cada entrada num Document
-do LangChain e popula o pgvector com embeddings via Gemini.
+Reads backend/data/cardio_knowledge.json, turns each entry into a LangChain
+Document, and populates pgvector with Gemini embeddings. The knowledge base
+content stays in Portuguese.
 
-Como rodar:
-  Dentro do container backend:
+How to run:
+  Inside the backend container:
     docker exec -it backend-backend-1 python scripts/ingest_knowledge.py
 
-  Localmente (com PGVECTOR_URL apontando para localhost):
+  Locally (with PGVECTOR_URL pointing to localhost):
     python backend/scripts/ingest_knowledge.py
 
-IMPORTANTE — PGVECTOR_URL:
-  Dentro do Docker, o host é "postgres" (o nome do serviço no docker-compose).
-  Fora do Docker, é "localhost". Configure no .env conforme o cenário de execução.
+IMPORTANT — PGVECTOR_URL:
+  Inside Docker, the host is "postgres" (the docker-compose service name).
+  Outside Docker, it is "localhost". Set .env for your environment.
 """
 
 from __future__ import annotations
@@ -22,12 +23,12 @@ import logging
 import sys
 from pathlib import Path
 
-# Garante que o módulo `app` (em backend/app) seja importável quando o script
-# rodar como `python scripts/ingest_knowledge.py` a partir de backend/.
+# Makes the `app` module (backend/app) importable when the script runs as
+# `python scripts/ingest_knowledge.py` from backend/.
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BACKEND_DIR))
 
-# pydantic-settings em app.config já carrega o .env automaticamente
+# pydantic-settings in app.config loads .env automatically
 
 from langchain_core.documents import Document
 from langchain_postgres import PGVector
@@ -50,15 +51,15 @@ def carregar_entradas() -> list[dict]:
     with open(JSON_PATH, encoding="utf-8") as f:
         dados = json.load(f)
     entradas = dados.get("base_conhecimento", [])
-    logger.info("JSON carregado: %d entradas em %s", len(entradas), JSON_PATH)
+    logger.info("Loaded JSON: %d entries from %s", len(entradas), JSON_PATH)
     return entradas
 
 
 def entrada_para_documento(entrada: dict) -> Document:
-    """Converte uma entrada do JSON num Document do LangChain.
+    """Convert a JSON entry into a LangChain Document.
 
-    page_content: texto rico para recuperação semântica.
-    metadata: campos estruturados para filtragem futura.
+    page_content: descriptive text for semantic retrieval.
+    metadata: structured fields for future filtering.
     """
     titulo = entrada.get("titulo", "")
     mecanismo = entrada.get("mecanismo", "")
@@ -88,13 +89,13 @@ def main() -> None:
     
     api_key = settings.gemini_api_key
     if not api_key:
-        raise SystemExit("GEMINI_API_KEY não definida no .env")
+        raise SystemExit("GEMINI_API_KEY is not set in .env")
 
     pgvector_url = settings.pgvector_url
     if not pgvector_url:
-        raise SystemExit("PGVECTOR_URL não definida no .env")
+        raise SystemExit("PGVECTOR_URL is not set in .env")
 
-    logger.info("Conectando ao pgvector em %s", _mascara_url(pgvector_url))
+    logger.info("Connecting to pgvector at %s", _mascara_url(pgvector_url))
 
     entradas = carregar_entradas()
     documentos = [entrada_para_documento(e) for e in entradas]
@@ -110,30 +111,30 @@ def main() -> None:
     )
 
     logger.info(
-        "Inserindo %d documentos na coleção '%s'...",
+        "Inserting %d documents into collection '%s'...",
         len(documentos),
         COLLECTION_NAME,
     )
 
-    # add_documents com ids → upsert: re-rodar o script atualiza embeddings
-    # ao invés de duplicar registros.
-    # Fazemos a inserção em lotes pequenos com pausa para evitar 429 (Rate Limit) da API do Gemini
+    # add_documents with ids → upsert: rerunning the script updates embeddings
+    # instead of duplicating records.
+    # Insert in small batches with a pause to avoid Gemini API 429 (rate limit) errors.
     import time
     batch_size = 5
     for i in range(0, len(documentos), batch_size):
         lote_docs = documentos[i : i + batch_size]
         lote_ids = ids[i : i + batch_size]
-        logger.info("Inserindo lote de %d a %d de %d documentos...", i + 1, min(i + batch_size, len(documentos)), len(documentos))
+        logger.info("Inserting documents %d to %d of %d...", i + 1, min(i + batch_size, len(documentos)), len(documentos))
         vectorstore.add_documents(documents=lote_docs, ids=lote_ids)
-        time.sleep(2) # Pausa de 2 segundos entre os lotes
+        time.sleep(2)  # 2-second pause between batches
 
 
-    logger.info("✓ %d documentos inseridos com sucesso.", len(documentos))
+    logger.info("✓ %d documents inserted successfully.", len(documentos))
     logger.info("IDs: %s", ", ".join(ids))
 
 
 def _mascara_url(url: str) -> str:
-    """Esconde a senha da URL para não vazar em log."""
+    """Mask the password in the URL so it does not leak into logs."""
     if "@" not in url or "://" not in url:
         return url
     prefixo, resto = url.split("://", 1)

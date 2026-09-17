@@ -1,13 +1,13 @@
-"""Wrapper de embeddings via SDK `google-genai` (novo).
+"""Embeddings wrapper built on the new `google-genai` SDK.
 
-O SDK antigo `google.generativeai` é deprecated e tem comportamentos
-imprevisíveis (incluindo ingestões que reportam sucesso mas não persistem
-embeddings no pgvector). Usamos o SDK novo `google-genai` (`from google
-import genai`), que é o mesmo já usado pelo motor LLM.
+The old `google.generativeai` SDK is deprecated and behaves unpredictably
+(including ingestions that report success but never persist embeddings to
+pgvector). We use the new `google-genai` SDK (`from google import genai`),
+the same one the LLM engine already uses.
 
-Expõe a interface `Embeddings` do LangChain (`embed_documents` +
-`embed_query`), para ser plugado em `langchain_postgres.PGVector` sem
-alteração na chamada.
+Implements LangChain's `Embeddings` interface (`embed_documents` +
+`embed_query`), so it plugs into `langchain_postgres.PGVector` without
+changes to the call site.
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ class GeminiEmbeddings(Embeddings):
         key = api_key or os.environ.get("GEMINI_API_KEY")
         if not key:
             raise RuntimeError(
-                "GEMINI_API_KEY não configurada — defina no .env antes de usar embeddings."
+                "GEMINI_API_KEY is not set. Define it in .env before using embeddings."
             )
         self.client = genai.Client(api_key=key)
         self.model = model
@@ -39,7 +39,7 @@ class GeminiEmbeddings(Embeddings):
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
         if not texts:
             return []
-        logger.info("Gerando embeddings para %d documentos...", len(texts))
+        logger.info("Generating embeddings for %d documents...", len(texts))
         result = self.client.models.embed_content(
             model=self.model,
             contents=texts,

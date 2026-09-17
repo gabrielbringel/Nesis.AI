@@ -1,4 +1,4 @@
-"""Modelos ORM do módulo de prescrições."""
+"""ORM models for the prescriptions module."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from app.common import TimestampMixin, UUIDMixin
 from app.database import Base
 
 
-# PostgreSQL usa JSONB; a variante JSON mantém a compatibilidade com SQLite.
+# PostgreSQL uses JSONB; the JSON variant keeps SQLite compatibility.
 _JSONType = JSONB().with_variant(JSON(), "sqlite")
 
 

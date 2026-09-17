@@ -1,7 +1,7 @@
-"""Importa todos os modelos ORM para registrá-los na metadata.
+"""Imports every ORM model so it is registered in the metadata.
 
-Importar este módulo garante que cada `Table` tenha sido criado em
-`Base.metadata` antes de `create_all` ou Alembic autogenerate rodarem.
+Importing this module ensures each `Table` exists in `Base.metadata`
+before `create_all` or Alembic autogenerate runs.
 """
 
 from app.prescriptions.models import Analise  # noqa: F401

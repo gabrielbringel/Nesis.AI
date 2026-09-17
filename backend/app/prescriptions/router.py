@@ -1,4 +1,4 @@
-"""Endpoint de análise de prescrições."""
+"""Prescription analysis endpoint."""
 
 from fastapi import APIRouter
 
@@ -10,5 +10,5 @@ router = APIRouter(tags=["analyze"])
 
 @router.post("/api/v1/analyze", response_model=AnalyzeResponse)
 async def analyze(payload: AnalyzeRequest) -> AnalyzeResponse:
-    """Valida os dados extraídos e retorna os alertas, sem persistir a análise."""
+    """Validate the extracted data and return alerts without persisting the analysis."""
     return await analisar(payload)

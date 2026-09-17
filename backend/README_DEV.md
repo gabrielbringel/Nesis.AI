@@ -121,12 +121,12 @@ app/
 `app/main.py` configures the root log level as `INFO`. To confirm a successful RAG lookup, look for:
 
 ```text
-RAG recuperou N documentos para: ...
+RAG retrieved N documents for: ...
 ```
 
 ## Troubleshooting
 
-**`GEMINI_API_KEY não configurada`**
+**`GEMINI_API_KEY is not set`**
 
 Set `GEMINI_API_KEY` in `backend/.env` before starting the process.
 

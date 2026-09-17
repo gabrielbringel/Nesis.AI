@@ -20,7 +20,7 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # Habilita pgvector — necessário para embeddings nas próximas iterações.
+    # Enable pgvector, required for embeddings.
     op.execute("CREATE EXTENSION IF NOT EXISTS vector")
 
     op.create_table(
